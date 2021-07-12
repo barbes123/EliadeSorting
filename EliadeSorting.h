@@ -90,13 +90,13 @@ public :
 
   class TEliadeDetector { 
   public:
-    int	 dom;
-    int	 ch;//ch daq
-    float 	 theta;
-    float	 phi;  
-    float	 TimeOffset; 
-    int 	 upperThreshold; 
-    int	 pol_order;
+    Int_t	 dom;
+    Int_t	 ch;//ch daq
+    Float_t 	 theta;
+    Float_t	 phi;  
+    Int_t	 TimeOffset; 
+    Int_t 	 upperThreshold; 
+    Int_t	 pol_order;
     std::vector<float> calibE;
     TEliadeDetector(): dom(-1),phi(-1),theta(-1),TimeOffset(0),calibE(0),upperThreshold(-1),ch(-1),pol_order(-1){};
  };
@@ -114,6 +114,7 @@ public :
  
   TEliadeEvent EliadeEvent;  
   TEliadeEvent lastEliadeEvent;  
+  TEliadeEvent lastEliadeZeroEvent;  
   TEliadeEventCoinc EliadeCoincEvent[4];
 
   TBranch *b_channel;
@@ -139,6 +140,8 @@ public :
   TH1F* hTimeZero;
   TH1F* hTest;
   TH2F* mBoardTimeDiff;
+  TH2F* mZeroTimeDiff;
+  TH2F* mZeroTimeDiff_vs_Enegy;
    
   std::clock_t start;
   double duration;

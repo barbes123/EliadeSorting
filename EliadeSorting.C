@@ -31,16 +31,19 @@
 #include <TString.h>
 #include <TObjString.h>
 
-TString LUT_Directory = "/data/live/IT/dsoft/EliadeSelector/";
+TString LUT_Directory = "/data/live/IT/dsoft/EliadeSorting/";
+//TString LUT_Directory = "";
 
 bool debug = false;
 
 const int dom_nbr = 1;
 const int current_clover = 1;
 const int nbr_of_boards = 8;
+const int nbr_of_ch = 200;
+const int zero_channel = 101; //for time allignement
 
 void EliadeSorting::Read_ELIADE_LookUpTable() {
-  std::cout << "Reading ELIADE LookUpTable ... ";
+  std::cout << "I am Reading ELIADE LookUpTable ... ";
 //  std::stringstream CUTFile;
 //  CUTFile << CUTG_Directory.Data() << "cut_EeEw_galileo.root";
 //  TFile *file_EeEw = TFile::Open(CUTFile.str().c_str());
@@ -63,12 +66,14 @@ void EliadeSorting::Read_ELIADE_LookUpTable() {
       Float_t theta(-1.), phi(-1.);
       int upperThreshold = 1e6;
       std::istringstream is(oneline);
-      if (debug)
-	std::cout << is.str().c_str() << std::endl;
-      is >> curDet.ch >> curDet.dom >> theta >> phi >> curDet.TimeOffset >> curDet.upperThreshold;
+      if (debug) std::cout << is.str().c_str() << std::endl;
+      is >> curDet.ch >> curDet.dom >> curDet.theta >> curDet.phi >> curDet.TimeOffset >> curDet.upperThreshold;
+      
+    //  std::cout<<" curDet.ch  "<<curDet.ch <<" curDet.TimeOffset " <<curDet.TimeOffset<<std::endl;
+      
       if (curDet.ch >= 0) {
-	theta *= TMath::DegToRad();
-	phi *= TMath::DegToRad();
+	//theta *= TMath::DegToRad();
+	//phi *= TMath::DegToRad();
 //	TVector3 DetPos;
 //	curDet.direction.SetMagThetaPhi(210, theta, phi);
 	int pol_order = 0;
@@ -141,10 +146,11 @@ void EliadeSorting::CheckSorting(std::deque<TEliadeEvent> myQu)
 
 void EliadeSorting::Print_ELIADE_LookUpTable()
 {
+    std::cout<<"Print_ELIADE_LookUpTable \n";		
     std::map<unsigned int, TEliadeDetector > ::iterator it__ = LUT_ELIADE.begin();
     for (; it__ != LUT_ELIADE.end(); ++it__) {
-    //      particle_id[it__->second] = it__->first;
-	std::cout<<LUT_ELIADE[it__->first].ch<<" "<< LUT_ELIADE[it__->first].pol_order <<std::endl;
+     // is >> curDet.ch >> curDet.dom >> theta >> phi >> curDet.TimeOffset >> curDet.upperThreshold;
+	std::cout<<LUT_ELIADE[it__->first].ch<<" "<< LUT_ELIADE[it__->first].dom<<" "<< LUT_ELIADE[it__->first].theta<<" "<< LUT_ELIADE[it__->first].phi <<" "<< LUT_ELIADE[it__->first].TimeOffset<<" "<< LUT_ELIADE[it__->first].upperThreshold<<" "<<LUT_ELIADE[it__->first].pol_order <<std::endl;
     }
 };
 
@@ -248,7 +254,7 @@ void EliadeSorting::Begin(TTree * tree)
 
 
   Read_ELIADE_LookUpTable();
- // Print_ELIADE_LookUpTable();
+  Print_ELIADE_LookUpTable();
 
 //  EliadeEvent.fChannel = uChannel;
  // EliadeEvent.fMod = uMod;
@@ -326,8 +332,17 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    mEliadeMULT = new TH2F("mEliadeMULT", "mEliadeMULT", 4, 0, 4, 10, -0.5, 9.5);
    fOutput->Add(mEliadeMULT);
    
-    mBoardTimeDiff = new TH2F("mBoardTimeDiff", "mBoardTimeDiff", nbr_of_boards, 0, nbr_of_boards, 1000, -99.5, 899.5);
+   mBoardTimeDiff = new TH2F("mBoardTimeDiff", "mBoardTimeDiff", nbr_of_boards, 0, nbr_of_boards, 1000, -99.5, 899.5);
    fOutput->Add(mBoardTimeDiff);
+   
+   mZeroTimeDiff = new TH2F("mZeroTimeDiff", "mZeroTimeDiff", nbr_of_ch, 0, nbr_of_ch, 1000, -99.5, 899.5);
+   fOutput->Add(mZeroTimeDiff);//time_diff relevant to the 1st channel (101), i.e. ch 101 is a trigger
+   
+    
+   mZeroTimeDiff_vs_Enegy = new TH2F("mZeroTimeDiff_vs_Enegy", "mZeroTimeDiff_vs_Enegy", 16384, -0.5, 16383.5, 1000, -99.5, 899.5);
+   fOutput->Add(mZeroTimeDiff_vs_Enegy);//time_diff relevant to the 1st channel (101), i.e. ch 101 is a trigger
+   
+   
    
    
    
@@ -335,6 +350,7 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
     start = std::clock();
     
     lastEliadeEvent.fTimeStamp = 0;
+    lastEliadeZeroEvent.fTimeStamp = 0;
     
     /*std::map<UInt_t, TEliadeEvent> ::iterator it__ = LUT_ELIADE.begin();
     for (; it__ != LUT_ELIADE.end(); ++it__) {
@@ -385,22 +401,36 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 //   int test =   EliadeEvent.fChannel;
    
    // std::cout<<Form("%i", EliadeEvent.fChannel) <<std::end;
-   int mod = EliadeEvent.fMod;
-   int ch = EliadeEvent.fChannel;
-   int num = 100*current_clover+(mod)*10+ch;
-   EliadeEvent.domain = num;
-   EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, num);
+	int mod = EliadeEvent.fMod;
+	int ch = EliadeEvent.fChannel;
+	int num = 100*current_clover+(mod)*10+ch;
+	EliadeEvent.channel = num;
+	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, num);
+	EliadeEvent.domain = LUT_ELIADE[num].dom;
+	
+	
+		//std::cout<<" EliadeEvent.domain "<<EliadeEvent.domain<<"  LUT_ELIADE[num].TimeOffset "<< LUT_ELIADE[num].TimeOffset<<" EliadeEvent.fTimeStamp "<<EliadeEvent.fTimeStamp <<" "<<EliadeEvent.fTimeStamp + LUT_ELIADE[num].TimeOffset<<std::endl;
+	
+	
+	//EliadeEvent.fTimeStamp = EliadeEvent.fTimeStamp + LUT_ELIADE[num].TimeOffset;
+
    
 //   hTimeSort->Fill(EliadeEvent.fTimeStamp - lastEliadeEvent.fTimeStamp);   
  
-   hHitPattern->Fill(num);
-   mEliade_raw->Fill(num,EliadeEvent.fEnergy);
-   mEliade->Fill(num,EliadeEvent.EnergyCal);
+   	hHitPattern->Fill(num);
+	mEliade_raw->Fill(num,EliadeEvent.fEnergy);
+	mEliade->Fill(num,EliadeEvent.EnergyCal);
    
-   lastEliadeEvent = EliadeEvent;
+   	lastEliadeEvent = EliadeEvent;
    
-   mBoardTimeDiff->Fill(mod, EliadeEvent.fTimeStamp - last_board_event[mod].fTimeStamp);
-   last_board_event[mod] = EliadeEvent;
+	mBoardTimeDiff->Fill(mod, EliadeEvent.fTimeStamp - last_board_event[mod].fTimeStamp);
+	last_board_event[mod] = EliadeEvent;
+
+
+	mZeroTimeDiff->Fill(num,EliadeEvent.fTimeStamp - lastEliadeZeroEvent.fTimeStamp);
+	mZeroTimeDiff_vs_Enegy->Fill(EliadeEvent.EnergyCal, EliadeEvent.fTimeStamp - lastEliadeZeroEvent.fTimeStamp);
+	if  (num == zero_channel) {lastEliadeZeroEvent = EliadeEvent;};
+
 
    /*if ((EliadeEvent.fMod == 0)&&(EliadeEvent.fChannel==1)){
    std::cout<<"EliadeEvent.fMod     "<<EliadeEvent.fMod*1.0<<" "<<std::endl;
