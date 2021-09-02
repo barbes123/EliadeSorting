@@ -30,6 +30,9 @@
 #include <TStyle.h>
 #include <TString.h>
 #include <TObjString.h>
+#include <unordered_set>
+using namespace std;
+
 
 TString LUT_Directory = "/data/live/IT/dsoft/EliadeSorting/";
 //TString LUT_Directory = "";
@@ -41,6 +44,9 @@ const int current_clover = 1;
 const int nbr_of_boards = 8;
 const int nbr_of_ch = 200;
 const int zero_channel = 101; //for time allignement
+
+//std::unordered_set<int> cores = { 101,111,121,131};
+std::unordered_set<int> cores = { 101,111,121};
 
 void EliadeSorting::Read_ELIADE_LookUpTable() {
   std::cout << "I am Reading ELIADE LookUpTable ... ";
@@ -200,7 +206,6 @@ void EliadeSorting::CheckCoincInCrystal(TEliadeEvent ev_)
  	}
  	else  	EliadeCoincEvent[ev_.fMod].coinc = false; 	
  }
- 
  return;
 };
 
@@ -214,9 +219,11 @@ void EliadeSorting::Begin(TTree * tree)
   TString option = GetOption();
   toks = option.Tokenize(",");
   TString RunID = ((TObjString*) toks->At(0))->GetString();
-  std::stringstream OutputFile;
-  OutputFile << "selectror_run" << "_" << RunID << ".root";
-  std::cout << "OUTFILE  run" << "_" << RunID << ".root"<<std::endl;
+//   TString VolID = ((TObjString*) toks->At(1))->GetString();
+// 
+//   std::stringstream OutputFile;
+//   OutputFile << "selectror_run" << "_" << RunID <<"_"<<VolID<< ".root";
+//   std::cout << "OUTFILE  run" << "_" << RunID<<"_"<<VolID<< ".root"<<std::endl;
    
    
    if(!tree) {std::cout<<" TTree NOT found "<<std::endl; return;};
@@ -342,9 +349,23 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    mZeroTimeDiff_vs_Enegy = new TH2F("mZeroTimeDiff_vs_Enegy", "mZeroTimeDiff_vs_Enegy", 16384, -0.5, 16383.5, 1000, -99.5, 899.5);
    fOutput->Add(mZeroTimeDiff_vs_Enegy);//time_diff relevant to the 1st channel (101), i.e. ch 101 is a trigger
    
-   
-   
-   
+    hMultCores = new TH1F("hMultCores", "hMultCores", 100, 0, 100);
+    fOutput->Add(hMultCores);
+    
+    hMultSegments = new TH1F("hMultSegments", "hMultSegments", 100, 0, 100);
+    fOutput->Add(hMultSegments);
+    
+    mCoreCore = new TH2F("mCoreCore", "mCoreCore",4096, -0.5, 4095.5, 4096, -0.5, 4095.5);
+    fOutput->Add(mCoreCore);
+    
+    mSegmentSegment = new TH2F("mSegmentSegment", "mSegmentSegment",4096, -0.5, 4095.5, 4096, -0.5, 4095.5);
+    fOutput->Add(mSegmentSegment);
+    
+    hTimeDiffCoreCore = new TH1F("hTimeDiffCoreCore", "hTimeDiffCoreCore", 1000, -99.5, 899.5);
+    fOutput->Add(hTimeDiffCoreCore);
+    
+    hTimeDiffSegSeg = new TH1F("hTimeDiffSegSeg", "hTimeDiffSegSeg", 1000, -99.5, 899.5);
+    fOutput->Add(hTimeDiffSegSeg);
    
    
     start = std::clock();
@@ -407,6 +428,11 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 	EliadeEvent.channel = num;
 	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, num);
 	EliadeEvent.domain = LUT_ELIADE[num].dom;
+    
+        
+   	hHitPattern->Fill(num);
+	mEliade_raw->Fill(num,EliadeEvent.fEnergy);
+	mEliade->Fill(num,EliadeEvent.EnergyCal);
 	
 	
 		//std::cout<<" EliadeEvent.domain "<<EliadeEvent.domain<<"  LUT_ELIADE[num].TimeOffset "<< LUT_ELIADE[num].TimeOffset<<" EliadeEvent.fTimeStamp "<<EliadeEvent.fTimeStamp <<" "<<EliadeEvent.fTimeStamp + LUT_ELIADE[num].TimeOffset<<std::endl;
@@ -417,9 +443,38 @@ Bool_t EliadeSorting::Process(Long64_t entry)
    
 //   hTimeSort->Fill(EliadeEvent.fTimeStamp - lastEliadeEvent.fTimeStamp);   
  
-   	hHitPattern->Fill(num);
-	mEliade_raw->Fill(num,EliadeEvent.fEnergy);
-	mEliade->Fill(num,EliadeEvent.EnergyCal);
+    //gamma-gamma between different cores
+//     ULong64_t TimeDiff = 0; 
+     if ((cores.count(num))){
+         if (coincQu_cores.empty()){coincQu_cores.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
+         else if (EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp < 100) {
+             coincQu_cores.push_back(EliadeEvent);
+             hTimeDiffCoreCore->Fill(EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp);
+         }
+         else {
+             hMultCores->Fill(coincQu_cores.size());
+             
+             std::deque<TEliadeEvent>  ::iterator it1__ = coincQu_cores.begin();
+             std::deque<TEliadeEvent>  ::iterator it2__ = coincQu_cores.begin();
+             
+              for (; it1__ != coincQu_cores.end(); ++it1__){
+                  for (; it2__ != coincQu_cores.end(); ++it2__){
+                      if (it1__ == it2__) continue;
+                      mCoreCore->Fill((*it1__).EnergyCal, (*it2__).EnergyCal);
+                  };
+             };
+             
+             coincQu_cores.clear();
+             coincQu_cores.push_back(EliadeEvent);
+         };
+     };
+    
+    
+
+    
+    if ((cores.count(num))){mCores -> Fill(mod, EliadeEvent.fEnergy);}
+        else {mSegments->Fill(num, EliadeEvent.fEnergy);};
+    
    
    	lastEliadeEvent = EliadeEvent;
    
@@ -506,9 +561,17 @@ void EliadeSorting::Terminate()
   TString option = GetOption();
   toks = option.Tokenize(",");
   TString RunID = ((TObjString*) toks->At(0))->GetString();
+  TString VolID = ((TObjString*) toks->At(1))->GetString();
+
+  std::stringstream OutputFile;
+  OutputFile << "sorted_run" << "_" << RunID <<"_"<<VolID<< ".root";
+  std::cout << "OUTFILE  sorted_run" << "_" << RunID<<"_"<<VolID<< ".root"<<std::endl;
+  
+  
+  /*
   std::stringstream OutputFile;
   OutputFile << "sorted_run" << "_" << RunID << ".root";
-  std::cout << "sorted_run" << "_" << RunID << ".root"<<std::endl;
+  std::cout << "sorted_run" << "_" << RunID << ".root"<<std::endl;*/
   
    
   TFile ofile(OutputFile.str().c_str(),"recreate"); 

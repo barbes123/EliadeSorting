@@ -5,6 +5,8 @@
 // found on file: run1005_03.root
 //////////////////////////////////////////////////////////
 
+#pragma once
+
 #ifndef EliadeSorting_h
 #define EliadeSorting_h
 
@@ -108,7 +110,10 @@ public :
  };
  
   std::deque<TEliadeEvent> eliadeQu;
-  std::deque<TEliadeEvent> eliadeQu_sorted;
+  std::deque<TEliadeEvent> coincQu_cores;
+  std::deque<TEliadeEvent> coincQu_segments;
+
+//   std::deque<TEliadeEvent> eliadeQu_sorted;
   std::map<unsigned int, TEliadeDetector > LUT_ELIADE  ;
  
  
@@ -116,6 +121,9 @@ public :
   TEliadeEvent lastEliadeEvent;  
   TEliadeEvent lastEliadeZeroEvent;  
   TEliadeEventCoinc EliadeCoincEvent[4];
+  
+  TEliadeEvent startEventCore;  
+  TEliadeEvent startEventSegment;  
 
   TBranch *b_channel;
   TBranch *b_tstmp;
@@ -130,10 +138,10 @@ public :
   std::map<UInt_t, TEliadeEvent> last_board_event;
  
   TH1F* hHitPattern;
-  TH2F* mEliade;
+  TH2F* mEliade;//keV
   TH2F* mEliade_raw;
-  TH2F* mCores;
-  TH2F* mSegments;
+  TH2F* mCores;//keV
+  TH2F* mSegments;//keV
   TH2F* mEliadeTD;
   TH2F* mEliadeMULT;
   TH1F* hTimeSort;
@@ -142,6 +150,14 @@ public :
   TH2F* mBoardTimeDiff;
   TH2F* mZeroTimeDiff;
   TH2F* mZeroTimeDiff_vs_Enegy;
+  
+  TH1F* hTimeDiffCoreCore;//Eg-Eg between cores; trigger any core
+  TH2F* mCoreCore;
+  TH1F* hMultCores;
+  
+  TH1F* hTimeDiffSegSeg;//Eg-Eg between segments; trigger any core
+  TH2F* mSegmentSegment;
+  TH1F* hMultSegments;
    
   std::clock_t start;
   double duration;
