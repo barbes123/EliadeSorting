@@ -32,7 +32,7 @@ void Chain_sorting_new(UInt_t first_run=195, UInt_t last_run=195, UInt_t vol0=1,
          
         std::ostringstream options;
         options<<run<<","<<vol<<","<<"100";
-        ch->Process("/data/live/IT/dsoft/EliadeSorting/EliadeSorting.C+",options.str().c_str());
+        ch->Process("/home/eliade/EliadeSorting/EliadeSorting.C+",options.str().c_str());
          
 	};   
 //    ch->Process("/home/eliade/testov/EliadeSelector/EliadeSelector.C+",options.str().c_str());
