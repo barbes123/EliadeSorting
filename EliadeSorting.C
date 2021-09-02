@@ -45,8 +45,8 @@ const int nbr_of_boards = 8;
 const int nbr_of_ch = 200;
 const int zero_channel = 101; //for time allignement
 
-//std::unordered_set<int> cores = { 101,111,121,131};
-std::unordered_set<int> cores = { 101,111,121};
+std::unordered_set<int> cores = { 101,111,121,131};
+//std::unordered_set<int> cores = { 101,111,121};
 
 void EliadeSorting::Read_ELIADE_LookUpTable() {
   std::cout << "I am Reading ELIADE LookUpTable ... ";
