@@ -34,9 +34,9 @@
 using namespace std;
 
 
-//TString LUT_Directory = "/data/live/IT/dsoft/EliadeSorting/";
+TString LUT_Directory = "/data/live/IT/dsoft/EliadeSorting/";
 //TString LUT_Directory = "/home/eliade/EliadeSorting/";
-TString LUT_Directory = "/home/work/EliadeSorting/";
+//TString LUT_Directory = "/home/work/EliadeSorting/";
 
 bool debug = false;
 
@@ -428,17 +428,16 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, num);
 	EliadeEvent.domain = LUT_ELIADE[num].dom;
 	
-        if (EliadeEvent.fEnergy < LUT_ELIADE[num].upperThreshold)  {/*std::cout<<" Reached 1e6 events I am terminating "<<std::endl;*/ return kTRUE;}
+     //   if ((EliadeEvent.fEnergy < LUT_ELIADE[num].upperThreshold)&&(num == 131))  {/*std::cout<<EliadeEvent.fEnergy<< " "<< LUT_ELIADE[num].upperThreshold<<std::endl; */return kTRUE;}
             
    	hHitPattern->Fill(num);
 	mEliade_raw->Fill(num,EliadeEvent.fEnergy);
 	mEliade->Fill(num,EliadeEvent.EnergyCal);
-	
-	
+		
 		//std::cout<<" EliadeEvent.domain "<<EliadeEvent.domain<<"  LUT_ELIADE[num].TimeOffset "<< LUT_ELIADE[num].TimeOffset<<" EliadeEvent.fTimeStamp "<<EliadeEvent.fTimeStamp <<" "<<EliadeEvent.fTimeStamp + LUT_ELIADE[num].TimeOffset<<std::endl;
 	
 	
-	//EliadeEvent.fTimeStamp = EliadeEvent.fTimeStamp + LUT_ELIADE[num].TimeOffset;
+     EliadeEvent.fTimeStamp = EliadeEvent.fTimeStamp + LUT_ELIADE[num].TimeOffset;
 
    
 //   hTimeSort->Fill(EliadeEvent.fTimeStamp - lastEliadeEvent.fTimeStamp);   
