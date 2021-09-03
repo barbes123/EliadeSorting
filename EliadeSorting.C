@@ -414,12 +414,10 @@ Bool_t EliadeSorting::Process(Long64_t entry)
     
     if (EliadeEvent.fTimeStamp == 0) {hTimeZero->Fill(EliadeEvent.fChannel);};
     
+
   // if (nevents>20000) {reset_counter=1;nevents_reset=0;};
   //}
   //std::cout<<"nb_entries "<<nb_entries<<std::endl;
-  
- // if (nevents == 10)  {std::cout<<" Reached 1e6 events I am terminating "<<std::endl; return kTRUE;}
-   
 //   int test =   EliadeEvent.fChannel;
    
    // std::cout<<Form("%i", EliadeEvent.fChannel) <<std::end;
@@ -429,8 +427,9 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 	EliadeEvent.channel = num;
 	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, num);
 	EliadeEvent.domain = LUT_ELIADE[num].dom;
-    
-        
+	
+        if (EliadeEvent.fEnergy < LUT_ELIADE[num].upperThreshold)  {/*std::cout<<" Reached 1e6 events I am terminating "<<std::endl;*/ return kTRUE;}
+            
    	hHitPattern->Fill(num);
 	mEliade_raw->Fill(num,EliadeEvent.fEnergy);
 	mEliade->Fill(num,EliadeEvent.EnergyCal);
