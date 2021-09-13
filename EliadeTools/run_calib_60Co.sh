@@ -5,6 +5,7 @@
 # DIST=$1
 FIRSTdomain=$1
 LASTdomain=$2
+activity=$3
 
 CUR_DIR=$(pwd)
 cd $CUR_DIR
@@ -57,14 +58,14 @@ do
  
  if [[ "$domnb" == "101" ]] ||  [[ "$domnb" == "111" ]]||  [[ "$domnb" == "121" ]]||  [[ "$domnb" == "131" ]];
  then
-  lim1=2000
-  lim2=3000
+  lim1=1000
+  lim2=1600
   fwhm=10
   ampl=1000
   echo "changed for core $domnb"
  else
-  lim1=6000
-  lim2=9500
+  lim1=3200
+  lim2=4500
   fwhm=20
   ampl=10
   echo "changed for segment $domnb"
@@ -119,8 +120,8 @@ done
  
 cat eliade.calib | sed 's/|/ /' | awk '{print $2, $9, $10}' >  eliade.coeff
 
-awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " keV"}' Co60.calib > resolution.txt
- 
+#awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " keV"}' Co60.calib > resolution.txt
+awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " keV " $5/'$activity' " eff "}' Co60.calib > resolution.txt 
 #  
 #  
 # case  $DIST in
