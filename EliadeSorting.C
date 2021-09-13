@@ -35,8 +35,8 @@ using namespace std;
 
 
 //TString LUT_Directory = "/data/live/IT/dsoft/EliadeSorting/";
-TString LUT_Directory = "/home/eliade/EliadeSorting/";
-//TString LUT_Directory = "/home/work/EliadeSorting/";
+//TString LUT_Directory = "/home/eliade/EliadeSorting/";
+TString LUT_Directory = "/home/work/EliadeSorting/";
 //TString LUT_Directory = "~/EliadeSorting/";
 
 
