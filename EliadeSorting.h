@@ -86,6 +86,7 @@ public :
     float	 EnergyCal;
     int	 domain;
     int	 channel;//ch daq
+    int	 core;
     //int make_board_ID(){return fMod*100}
     TEliadeEvent(): domain(-1),channel(-1),fTimeStamp(0),fEnergy(-1){};
  };
@@ -112,6 +113,7 @@ public :
   std::deque<TEliadeEvent> eliadeQu;
   std::deque<TEliadeEvent> coincQu_cores;
   std::deque<TEliadeEvent> coincQu_segments;
+  std::deque<float> enrergyQu;
 
 //   std::deque<TEliadeEvent> eliadeQu_sorted;
   std::map<unsigned int, TEliadeDetector > LUT_ELIADE  ;
@@ -146,7 +148,7 @@ public :
   TH2F* mEliadeMULT;
   TH1F* hTimeSort;
   TH1F* hTimeZero;
-  TH1F* hTest;
+  TH1F* hEliade;
   TH2F* mBoardTimeDiff;
   TH2F* mZeroTimeDiff;
   TH2F* mZeroTimeDiff_vs_Enegy;
@@ -191,6 +193,7 @@ public :
    virtual float CalibDet(float,int);
    virtual void PrioritySorting(TEliadeEvent ev_);
    virtual void CheckSorting(std::deque<TEliadeEvent> myQu);
+   virtual void AddBack();
    
 
    ClassDef(EliadeSorting,0);

@@ -34,9 +34,13 @@
 using namespace std;
 
 
+int addBackMode = 1; //0 - no addback; 1- addback
+bool Trigger = false;
+
 //TString LUT_Directory = "/data/live/IT/dsoft/EliadeSorting/";
 //TString LUT_Directory = "/home/eliade/EliadeSorting/";
-TString LUT_Directory = "/home/work/EliadeSorting/";
+TString LUT_Directory = "/home/testov/EliadeSorting/";
+//TString LUT_Directory = "/home/work/EliadeSorting/";
 //TString LUT_Directory = "~/EliadeSorting/";
 
 
@@ -49,6 +53,7 @@ const int nbr_of_ch = 200;
 const int zero_channel = 101; //for time allignement
 
 std::unordered_set<int> cores = { 101,111,121,131};
+std::unordered_set<int> crystal2mask = {3,5,7};
 //std::unordered_set<int> cores = { 101,111,121};
 
 void EliadeSorting::Read_ELIADE_LookUpTable() {
@@ -315,8 +320,8 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    
    
    	
-   hTest = new TH1F("hTest", "hTest", 16384, -0.5, 16383.5);
-   fOutput->Add(hTest);
+   hEliade = new TH1F("hEliade", "hEliade", 4096, -0.5, 4095.5);
+   fOutput->Add(hEliade);
    
    hTimeSort = new TH1F("hTimeSort", "hTimeSort", 1000, -500, 500);
    fOutput->Add(hTimeSort);
@@ -429,12 +434,14 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 	EliadeEvent.channel = num;
 	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, num);
 	EliadeEvent.domain = LUT_ELIADE[num].dom;
+	EliadeEvent.core = (EliadeEvent.domain  - 100*current_clover)/10; // a % 10 = reminder
 	
      //   if ((EliadeEvent.fEnergy < LUT_ELIADE[num].upperThreshold)&&(num == 131))  {/*std::cout<<EliadeEvent.fEnergy<< " "<< LUT_ELIADE[num].upperThreshold<<std::endl; */return kTRUE;}
             
    	hHitPattern->Fill(num);
 	mEliade_raw->Fill(num,EliadeEvent.fEnergy);
 	mEliade->Fill(num,EliadeEvent.EnergyCal);
+//	hEliade->
 		
 		//std::cout<<" EliadeEvent.domain "<<EliadeEvent.domain<<"  LUT_ELIADE[num].TimeOffset "<< LUT_ELIADE[num].TimeOffset<<" EliadeEvent.fTimeStamp "<<EliadeEvent.fTimeStamp <<" "<<EliadeEvent.fTimeStamp + LUT_ELIADE[num].TimeOffset<<std::endl;
 	
@@ -446,7 +453,7 @@ Bool_t EliadeSorting::Process(Long64_t entry)
  
     //gamma-gamma between different cores
 //     ULong64_t TimeDiff = 0; 
-     if ((cores.count(num))){
+     if ((cores.count(num))&&(addBackMode == 0)){
          if (coincQu_cores.empty()){coincQu_cores.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
          else if (EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp < 100) {
              coincQu_cores.push_back(EliadeEvent);
@@ -469,8 +476,35 @@ Bool_t EliadeSorting::Process(Long64_t entry)
              coincQu_cores.push_back(EliadeEvent);
          };
      };
+     
+    //Trying add-back
     
-    
+     if (addBackMode == 1){
+     	if (!Trigger){
+	     	if ((cores.count(num))){coincQu_cores.push_back(EliadeEvent);Trigger=true;}
+     	}
+     	else //Trigger==true
+     	{
+     		if (EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp < 100)
+     		{
+     			if ((cores.count(num))){coincQu_cores.push_back(EliadeEvent);}
+     				else coincQu_segments.push_back(EliadeEvent);
+     		
+     		}
+     		else 
+     		{
+     			//Run AddBack
+     			 coincQu_cores.clear();
+   			 coincQu_segments.clear();
+   			 Trigger = false;
+     		}
+     	};
+     	//if (coincQu_cores.empty()){
+	//	if ((cores.count(num))){coincQu_cores.push_back(EliadeEvent);}
+     	//};
+     };
+   	 
+   	 
 
     
     if ((cores.count(num))){mCores -> Fill(mod, EliadeEvent.fEnergy);}
@@ -537,6 +571,26 @@ Bool_t EliadeSorting::Process(Long64_t entry)
    nevents++;
    nevents_reset++;
    return kTRUE;
+}
+
+
+void EliadeSorting::AddBack()
+{
+ if (coincQu_cores.empty()){std::cout<<"Strange Empty Queue "<<std::endl;return;};
+//std::deque<TEliadeEvent>  ::iterator it2__ = coincQu_cores.begin();  
+ enrergyQu.clear();
+ int ncores = coincQu_cores.size();
+ if (ncores == 1) {enrergyQu.push_back(coincQu_cores.front().EnergyCal);return;}
+ 
+ if (ncores == 2) {
+	 std::cout<<"core coinc" <<coincQu_cores[0].domain + coincQu_cores[1].domain <<std::endl;
+	 if (!crystal2mask.count(coincQu_cores[0].domain + coincQu_cores[1].domain))
+	 {
+	 	enrergyQu.push_back(coincQu_cores[0].EnergyCal);
+	        enrergyQu.push_back(coincQu_cores[1].EnergyCal);
+	 };
+	 return;};
+	
 }
 
 void EliadeSorting::SlaveTerminate()
