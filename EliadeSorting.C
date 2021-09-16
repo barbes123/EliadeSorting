@@ -317,8 +317,11 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    hCheckCore2AddBack = new TH1F("hCheckCore2AddBack", "hCheckCore2AddBack",10,0,10);
    fOutput->Add(hCheckCore2AddBack);
  	
-   hHitPattern = new TH1F("ChannelHits", "ChannelHits",200,0,200);
-   fOutput->Add(hHitPattern);
+   hChannelHit = new TH1F("hChannelHit", "hChannelHit",3216,0,3216);
+   fOutput->Add(hChannelHit);
+   
+   hDomainHit = new TH1F("hDomainHit", "hDomainHit",200,0,200);
+   fOutput->Add(hDomainHit);
    
    hCoreHit = new TH1F("hCoreHit", "hCoreHit",10,0,10);
    fOutput->Add(hCoreHit);
@@ -336,9 +339,14 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    fOutput->Add(hTimeZero);
       
    mEliade_raw = new TH2F("mEliade_raw", "mEliade_raw", 200, 0.5, 200.5, 16384, -0.5, 16383.5);
+   mEliade_raw->GetXaxis()->SetTitle("domain");
+   mEliade_raw->GetYaxis()->SetTitle("ADC channels");   
    fOutput->Add(mEliade_raw);
    
+   
    mEliade = new TH2F("mEliade", "mEliade", 200, 0.5, 200.5, 16384, -0.5, 16383.5);
+   mEliade->GetXaxis()->SetTitle("domain");
+   mEliade->GetYaxis()->SetTitle("keV");
    fOutput->Add(mEliade);
       
    mSegments = new TH2F("mSegments", "mSegments", 200, 0, 200, 16384, -0.5, 16383.5);
@@ -436,33 +444,36 @@ Bool_t EliadeSorting::Process(Long64_t entry)
    // std::cout<<Form("%i", EliadeEvent.fChannel) <<std::end;
 	int mod = EliadeEvent.fMod;
 	int ch = EliadeEvent.fChannel;
-	int num = 100*current_clover+(mod)*10+ch;
-	EliadeEvent.channel = num;
-	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, num);
-	EliadeEvent.domain = LUT_ELIADE[num].dom;
+	//int num = 100*current_clover+(mod)*10+ch;
+        int daq_ch = (mod)*100+ch;
+	EliadeEvent.channel = daq_ch;
+	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, daq_ch);
+	EliadeEvent.domain = LUT_ELIADE[daq_ch].dom;
 	EliadeEvent.core = (EliadeEvent.domain  - 100*current_clover)/10; // a % 10 = reminder
 	hCoreHit->Fill(EliadeEvent.core);
+	int domain = EliadeEvent.domain;
      //   if ((EliadeEvent.fEnergy < LUT_ELIADE[num].upperThreshold)&&(num == 131))  {/*std::cout<<EliadeEvent.fEnergy<< " "<< LUT_ELIADE[num].upperThreshold<<std::endl; */return kTRUE;}
             
-   	hHitPattern->Fill(num);
-	mEliade_raw->Fill(num,EliadeEvent.fEnergy);
-	mEliade->Fill(num,EliadeEvent.EnergyCal);
+   	hChannelHit->Fill(daq_ch);
+  	hDomainHit->Fill(domain);
+	mEliade_raw->Fill(domain,EliadeEvent.fEnergy);
+	mEliade->Fill(domain,EliadeEvent.EnergyCal);
 	
-	if (cores.count(num)) hEliade_no_addback->Fill(EliadeEvent.EnergyCal);
+	if (cores.count(domain)) hEliade_no_addback->Fill(EliadeEvent.EnergyCal);
 	
 //	hEliade->
 		
 		//std::cout<<" EliadeEvent.domain "<<EliadeEvent.domain<<"  LUT_ELIADE[num].TimeOffset "<< LUT_ELIADE[num].TimeOffset<<" EliadeEvent.fTimeStamp "<<EliadeEvent.fTimeStamp <<" "<<EliadeEvent.fTimeStamp + LUT_ELIADE[num].TimeOffset<<std::endl;
 	
 	
-     EliadeEvent.fTimeStamp = EliadeEvent.fTimeStamp + LUT_ELIADE[num].TimeOffset;
+     EliadeEvent.fTimeStamp = EliadeEvent.fTimeStamp + LUT_ELIADE[daq_ch].TimeOffset;
 
    
 //   hTimeSort->Fill(EliadeEvent.fTimeStamp - lastEliadeEvent.fTimeStamp);   
  
     //gamma-gamma between different cores
 //     ULong64_t TimeDiff = 0; 
-     if ((cores.count(num))&&(addBackMode == 0)){
+     if ((cores.count(domain))&&(addBackMode == 0)){
          if (coincQu_cores.empty()){coincQu_cores.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
          else if (EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp < 100) {
              coincQu_cores.push_back(EliadeEvent);
@@ -490,14 +501,14 @@ Bool_t EliadeSorting::Process(Long64_t entry)
     
      if (addBackMode == 1){
      	if (!Trigger){
-	     	if ((cores.count(num))){coincQu_cores.push_back(EliadeEvent);Trigger=true;}
+	     	if ((cores.count(domain))){coincQu_cores.push_back(EliadeEvent);Trigger=true;}
      	}
      	else //Trigger==true
      	{
      		hTimeDiffCoreCore->Fill(EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp);
      		if (EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp < 400)
      		{
-     			if ((cores.count(num))){coincQu_cores.push_back(EliadeEvent);}
+     			if ((cores.count(domain))){coincQu_cores.push_back(EliadeEvent);}
      				else coincQu_segments.push_back(EliadeEvent);
      		
      		}
@@ -523,7 +534,7 @@ Bool_t EliadeSorting::Process(Long64_t entry)
    			 coincQu_segments.clear();
     			 Trigger = false;
    			 
-   			 if ((cores.count(num)))
+   			 if ((cores.count(domain)))
    			 {
    			 	coincQu_cores.push_back(EliadeEvent);Trigger=true;
    			 }
@@ -538,8 +549,8 @@ Bool_t EliadeSorting::Process(Long64_t entry)
    	 
 
     
-    if ((cores.count(num))){mCores -> Fill(mod, EliadeEvent.fEnergy);}
-        else {mSegments->Fill(num, EliadeEvent.fEnergy);};
+    if ((cores.count(domain))){mCores -> Fill(mod, EliadeEvent.fEnergy);}
+        else {mSegments->Fill(domain, EliadeEvent.fEnergy);};
     
    
    	lastEliadeEvent = EliadeEvent;
@@ -548,9 +559,9 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 	last_board_event[mod] = EliadeEvent;
 
 
-	mZeroTimeDiff->Fill(num,EliadeEvent.fTimeStamp - lastEliadeZeroEvent.fTimeStamp);
+	mZeroTimeDiff->Fill(domain,EliadeEvent.fTimeStamp - lastEliadeZeroEvent.fTimeStamp);
 	mZeroTimeDiff_vs_Enegy->Fill(EliadeEvent.EnergyCal, EliadeEvent.fTimeStamp - lastEliadeZeroEvent.fTimeStamp);
-	if  (num == zero_channel) {lastEliadeZeroEvent = EliadeEvent;};
+	if  (domain == zero_channel) {lastEliadeZeroEvent = EliadeEvent;};
 
 
    /*if ((EliadeEvent.fMod == 0)&&(EliadeEvent.fChannel==1)){

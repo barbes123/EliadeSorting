@@ -139,7 +139,8 @@ public :
  
   std::map<UInt_t, TEliadeEvent> last_board_event;
  
-  TH1F* hHitPattern;
+  TH1F* hChannelHit;
+  TH1F* hDomainHit;
   TH2F* mEliade;//keV
   TH2F* mEliade_raw;
   TH2F* mCores;//keV
