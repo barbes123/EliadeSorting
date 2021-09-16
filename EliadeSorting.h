@@ -145,10 +145,14 @@ public :
   TH2F* mCores;//keV
   TH2F* mSegments;//keV
   TH2F* mEliadeTD;
+//  TH2F* mEliadeSegEnergy;
   TH2F* mEliadeMULT;
   TH1F* hTimeSort;
   TH1F* hTimeZero;
   TH1F* hEliade;
+  TH1F* hEliade_no_addback;
+  TH1F* hCheckCore2AddBack;
+  TH1F* hCoreHit;
   TH2F* mBoardTimeDiff;
   TH2F* mZeroTimeDiff;
   TH2F* mZeroTimeDiff_vs_Enegy;

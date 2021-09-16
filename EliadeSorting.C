@@ -53,7 +53,8 @@ const int nbr_of_ch = 200;
 const int zero_channel = 101; //for time allignement
 
 std::unordered_set<int> cores = { 101,111,121,131};
-std::unordered_set<int> crystal2mask = {3,5,7};
+std::unordered_set<int> crystal2mask = {1,3,5};
+//std::unordered_set<int> frontsegments = {};
 //std::unordered_set<int> cores = { 101,111,121};
 
 void EliadeSorting::Read_ELIADE_LookUpTable() {
@@ -313,12 +314,17 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
  
    // for (int i=0;i<=3;i++){EliadeCoincEvent[0].fMod = 999};
    
-
+   hCheckCore2AddBack = new TH1F("hCheckCore2AddBack", "hCheckCore2AddBack",10,0,10);
+   fOutput->Add(hCheckCore2AddBack);
  	
    hHitPattern = new TH1F("ChannelHits", "ChannelHits",200,0,200);
    fOutput->Add(hHitPattern);
    
-   
+   hCoreHit = new TH1F("hCoreHit", "hCoreHit",10,0,10);
+   fOutput->Add(hCoreHit);
+     
+   hEliade_no_addback = new TH1F("hEliade_no_addback", "hEliade_no_addback", 4096, -0.5, 4095.5);
+   fOutput->Add(hEliade_no_addback);
    	
    hEliade = new TH1F("hEliade", "hEliade", 4096, -0.5, 4095.5);
    fOutput->Add(hEliade);
@@ -435,12 +441,15 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, num);
 	EliadeEvent.domain = LUT_ELIADE[num].dom;
 	EliadeEvent.core = (EliadeEvent.domain  - 100*current_clover)/10; // a % 10 = reminder
-	
+	hCoreHit->Fill(EliadeEvent.core);
      //   if ((EliadeEvent.fEnergy < LUT_ELIADE[num].upperThreshold)&&(num == 131))  {/*std::cout<<EliadeEvent.fEnergy<< " "<< LUT_ELIADE[num].upperThreshold<<std::endl; */return kTRUE;}
             
    	hHitPattern->Fill(num);
 	mEliade_raw->Fill(num,EliadeEvent.fEnergy);
 	mEliade->Fill(num,EliadeEvent.EnergyCal);
+	
+	if (cores.count(num)) hEliade_no_addback->Fill(EliadeEvent.EnergyCal);
+	
 //	hEliade->
 		
 		//std::cout<<" EliadeEvent.domain "<<EliadeEvent.domain<<"  LUT_ELIADE[num].TimeOffset "<< LUT_ELIADE[num].TimeOffset<<" EliadeEvent.fTimeStamp "<<EliadeEvent.fTimeStamp <<" "<<EliadeEvent.fTimeStamp + LUT_ELIADE[num].TimeOffset<<std::endl;
@@ -485,7 +494,8 @@ Bool_t EliadeSorting::Process(Long64_t entry)
      	}
      	else //Trigger==true
      	{
-     		if (EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp < 100)
+     		hTimeDiffCoreCore->Fill(EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp);
+     		if (EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp < 400)
      		{
      			if ((cores.count(num))){coincQu_cores.push_back(EliadeEvent);}
      				else coincQu_segments.push_back(EliadeEvent);
@@ -494,9 +504,30 @@ Bool_t EliadeSorting::Process(Long64_t entry)
      		else 
      		{
      			//Run AddBack
+ 			 AddBack();
+ 			 
+ 			//Add to hist and mat 
+ 			std::deque<float>  ::iterator it1__ = enrergyQu.begin();
+		        std::deque<float>  ::iterator it2__ = enrergyQu.begin();
+                       for (; it1__ != enrergyQu.end(); ++it1__){
+                          hEliade->Fill((*it1__));
+	                  for (; it2__ != enrergyQu.end(); ++it2__){
+        	              if (it1__ == it2__) continue;
+        	              mCoreCore->Fill((*it1__), (*it2__));
+                  	};
+             };
+ 			 
+ 			 
+ 			 
      			 coincQu_cores.clear();
    			 coincQu_segments.clear();
-   			 Trigger = false;
+    			 Trigger = false;
+   			 
+   			 if ((cores.count(num)))
+   			 {
+   			 	coincQu_cores.push_back(EliadeEvent);Trigger=true;
+   			 }
+
      		}
      	};
      	//if (coincQu_cores.empty()){
@@ -580,16 +611,22 @@ void EliadeSorting::AddBack()
 //std::deque<TEliadeEvent>  ::iterator it2__ = coincQu_cores.begin();  
  enrergyQu.clear();
  int ncores = coincQu_cores.size();
+ hMultCores->Fill(ncores);
  if (ncores == 1) {enrergyQu.push_back(coincQu_cores.front().EnergyCal);return;}
  
  if (ncores == 2) {
-	 std::cout<<"core coinc" <<coincQu_cores[0].domain + coincQu_cores[1].domain <<std::endl;
-	 if (!crystal2mask.count(coincQu_cores[0].domain + coincQu_cores[1].domain))
+	 hCheckCore2AddBack->Fill(coincQu_cores[0].core + coincQu_cores[1].core);
+	 if (!crystal2mask.count(coincQu_cores[0].core + coincQu_cores[1].core))
+	 //if cores are on diagonal: 4 or 6
 	 {
+	 	
+	 	//std::cout<<"core coinc " <<coincQu_cores[0].core + coincQu_cores[1].core <<std::endl;
 	 	enrergyQu.push_back(coincQu_cores[0].EnergyCal);
 	        enrergyQu.push_back(coincQu_cores[1].EnergyCal);
 	 };
-	 return;};
+	 return;
+	};
+ return;
 	
 }
 
