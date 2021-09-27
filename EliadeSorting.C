@@ -53,6 +53,7 @@ const int nbr_of_ch = 200;
 const int zero_channel = 101; //for time allignement
 
 std::unordered_set<int> cores = { 101,111,121,131};
+std::unordered_set<int> pulsers = { 140,141,142,143};
 std::unordered_set<int> crystal2mask = {1,3,5};
 //std::unordered_set<int> frontsegments = {};
 //std::unordered_set<int> cores = { 101,111,121};
@@ -165,7 +166,7 @@ void EliadeSorting::Print_ELIADE_LookUpTable()
     std::map<unsigned int, TEliadeDetector > ::iterator it__ = LUT_ELIADE.begin();
     for (; it__ != LUT_ELIADE.end(); ++it__) {
      // is >> curDet.ch >> curDet.dom >> theta >> phi >> curDet.TimeOffset >> curDet.upperThreshold;
-	std::cout<<LUT_ELIADE[it__->first].ch<<" "<< LUT_ELIADE[it__->first].dom<<" "<< LUT_ELIADE[it__->first].theta<<" "<< LUT_ELIADE[it__->first].phi <<" "<< LUT_ELIADE[it__->first].TimeOffset<<" "<< LUT_ELIADE[it__->first].upperThreshold<<" "<<LUT_ELIADE[it__->first].pol_order <<std::endl;
+	std::cout<<" Ch "<<LUT_ELIADE[it__->first].ch<<" Dom "<< LUT_ELIADE[it__->first].dom<<" "<< LUT_ELIADE[it__->first].theta<<" "<< LUT_ELIADE[it__->first].phi <<" offset "<< LUT_ELIADE[it__->first].TimeOffset<<" Thr "<< LUT_ELIADE[it__->first].upperThreshold<<" "<<LUT_ELIADE[it__->first].pol_order <<std::endl;
     }
 };
 
@@ -343,8 +344,7 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    mEliade_raw->GetYaxis()->SetTitle("ADC channels");   
    fOutput->Add(mEliade_raw);
    
-   
-   mEliade = new TH2F("mEliade", "mEliade", 200, 0.5, 200.5, 16384, -0.5, 16383.5);
+      mEliade = new TH2F("mEliade", "mEliade", 200, 0.5, 200.5, 16384, -0.5, 16383.5);
    mEliade->GetXaxis()->SetTitle("domain");
    mEliade->GetYaxis()->SetTitle("keV");
    fOutput->Add(mEliade);
@@ -388,6 +388,14 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
     
     hTimeDiffSegSeg = new TH1F("hTimeDiffSegSeg", "hTimeDiffSegSeg", 1000, -99.5, 899.5);
     fOutput->Add(hTimeDiffSegSeg);
+    
+    hTimeDiffPulser = new TH1F("hTimeDiffPulser", "hTimeDiffPulser", 1000, -99.5, 899.5);
+    fOutput->Add(hTimeDiffPulser);
+    
+    mPulserPulser = new TH2F("mPulserPulser", "mPulserPulser",4096, -0.5, 8191.5, 4096, -0.5, 8195.5);
+    fOutput->Add(mPulserPulser);
+    
+    
    
    
     start = std::clock();
@@ -444,6 +452,9 @@ Bool_t EliadeSorting::Process(Long64_t entry)
    // std::cout<<Form("%i", EliadeEvent.fChannel) <<std::end;
 	int mod = EliadeEvent.fMod;
 	int ch = EliadeEvent.fChannel;
+	
+       if (mod > 3) return kTRUE;
+	
 	//int num = 100*current_clover+(mod)*10+ch;
         int daq_ch = (mod)*100+ch;
 	EliadeEvent.channel = daq_ch;
@@ -452,36 +463,46 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 	EliadeEvent.core = (EliadeEvent.domain  - 100*current_clover)/10; // a % 10 = reminder
 	hCoreHit->Fill(EliadeEvent.core);
 	int domain = EliadeEvent.domain;
-     //   if ((EliadeEvent.fEnergy < LUT_ELIADE[num].upperThreshold)&&(num == 131))  {/*std::cout<<EliadeEvent.fEnergy<< " "<< LUT_ELIADE[num].upperThreshold<<std::endl; */return kTRUE;}
+       if ((EliadeEvent.fEnergy < LUT_ELIADE[daq_ch].upperThreshold))  {/*std::cout<<EliadeEvent.fEnergy<< " "<< LUT_ELIADE[daq_ch].upperThreshold<<std::endl; */return kTRUE;}
             
    	hChannelHit->Fill(daq_ch);
   	hDomainHit->Fill(domain);
 	mEliade_raw->Fill(domain,EliadeEvent.fEnergy);
+	
+	//if (domain < 140) return kTRUE;
+	
 	mEliade->Fill(domain,EliadeEvent.EnergyCal);
 	
 	if (cores.count(domain)) hEliade_no_addback->Fill(EliadeEvent.EnergyCal);
-	
-//	hEliade->
-		
+
 		//std::cout<<" EliadeEvent.domain "<<EliadeEvent.domain<<"  LUT_ELIADE[num].TimeOffset "<< LUT_ELIADE[num].TimeOffset<<" EliadeEvent.fTimeStamp "<<EliadeEvent.fTimeStamp <<" "<<EliadeEvent.fTimeStamp + LUT_ELIADE[num].TimeOffset<<std::endl;
 	
 	
      EliadeEvent.fTimeStamp = EliadeEvent.fTimeStamp + LUT_ELIADE[daq_ch].TimeOffset;
 
    
-//   hTimeSort->Fill(EliadeEvent.fTimeStamp - lastEliadeEvent.fTimeStamp);   
- 
+     hTimeSort->Fill(EliadeEvent.fTimeStamp - lastEliadeEvent.fTimeStamp);   
+
+
+//Check Pulser
+//if ((pulsers.count(domain))){CheckTimePulser();return kTRUE;};
+if (domain>=140){CheckTimePulser();return kTRUE;};
+ //if ((pulsers.count(domain))){std::cout<<"Pulser \n";return kTRUE;};
+ //if ((cores.count(domain))){std::cout<<"Core \n";return kTRUE;};
+  
     //gamma-gamma between different cores
 //     ULong64_t TimeDiff = 0; 
      if ((cores.count(domain))&&(addBackMode == 0)){
+//  if ((domain >= 140)&&(addBackMode == 0)){ //for the pulser to check the time
+         
          if (coincQu_cores.empty()){coincQu_cores.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
-         else if (EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp < 100) {
+         else if (EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp < 1) {
              coincQu_cores.push_back(EliadeEvent);
              hTimeDiffCoreCore->Fill(EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp);
          }
          else {
-             hMultCores->Fill(coincQu_cores.size());
-             
+	     hTimeDiffCoreCore->Fill(EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp);
+             hMultCores->Fill(coincQu_cores.size());             
              std::deque<TEliadeEvent>  ::iterator it1__ = coincQu_cores.begin();
              std::deque<TEliadeEvent>  ::iterator it2__ = coincQu_cores.begin();
              
@@ -499,14 +520,15 @@ Bool_t EliadeSorting::Process(Long64_t entry)
      
     //Trying add-back
     
-     if (addBackMode == 1){
+     if ((addBackMode == 1)&&(!pulsers.count(domain))){
+
      	if (!Trigger){
 	     	if ((cores.count(domain))){coincQu_cores.push_back(EliadeEvent);Trigger=true;}
      	}
      	else //Trigger==true
      	{
      		hTimeDiffCoreCore->Fill(EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp);
-     		if (EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp < 400)
+     		if (EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp < 40)
      		{
      			if ((cores.count(domain))){coincQu_cores.push_back(EliadeEvent);}
      				else coincQu_segments.push_back(EliadeEvent);
@@ -693,3 +715,31 @@ void EliadeSorting::Terminate()
    
 
 }
+
+void EliadeSorting::CheckTimePulser()
+{
+    
+         if (coincQu_pulser.empty()){coincQu_pulser.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
+         else if (EliadeEvent.fTimeStamp - coincQu_pulser.front().fTimeStamp < 1) {
+             coincQu_pulser.push_back(EliadeEvent);
+             hTimeDiffPulser->Fill(EliadeEvent.fTimeStamp - coincQu_pulser.front().fTimeStamp);
+         }
+         else {
+	     hTimeDiffPulser->Fill(EliadeEvent.fTimeStamp - coincQu_pulser.front().fTimeStamp);
+             //hMultCores->Fill(coincQu_pulser.size());             
+             std::deque<TEliadeEvent>  ::iterator it1__ = coincQu_pulser.begin();
+             std::deque<TEliadeEvent>  ::iterator it2__ = coincQu_pulser.begin();
+             
+              for (; it1__ != coincQu_pulser.end(); ++it1__){
+                  for (; it2__ != coincQu_pulser.end(); ++it2__){
+                      if (it1__ == it2__) continue;
+                      mPulserPulser->Fill((*it1__).EnergyCal, (*it2__).EnergyCal);
+                  };
+             };
+             
+             coincQu_pulser.clear();
+             coincQu_pulser.push_back(EliadeEvent);
+         };	
+
+     	return;
+};

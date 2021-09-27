@@ -111,6 +111,7 @@ public :
  };
  
   std::deque<TEliadeEvent> eliadeQu;
+  std::deque<TEliadeEvent> coincQu_pulser;
   std::deque<TEliadeEvent> coincQu_cores;
   std::deque<TEliadeEvent> coincQu_segments;
   std::deque<float> enrergyQu;
@@ -165,6 +166,9 @@ public :
   TH1F* hTimeDiffSegSeg;//Eg-Eg between segments; trigger any core
   TH2F* mSegmentSegment;
   TH1F* hMultSegments;
+  
+  TH1F* hTimeDiffPulser;
+  TH2F* mPulserPulser;
    
   std::clock_t start;
   double duration;
@@ -199,6 +203,7 @@ public :
    virtual void PrioritySorting(TEliadeEvent ev_);
    virtual void CheckSorting(std::deque<TEliadeEvent> myQu);
    virtual void AddBack();
+   virtual void CheckTimePulser();
    
 
    ClassDef(EliadeSorting,0);
