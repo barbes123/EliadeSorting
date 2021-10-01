@@ -161,8 +161,8 @@ cat eliade.calib | sed 's/|/ /' | awk '{print $2, $9, $10}' >  eliade.coeff
 #awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " keV eff: " $5/'$activity'}' Co60.calib > resolution.txt
 
 awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " keV" }' data.calib > resolution.txt 
-awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " keV eff: " $5/'$activityCo60'}' Co60.temp > eff_60Co.txt
-awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " keV eff: " $5/'$activityCs137'}' Cs137.temp > eff_137Cs.txt
+awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " [keV]; eff [%]: " $5/'$activityCo60'*100}' Co60.temp > eff_60Co.txt
+awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " [keV]; eff [%]: " $5/'$activityCs137'*100}' Cs137.temp > eff_137Cs.txt
 
 rm Co60.temp
 rm Cs137.temp
