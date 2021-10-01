@@ -39,7 +39,7 @@ bool Trigger = false;
 
 //TString LUT_Directory = "/data/live/IT/dsoft/EliadeSorting/";
 //TString LUT_Directory = "/home/eliade/EliadeSorting/";
-TString LUT_Directory = "/home/testov/EliadeSorting/";
+//TString LUT_Directory = "/home/testov/EliadeSorting/";
 //TString LUT_Directory = "/home/work/EliadeSorting/";
 //TString LUT_Directory = "~/EliadeSorting/";
 
@@ -63,9 +63,18 @@ void EliadeSorting::Read_ELIADE_LookUpTable() {
 //  std::stringstream CUTFile;
 //  CUTFile << CUTG_Directory.Data() << "cut_EeEw_galileo.root";
 //  TFile *file_EeEw = TFile::Open(CUTFile.str().c_str());
+
+ char* pLUT_Path;
+  pLUT_Path = getenv ("ELIADE_LUT");
+  if (pLUT_Path!=NULL)
+    printf ("The LookUpTable path is: %s \n",pLUT_Path);
+
+
   std::stringstream LUTFile;
-  LUTFile << LUT_Directory << "LUT_ELIADE.dat";
+  LUTFile << pLUT_Path <<"/"<<"LUT_ELIADE.dat";
+  //LUTFile << LUT_Directory << "LUT_ELIADE.dat";
   std::ifstream lookuptable(LUTFile.str().c_str());
+
   if (!lookuptable.good()) {
     std::ostringstream os;
     os << "Could not open " << LUTFile.str().c_str()
@@ -234,8 +243,7 @@ void EliadeSorting::Begin(TTree * tree)
 //   std::stringstream OutputFile;
 //   OutputFile << "selectror_run" << "_" << RunID <<"_"<<VolID<< ".root";
 //   std::cout << "OUTFILE  run" << "_" << RunID<<"_"<<VolID<< ".root"<<std::endl;
-   
-   
+  
    if(!tree) {std::cout<<" TTree NOT found "<<std::endl; return;};
   
   std::cout<<" TTree found "<<std::endl;

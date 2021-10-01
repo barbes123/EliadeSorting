@@ -54,7 +54,8 @@
 #include <TApplication.h>
 #include <deque>
 #include "TTreeIndex.h"
-
+#include <stdio.h>      /* printf */
+#include <stdlib.h>     /* getenv */
 
 //#include "TObjString.h."
 // Headers needed by this particular selector
