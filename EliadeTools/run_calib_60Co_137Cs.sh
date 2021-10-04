@@ -124,7 +124,7 @@ do
 	then
            #echo -n "domain $domnb " >> Co60.calib 
  	   grep '661.661'  temp.calib >> res.temp
- 	   grep '1173.238'  temp.calib >> Cs137.temp      
+ 	   grep '661.661'  temp.calib >> Cs137.temp      
  	   echo "Found"
 	fi
 	if grep '1460.81' temp.calib	    

@@ -8,7 +8,7 @@
 // The following methods are defined in this file:
 //    Begin():        called every time a loop on the tree starts,
 //                    a convenient place to create your histograms.
-//    SlaveBegin():   called after Begin(), when on PROOF called only on the
+//    SlaveBegin():   called after hTimeDiffCoreCoreBegin(), when on PROOF called only on the
 //                    slave servers.
 //    Process():      called for each event, in this function you decide what
 //                    to read and fill your histograms.
@@ -53,8 +53,8 @@ const int nbr_of_boards = 8;
 const int nbr_of_ch = 200;
 const int zero_channel = 101; //for time allignement
 
-std::unordered_set<int> cores = { 101,111,121,131};
-std::unordered_set<int> pulsers = { 140,141,142,143};
+std::unordered_set<int> cores = { 109,119,129,139};
+std::unordered_set<int> pulsers = { 150,151,152,153};
 std::unordered_set<int> crystal2mask = {1,3,5};
 //std::unordered_set<int> frontsegments = {};
 //std::unordered_set<int> cores = { 101,111,121};
@@ -324,11 +324,14 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
  
    // for (int i=0;i<=3;i++){EliadeCoincEvent[0].fMod = 999};
    
-   hCheckCore2AddBack = new TH1F("hCheckCore2AddBack", "hCheckCore2AddBack",10,0,10);
+   hCheckCore2AddBack = new TH1F("hCheckCore2AddBack", "hCheckCore2AddBack",40,0,40);
    fOutput->Add(hCheckCore2AddBack);
  	
    hChannelHit = new TH1F("hChannelHit", "hChannelHit",3216,0,3216);
    fOutput->Add(hChannelHit);
+   
+   hSegmentHit = new TH1F("hSegmentHit", "hSegmentHit",20,0,20);
+   fOutput->Add(hSegmentHit);
    
    hDomainHit = new TH1F("hDomainHit", "hDomainHit",200,0,200);
    fOutput->Add(hDomainHit);
@@ -353,16 +356,25 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    mEliade_raw->GetYaxis()->SetTitle("ADC channels");   
    fOutput->Add(mEliade_raw);
    
-      mEliade = new TH2F("mEliade", "mEliade", 200, 0.5, 200.5, 16384, -0.5, 16383.5);
+   mEliade = new TH2F("mEliade", "mEliade", 200, 0.5, 200.5, 16384, -0.5, 16383.5);
    mEliade->GetXaxis()->SetTitle("domain");
    mEliade->GetYaxis()->SetTitle("keV");
    fOutput->Add(mEliade);
       
    mSegments = new TH2F("mSegments", "mSegments", 200, 0, 200, 16384, -0.5, 16383.5);
+   mSegments->GetXaxis()->SetTitle("domain");
+   mSegments->GetYaxis()->SetTitle("keV");
    fOutput->Add(mSegments);
    
    mCores = new TH2F("mCores", "mCores", 200, 0, 200, 16384, -0.5, 16383.5);
+   mCores->GetXaxis()->SetTitle("domain");
+   mCores->GetYaxis()->SetTitle("keV");
    fOutput->Add(mCores);
+   
+   mSegmentsPerCore = new TH2F("mSegmentsPerCore", "mSegmentsPerCore", 10, 0, 10, 20, 0, 20);
+   mSegmentsPerCore->GetXaxis()->SetTitle("segments");
+   mSegmentsPerCore->GetYaxis()->SetTitle("counts");   
+   fOutput->Add(mSegmentsPerCore);
    
    mEliadeTD = new TH2F("mEliadeTD", "mEliadeTD", 4, 0, 4, 300, -0.5, 299.5);
    fOutput->Add(mEliadeTD);
@@ -470,7 +482,9 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, daq_ch);
 	EliadeEvent.domain = LUT_ELIADE[daq_ch].dom;
 	EliadeEvent.core = (EliadeEvent.domain  - 100*current_clover)/10; // a % 10 = reminder
+	EliadeEvent.segment = (EliadeEvent.domain  - 100*current_clover) % 10; // a % 10 = reminder
 	hCoreHit->Fill(EliadeEvent.core);
+    hSegmentHit->Fill(EliadeEvent.segment);
 	int domain = EliadeEvent.domain;
        if ((EliadeEvent.fEnergy < LUT_ELIADE[daq_ch].upperThreshold))  {/*std::cout<<EliadeEvent.fEnergy<< " "<< LUT_ELIADE[daq_ch].upperThreshold<<std::endl; */return kTRUE;}
             
@@ -536,18 +550,21 @@ if (domain>=140){CheckTimePulser();return kTRUE;};
      	}
      	else //Trigger==true
      	{
-     		hTimeDiffCoreCore->Fill(EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp);
-     		if (EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp < 40)
+     		int time_diff = EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp;
+            hTimeDiffCoreCore->Fill(time_diff);
+     		if (time_diff < 40)
      		{
      			if ((cores.count(domain))){coincQu_cores.push_back(EliadeEvent);}
-     				else coincQu_segments.push_back(EliadeEvent);
+     				//else coincQu_segments.push_back(EliadeEvent);
+     				else coincQu_seg[EliadeEvent.core].push_back(EliadeEvent);
      		
      		}
      		else 
      		{
-     			//Run AddBack
+
+            for (int i=0;i<=3;i++){mSegmentsPerCore->Fill(i,coincQu_seg[i].size());};
+            //Run AddBack
  			 AddBack();
- 			 
  			//Add to hist and mat 
  			std::deque<float>  ::iterator it1__ = enrergyQu.begin();
 		        std::deque<float>  ::iterator it2__ = enrergyQu.begin();
@@ -558,11 +575,9 @@ if (domain>=140){CheckTimePulser();return kTRUE;};
         	              mCoreCore->Fill((*it1__), (*it2__));
                   	};
              };
- 			 
- 			 
- 			 
-     			 coincQu_cores.clear();
+   			 coincQu_cores.clear();
    			 coincQu_segments.clear();
+             for (int j=0;j<=3;j++) coincQu_seg[j].clear();
     			 Trigger = false;
    			 
    			 if ((cores.count(domain)))
@@ -580,8 +595,8 @@ if (domain>=140){CheckTimePulser();return kTRUE;};
    	 
 
     
-    if ((cores.count(domain))){mCores -> Fill(mod, EliadeEvent.fEnergy);}
-        else {mSegments->Fill(domain, EliadeEvent.fEnergy);};
+    if ((cores.count(domain))){mCores -> Fill(mod, EliadeEvent.EnergyCal);}
+        else {mSegments->Fill(domain, EliadeEvent.EnergyCal);};
     
    
    	lastEliadeEvent = EliadeEvent;
@@ -657,16 +672,93 @@ void EliadeSorting::AddBack()
  if (ncores == 1) {enrergyQu.push_back(coincQu_cores.front().EnergyCal);return;}
  
  if (ncores == 2) {
-	 hCheckCore2AddBack->Fill(coincQu_cores[0].core + coincQu_cores[1].core);
-	 if (!crystal2mask.count(coincQu_cores[0].core + coincQu_cores[1].core))
-	 //if cores are on diagonal: 4 or 6
-	 {
-	 	
-	 	//std::cout<<"core coinc " <<coincQu_cores[0].core + coincQu_cores[1].core <<std::endl;
-	 	enrergyQu.push_back(coincQu_cores[0].EnergyCal);
-	        enrergyQu.push_back(coincQu_cores[1].EnergyCal);
-	 };
-	 return;
+     int coreCoincID = 0;
+     
+     if (coincQu_cores[0].core < coincQu_cores[1].core) 
+     {
+         coreCoincID =  coincQu_cores[1].core *10 +  coincQu_cores[0].core;
+//          CoreSegmentHitID(coincQu_cores[0].core, 2376);
+//          CoreSegmentHitID(coincQu_cores[1].core, 3478);
+     }
+     else 
+     {
+         coreCoincID =  coincQu_cores[0].core *10 +  coincQu_cores[1].core;
+//          CoreSegmentHitID(coincQu_cores[1].core, 2376);
+//          CoreSegmentHitID(coincQu_cores[0].core, 3478);
+     };
+     
+     hCheckCore2AddBack->Fill(coreCoincID);
+     
+     switch (coreCoincID){
+         case 20: case 31: //diagonal
+         {
+          enrergyQu.push_back(coincQu_cores[0].EnergyCal);
+          enrergyQu.push_back(coincQu_cores[1].EnergyCal);   
+         }
+         case 10: case 21: case 32:
+         {
+            CoreSegmentHitID(coincQu_seg[coreCoincID % 10], 2376); //smaller core
+            CoreSegmentHitID(coincQu_seg[coreCoincID / 10], 3478); // bigger core
+            //std::cout<<coreCoincID<<" coreCoincID smaller "<< (coreCoincID % 10)<<" bigger" << (coreCoincID / 10) <<" \n";
+         }
+         case 30:
+          {
+            CoreSegmentHitID(coincQu_seg[coreCoincID / 10], 2376);
+            CoreSegmentHitID(coincQu_seg[coreCoincID % 10], 3478); 
+            //std::cout<<(coreCoincID / 10)<<" \n";
+         }   
+     };
+     
+     
+     
+//      switch (coreCoincID){
+//          case 4: case 6: //segments are on diagonal
+//              enrergyQu.push_back(coincQu_cores[0].EnergyCal);
+//              enrergyQu.push_back(coincQu_cores[1].EnergyCal);
+//          case 1: case 5: //core 0 and 1
+//           {
+//               if (coincQu_cores[0].core < coincQu_cores[1].core) 
+//               {
+//                   CoreSegmentHitID(coincQu_cores[0].core, 2376);
+//                   CoreSegmentHitID(coincQu_cores[1].core, 3478);
+//               }
+//               else 
+//               {
+//                   CoreSegmentHitID(coincQu_cores[1].core, 2376);
+//                   CoreSegmentHitID(coincQu_cores[0].core, 3478);   
+//               }
+//           };
+//          case 3:
+//          {
+//              if (coincQu_cores[0].core < coincQu_cores[1].core) 
+//               {
+//                   CoreSegmentHitID(coincQu_cores[0].core, 2376);
+//                   CoreSegmentHitID(coincQu_cores[1].core, 3478);
+//               }
+//               else 
+//               {
+//                   CoreSegmentHitID(coincQu_cores[1].core, 2376);
+//                   CoreSegmentHitID(coincQu_cores[0].core, 3478);   
+//               }
+//          };
+//              
+//      };
+//      
+     
+// 	 if (!crystal2mask.count(coreCoincID))//segments are on diagonal
+// 	 //if cores are on diagonal: 4 or 6 ; (side :  1 3 or 5)
+// 	 {
+// 	 	
+// 	 	//std::cout<<"core coinc " <<coincQu_cores[0].core + coincQu_cores[1].core <<std::endl;
+// 	 	enrergyQu.push_back(coincQu_cores[0].EnergyCal);
+// 	    enrergyQu.push_back(coincQu_cores[1].EnergyCal);CoreSegmentHitID
+//         //return;
+// 	 }
+// 	 else {
+//         int segmentCoincID;// = pow(2, coincQu_cores[0].core); 
+//          //return;
+//          
+//         }
 	};
  return;
 	
@@ -683,7 +775,7 @@ void EliadeSorting::SlaveTerminate()
 void EliadeSorting::Terminate()
 {
    // The Terminate() function is the last function to be called during
-   // a query. It always runs on the client, it can be used to present
+   // a query. It always runs on the clieint coreID, nt, it can be used to present
    // the results graphically or save the results to file.
 
   std::cout<<"I  will terminate soon... "<<std::endl;   
@@ -752,3 +844,63 @@ void EliadeSorting::CheckTimePulser()
 
      	return;
 };
+
+int  EliadeSorting::CoreSegmentHitID(std::deque<TEliadeEvent> segQu_, int coincID)
+{
+    std::deque<TEliadeEvent>  ::iterator it__ = segQu_.begin();  
+    
+    std::deque<UShort_t> SegmentHitMask;
+    for (int i=1;i<=8;i++) SegmentHitMask.push_back(0);
+    for (; it__ != segQu_.end(); ++it__)SegmentHitMask.at(it__->segment = 1);                  
+    
+   // for (int i=1;i<=8;i++) {std::cout<<SegmentHitMask.at(0)<<" ";};std::cout<<"\n";
+
+    
+    int result = 0;    
+    
+    /*switch (coincID){
+        case 2376:
+        {
+            result = pow(2,SegmentHitMask.at(2))+pow(2,SegmentHitMask.at(3))+pow(2,SegmentHitMask.at(6))+pow(3,(7));//204 max
+            std::cout<<SegmentHitMask.at(2)<<" "<<SegmentHitMask.at(3)<<" "<<SegmentHitMask.at(6)<<" "<<SegmentHitMask.at(7)<<"\n";
+        }
+        case 3478:
+        {
+            result = pow(2,SegmentHitMask.at(3))+pow(2,SegmentHitMask.at(4))+pow(2,SegmentHitMask.at(7))+pow(3,(8));//408 max
+            std::cout<<SegmentHitMask.at(3)<<" "<<SegmentHitMask.at(4)<<" "<<SegmentHitMask.at(7)<<" "<<SegmentHitMask.at(8)<<"\n";
+
+        };
+    };*/
+    
+    if (result > 408) {std::cout<<"Warning something is wrong with SegmentHitMask "<< result << " \n";};
+    
+ return result;   
+}
+
+void EliadeSorting::AddBackCoreAB() //0 and 1
+{
+//     for (int i = 0; i<=1; i++)
+//         switch (coincQu_cores[1].core)
+//         {
+//             case (coincQu_cores[i].core == 0):
+//                 CoreSegmentHitID(coincQu_cores[0].core, 2376);
+//             case (coincQu_cores[i].core == 1):
+//                 CoreSegmentHitID(coincQu_cores[0].core, 3478);    
+//         }
+ return;   
+}
+
+void EliadeSorting::AddBackCoreBC()
+{
+ return;   
+}
+
+void EliadeSorting::AddBackCoreCD()
+{
+ return;   
+}
+
+void EliadeSorting::AddBackCoreDA()
+{
+ return;   
+}

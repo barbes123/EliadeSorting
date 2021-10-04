@@ -80,14 +80,16 @@ public :
 
  class TEliadeEvent {
  public:
-    UChar_t	 fMod; 
-    UChar_t	 fChannel;    
-    ULong64_t	 fTimeStamp;
-    UShort_t	 fEnergy;  
-    float	 EnergyCal;
-    int	 domain;
-    int	 channel;//ch daq
-    int	 core;
+    UChar_t	        fMod; 
+    UChar_t	        fChannel;    
+    ULong64_t	    fTimeStamp;
+    UShort_t	    fEnergy;  
+    float	        EnergyCal;
+    UShort_t        domain;
+    UShort_t        channel;//ch daq
+    UShort_t        core;
+    UShort_t        segment;
+
     //int make_board_ID(){return fMod*100}
     TEliadeEvent(): domain(-1),channel(-1),fTimeStamp(0),fEnergy(-1){};
  };
@@ -119,6 +121,8 @@ public :
 
 //   std::deque<TEliadeEvent> eliadeQu_sorted;
   std::map<unsigned int, TEliadeDetector > LUT_ELIADE  ;
+  std::map<unsigned int, std::deque<TEliadeEvent> > coincQu_seg ;
+
  
  
   TEliadeEvent EliadeEvent;  
@@ -143,6 +147,7 @@ public :
  
   TH1F* hChannelHit;
   TH1F* hDomainHit;
+  TH1F* hSegmentHit;
   TH2F* mEliade;//keV
   TH2F* mEliade_raw;
   TH2F* mCores;//keV
@@ -159,6 +164,7 @@ public :
   TH2F* mBoardTimeDiff;
   TH2F* mZeroTimeDiff;
   TH2F* mZeroTimeDiff_vs_Enegy;
+  TH2F* mSegmentsPerCore;
   
   TH1F* hTimeDiffCoreCore;//Eg-Eg between cores; trigger any core
   TH2F* mCoreCore;
@@ -170,7 +176,7 @@ public :
   
   TH1F* hTimeDiffPulser;
   TH2F* mPulserPulser;
-   
+    
   std::clock_t start;
   double duration;
  
@@ -204,7 +210,12 @@ public :
    virtual void PrioritySorting(TEliadeEvent ev_);
    virtual void CheckSorting(std::deque<TEliadeEvent> myQu);
    virtual void AddBack();
+   virtual void AddBackCoreAB();//0 and 1
+   virtual void AddBackCoreBC();//1 and 2
+   virtual void AddBackCoreCD();//2 and 3
+   virtual void AddBackCoreDA();//3 and 0
    virtual void CheckTimePulser();
+   virtual int  CoreSegmentHitID(std::deque<TEliadeEvent>, int coincID);
    
 
    ClassDef(EliadeSorting,0);
