@@ -39,7 +39,11 @@ int addBackMode = 0; //0 - no addback; 1- addback
 bool Trigger = false;
 
 //TString LUT_Directory = "/data/live/IT/dsoft/EliadeSorting/";
+<<<<<<< HEAD
 //TString LUT_Directory = "/home/eliade/EliadeSorting/";
+=======
+TString LUT_Directory = "/home/eliade/EliadeSorting/";
+>>>>>>> 3f50045f2a8acaeda113e198f8cbb98b8a3aff48
 //TString LUT_Directory = "/home/testov/EliadeSorting/";
 //TString LUT_Directory = "/home/work/EliadeSorting/";
 //TString LUT_Directory = "~/EliadeSorting/";
