@@ -5,13 +5,9 @@
 #include <iostream> 
 using namespace std;
 
-
-//string data_dir = "/eliadedisks/w1/root_files/";
-//string output_dir = "/eliadedisks/w1/selectror_files/";
 string data_dir = "/eliadedisks/w2/root_files/";
-//string data_dir = "/data/eliade/root_files/";
 
-void Chain_sorting_new(UInt_t first_run=195, UInt_t last_run=195, UInt_t vol0=1, UInt_t vol1=1){
+void Chain_sorting_new(UInt_t AddBAck = 0, UInt_t first_run=195, UInt_t last_run=195, UInt_t vol0=1, UInt_t vol1=1){
 
  
  std::cout<<" Chain_selector.C is running "<<std::endl;
@@ -31,8 +27,9 @@ void Chain_sorting_new(UInt_t first_run=195, UInt_t last_run=195, UInt_t vol0=1,
         ch->Add(Form("%srun%s_%s.root", data_dir.c_str(), szRun.c_str(),szVol.c_str()));
          
         std::ostringstream options;
-        options<<run<<","<<vol<<","<<"100";
-        ch->Process("/home/eliade/EliadeSorting/EliadeSorting.C+",options.str().c_str());
+        options<<run<<","<<vol<<","<<","<<AddBAck<<","<<"100";
+//        ch->Process("/data/live/IT/dsoft/EliadeSorting/EliadeSorting.C+",options.str().c_str());
+        ch->Process("~/EliadeSorting/EliadeSorting.C+",options.str().c_str());
          
 	};   
 //    ch->Process("/home/eliade/testov/EliadeSelector/EliadeSelector.C+",options.str().c_str());

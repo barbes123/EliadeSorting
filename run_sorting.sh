@@ -1,7 +1,8 @@
 #!/bin/bash
 
-FIRSTrun=$1
-LASTrun=$2
+AddBAck=$1
+FIRSTrun=$2
+#LASTrun=$3
 volume1=$3
 volume2=$4
 
@@ -9,6 +10,8 @@ echo "Will run the selector for runs $FIRSTrun upto $LASTrun "
 echo "Will run the selector for volumes $volume1 upto $volume2 "		
 
 runnb=$FIRSTrun
+LASTrun=$FIRSTrun
+
 while test $runnb -le $LASTrun
 do
  echo "Now starting run the selector $runnb"	
@@ -24,7 +27,7 @@ do
  done
 
 # rootcommand=Chain_selector.C"($runnb,$runnb,$volume1,$volnb)"
- rootcommand=Chain_sorting_new.C+"($runnb,$runnb,$volume1,$volume2)"  
+ rootcommand=Chain_sorting_new.C+"($AddBAck,$runnb,$runnb,$volume1,$volume2)"  
 
  root -l -b -q $rootcommand
  
