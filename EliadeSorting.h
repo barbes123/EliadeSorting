@@ -84,6 +84,7 @@ public :
     UChar_t	        fChannel;    
     ULong64_t	    fTimeStamp;
     UShort_t	    fEnergy;  
+    UShort_t        det_def;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
     float	        EnergyCal;
     UShort_t        domain;
     UShort_t        channel;//ch daq
@@ -98,8 +99,9 @@ public :
   public:
     Int_t	 dom;
     Int_t	 ch;//ch daq
-    Float_t 	 theta;
+    Float_t  theta;
     Float_t	 phi;  
+    UShort_t detType;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
     Int_t	 TimeOffset; 
     Int_t 	 upperThreshold; 
     Int_t	 pol_order;
@@ -148,6 +150,7 @@ public :
   TH1F* hChannelHit;
   TH1F* hDomainHit;
   TH1F* hSegmentHit;
+  TH1F* hDetTypeHit;
   TH2F* mEliade;//keV
   TH2F* mEliade_raw;
   TH2F* mCores;//keV

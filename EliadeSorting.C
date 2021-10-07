@@ -35,15 +35,13 @@
 using namespace std;
 
 
-int addBackMode = 0; //0 - no addback; 1- addback
+int addBackMode = 1; //0 - no addback; 1- addback
 bool Trigger = false;
 
 //TString LUT_Directory = "/data/live/IT/dsoft/EliadeSorting/";
-<<<<<<< HEAD
 //TString LUT_Directory = "/home/eliade/EliadeSorting/";
-=======
-TString LUT_Directory = "/home/eliade/EliadeSorting/";
->>>>>>> 3f50045f2a8acaeda113e198f8cbb98b8a3aff48
+
+// TString LUT_Directory = "/home/eliade/EliadeSorting/";
 //TString LUT_Directory = "/home/testov/EliadeSorting/";
 //TString LUT_Directory = "/home/work/EliadeSorting/";
 //TString LUT_Directory = "~/EliadeSorting/";
@@ -78,7 +76,7 @@ void EliadeSorting::Read_ELIADE_LookUpTable() {
   std::stringstream LUTFile;
   LUTFile << pLUT_Path <<"/"<<"LUT_ELIADE.dat";
   //LUTFile << LUT_Directory << "LUT_ELIADE.dat";
-const int nbr_of_ch = 200;
+  const int nbr_of_ch = 200;
   std::ifstream lookuptable(LUTFile.str().c_str());
 
   if (!lookuptable.good()) {
@@ -98,8 +96,8 @@ const int nbr_of_ch = 200;
       int upperThreshold = 1e6;
       std::istringstream is(oneline);
       if (debug) std::cout << is.str().c_str() << std::endl;
-      is >> curDet.ch >> curDet.dom >> curDet.theta >> curDet.phi >> curDet.TimeOffset >> curDet.upperThreshold;
-      
+//       is >> curDet.ch >> curDet.dom >> curDet.theta >> curDet.phi >> curDet.TimeOffset >> curDet.upperThreshold;
+      is >> curDet.ch >> curDet.dom >> curDet.detType >> curDet.phi >> curDet.TimeOffset >> curDet.upperThreshold;
     //  std::cout<<" curDet.ch  "<<curDet.ch <<" curDet.TimeOffset " <<curDet.TimeOffset<<std::endl;
       
       if (curDet.ch >= 0) {
@@ -244,6 +242,9 @@ void EliadeSorting::Begin(TTree * tree)
   TString option = GetOption();
   toks = option.Tokenize(",");
   TString RunID = ((TObjString*) toks->At(0))->GetString();
+  addBackMode = atoi(((TObjString*) toks->At(2))->GetString());
+  std::cout << "addBackMode  " << addBackMode <<std::endl;
+
 //   TString VolID = ((TObjString*) toks->At(1))->GetString();
 // 
 //   std::stringstream OutputFile;
@@ -343,6 +344,9 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    
    hCoreHit = new TH1F("hCoreHit", "hCoreHit",10,0,10);
    fOutput->Add(hCoreHit);
+   
+   hDetTypeHit = new TH1F("hDetTypeHit", "hDetTypeHit",200,0,200);
+   fOutput->Add(hDetTypeHit);
      
    hEliade_no_addback = new TH1F("hEliade_no_addback", "hEliade_no_addback", 4096, -0.5, 4095.5);
    fOutput->Add(hEliade_no_addback);
@@ -392,8 +396,7 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    
    mZeroTimeDiff = new TH2F("mZeroTimeDiff", "mZeroTimeDiff", nbr_of_ch, 0, nbr_of_ch, 1000, -99.5, 899.5);
    fOutput->Add(mZeroTimeDiff);//time_diff relevant to the 1st channel (101), i.e. ch 101 is a trigger
-   
-    
+       
    mZeroTimeDiff_vs_Enegy = new TH2F("mZeroTimeDiff_vs_Enegy", "mZeroTimeDiff_vs_Enegy", 16384, -0.5, 16383.5, 1000, -99.5, 899.5);
    fOutput->Add(mZeroTimeDiff_vs_Enegy);//time_diff relevant to the 1st channel (101), i.e. ch 101 is a trigger
    
@@ -487,6 +490,9 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 	EliadeEvent.channel = daq_ch;
 	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, daq_ch);
 	EliadeEvent.domain = LUT_ELIADE[daq_ch].dom;
+    EliadeEvent.det_def = LUT_ELIADE[daq_ch].detType;
+    hDetTypeHit->Fill(EliadeEvent.det_def);
+//     EliadeEvent.domain = LUT_ELIADE[daq_ch].dom;
 	EliadeEvent.core = (EliadeEvent.domain  - 100*current_clover)/10; // a % 10 = reminder
 	EliadeEvent.segment = (EliadeEvent.domain  - 100*current_clover) % 10; // a % 10 = reminder
 	hCoreHit->Fill(EliadeEvent.core);
@@ -498,30 +504,23 @@ Bool_t EliadeSorting::Process(Long64_t entry)
   	hDomainHit->Fill(domain);
 	mEliade_raw->Fill(domain,EliadeEvent.fEnergy);
 	
-	//if (domain < 140) return kTRUE;
-	
 	mEliade->Fill(domain,EliadeEvent.EnergyCal);
 	
-	if (cores.count(domain)) hEliade_no_addback->Fill(EliadeEvent.EnergyCal);
+// 	if (cores.count(domain)) hEliade_no_addback->Fill(EliadeEvent.EnergyCal);
+    if (EliadeEvent.det_def == 1) hEliade_no_addback->Fill(EliadeEvent.EnergyCal);
 
 		//std::cout<<" EliadeEvent.domain "<<EliadeEvent.domain<<"  LUT_ELIADE[num].TimeOffset "<< LUT_ELIADE[num].TimeOffset<<" EliadeEvent.fTimeStamp "<<EliadeEvent.fTimeStamp <<" "<<EliadeEvent.fTimeStamp + LUT_ELIADE[num].TimeOffset<<std::endl;
-	
-	
      EliadeEvent.fTimeStamp = EliadeEvent.fTimeStamp + LUT_ELIADE[daq_ch].TimeOffset;
-
-   
      hTimeSort->Fill(EliadeEvent.fTimeStamp - lastEliadeEvent.fTimeStamp);   
 
-
 //Check Pulser
-//if ((pulsers.count(domain))){CheckTimePulser();return kTRUE;};
-if (pulsers.count(domain)){CheckTimePulser();return kTRUE;};
- //if ((pulsers.count(domain))){std::cout<<"Pulser \n";return kTRUE;};
- //if ((cores.count(domain))){std::cout<<"Core \n";return kTRUE;};
+// if (pulsers.count(domain)){CheckTimePulser();return kTRUE;};
+    if (EliadeEvent.det_def == 9){CheckTimePulser();return kTRUE;};
   
     //gamma-gamma between different cores
 //     ULong64_t TimeDiff = 0; 
-     if ((cores.count(domain))&&(addBackMode == 0)){
+//      if ((cores.count(domain))&&(addBackMode == 0)){
+    if ((EliadeEvent.det_def == 1)&&(addBackMode == 0)){
 //  if ((domain >= 140)&&(addBackMode == 0)){ //for the pulser to check the time
 //          std::cout<<" no add back \n";
          if (coincQu_cores.empty()){coincQu_cores.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
@@ -554,10 +553,11 @@ if (pulsers.count(domain)){CheckTimePulser();return kTRUE;};
      
     //Trying add-back
     
-     if ((addBackMode == 1)&&(!pulsers.count(domain))){
+    // if ((addBackMode == 1)&&(!pulsers.count(domain))){
+      if ((addBackMode == 1)&&(EliadeEvent.det_def != 9)){
 
      	if (!Trigger){
-	     	if ((cores.count(domain))){coincQu_cores.push_back(EliadeEvent);Trigger=true;}
+	     	if (EliadeEvent.det_def == 1){coincQu_cores.push_back(EliadeEvent);Trigger=true;}
      	}
      	else //Trigger==true
      	{
@@ -565,7 +565,7 @@ if (pulsers.count(domain)){CheckTimePulser();return kTRUE;};
             hTimeDiffCoreCore->Fill(time_diff);
      		if (time_diff < 40)
      		{
-     			if ((cores.count(domain))){coincQu_cores.push_back(EliadeEvent);}
+     			if (EliadeEvent.det_def == 1){coincQu_cores.push_back(EliadeEvent);}
      				//else coincQu_segments.push_back(EliadeEvent);
      				else coincQu_seg[EliadeEvent.core].push_back(EliadeEvent);
      		
@@ -591,7 +591,7 @@ if (pulsers.count(domain)){CheckTimePulser();return kTRUE;};
              for (int j=0;j<=3;j++) coincQu_seg[j].clear();
     			 Trigger = false;
    			 
-   			 if ((cores.count(domain)))
+   			 if (EliadeEvent.det_def == 1)
    			 {
    			 	coincQu_cores.push_back(EliadeEvent);Trigger=true;
    			 }
@@ -683,6 +683,12 @@ void EliadeSorting::AddBack()
  if (ncores == 1) {enrergyQu.push_back(coincQu_cores.front().EnergyCal);return;}
  
  if (ncores == 2) {
+     if (coincQu_cores[0].core == coincQu_cores[1].core) 
+     {        
+         enrergyQu.push_back(coincQu_cores.front().EnergyCal);
+         return;
+     };    
+     
      int coreCoincID = 0;
      
      if (coincQu_cores[0].core < coincQu_cores[1].core) 
@@ -701,12 +707,12 @@ void EliadeSorting::AddBack()
      hCheckCore2AddBack->Fill(coreCoincID);
      
      switch (coreCoincID){
-         case 20: case 31: //diagonal
+         case 21: case 30: //diagonal
          {
           enrergyQu.push_back(coincQu_cores[0].EnergyCal);
           enrergyQu.push_back(coincQu_cores[1].EnergyCal);   
          }
-         case 10: case 21: case 32:
+     /*    case 10: case 21: case 32:
          {
             CoreSegmentHitID(coincQu_seg[coreCoincID % 10], 2376); //smaller core
             CoreSegmentHitID(coincQu_seg[coreCoincID / 10], 3478); // bigger core
@@ -717,7 +723,7 @@ void EliadeSorting::AddBack()
             CoreSegmentHitID(coincQu_seg[coreCoincID / 10], 2376);
             CoreSegmentHitID(coincQu_seg[coreCoincID % 10], 3478); 
             //std::cout<<(coreCoincID / 10)<<" \n";
-         }   
+         } */  
      };
      
      
@@ -799,12 +805,11 @@ void EliadeSorting::Terminate()
   toks = option.Tokenize(",");
   TString RunID = ((TObjString*) toks->At(0))->GetString();
   TString VolID = ((TObjString*) toks->At(1))->GetString();
-
+  
   std::stringstream OutputFile;
   OutputFile << "sorted_run" << "_" << RunID <<"_"<<VolID<< ".root";
   std::cout << "OUTFILE  sorted_run" << "_" << RunID<<"_"<<VolID<< ".root"<<std::endl;
-  
-  
+ 
   /*
   std::stringstream OutputFile;
   OutputFile << "sorted_run" << "_" << RunID << ".root";
