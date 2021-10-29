@@ -152,6 +152,7 @@ public :
   TH1F* hSegmentHit;
   TH1F* hDetTypeHit;
   TH2F* mEliade;//keV
+  TH1F* hEliade;//keV
   TH2F* mEliade_raw;
   TH2F* mCores;//keV
   TH2F* mSegments;//keV
@@ -160,14 +161,17 @@ public :
   TH2F* mEliadeMULT;
   TH1F* hTimeSort;
   TH1F* hTimeZero;
-  TH1F* hEliade;
   TH1F* hEliade_no_addback;
   TH1F* hCheckCore2AddBack;
   TH1F* hCoreHit;
   TH2F* mBoardTimeDiff;
-  TH2F* mZeroTimeDiff;
   TH2F* mZeroTimeDiff_vs_Enegy;
   TH2F* mSegmentsPerCore;
+  
+  TH2F *mDomTimeDiff;
+  TH2F *mPulser0TimeDiff;
+  TH2F *mDom0TimeDiff;
+  TH2F *mDom0TimeDiffEnergy;
   
   TH1F* hTimeDiffCoreCore;//Eg-Eg between cores; trigger any core
   TH2F* mCoreCore;
@@ -217,7 +221,7 @@ public :
    virtual void AddBackCoreBC();//1 and 2
    virtual void AddBackCoreCD();//2 and 3
    virtual void AddBackCoreDA();//3 and 0
-   virtual void CheckTimePulser();
+   virtual int CheckTimeAlignment(int to_domain);
    virtual int  CoreSegmentHitID(std::deque<TEliadeEvent>, int coincID);
    
 
@@ -253,3 +257,6 @@ Bool_t EliadeSorting::Notify()
 
 
 #endif // #ifdef EliadeSorting_cxx
+// R G // 2 1
+// W B // 3 0
+// B0 G1 R2 W3
