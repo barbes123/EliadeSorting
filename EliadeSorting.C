@@ -424,6 +424,11 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
 //     hTimeDiffCoreCore = new TH1F("hTimeDiffCoreCore", "hTimeDiffCoreCore", 1000, -99.5, 899.5);
    hTimeDiffCoreCore = new TH1F("hTimeDiffCoreCore", "hTimeDiffCoreCore", 1000, -99.5, 899.5);
    fOutput->Add(hTimeDiffCoreCore);
+   
+   hTimeDiffCeBrCebr = new TH1F("hTimeDiffCeBrCebr", "hTimeDiffCeBrCebr", 1000, 0, 1000000);
+   fOutput->Add(hTimeDiffCeBrCebr);
+   
+   
     
    hTimeDiffSegSeg = new TH1F("hTimeDiffSegSeg", "hTimeDiffSegSeg", 1000, -99.5, 899.5);
    fOutput->Add(hTimeDiffSegSeg);
@@ -578,7 +583,38 @@ Bool_t EliadeSorting::Process(Long64_t entry)
                 coincQu_cores.push_back(EliadeEvent);
              }
          }
+     }else if ((EliadeEvent.det_def == 3)&&(addBackMode == 0)){ //noaddback
+//  if ((domain >= 140)&&(addBackMode == 0)){ //for the pulser to check the time
+         // std::cout<<" CeBr \n";
+         if (coincQu_cores.empty()){coincQu_cores.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
+         else
+         {
+//              std::cout<<" no add back \n";
+             int time_diff = EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp;
+//                std::cout<<time_diff<<" time_diff \n";
+             hTimeDiffCeBrCebr->Fill(time_diff);
+             if (std::abs(time_diff) < 40000) 
+             {
+                 coincQu_cores.push_back(EliadeEvent);
+             }
+             else
+             {
+                hMultCores->Fill(coincQu_cores.size());             
+                std::deque<TEliadeEvent>  ::iterator it1__ = coincQu_cores.begin();
+                std::deque<TEliadeEvent>  ::iterator it2__ = coincQu_cores.begin(); 
+                for (; it1__ != coincQu_cores.end(); ++it1__){
+                     hEliade->Fill((*it1__).EnergyCal);
+                  for (; it2__ != coincQu_cores.end(); ++it2__){
+                      if (it1__ == it2__) continue;
+                      mCoreCore->Fill((*it1__).EnergyCal, (*it2__).EnergyCal);
+                  };
+                };
+                coincQu_cores.clear();
+                coincQu_cores.push_back(EliadeEvent);
+             }
+         }
      };
+     
      
     //Trying add-back
     

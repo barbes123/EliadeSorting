@@ -174,6 +174,7 @@ public :
   TH2F *mDom0TimeDiffEnergy;
   
   TH1F* hTimeDiffCoreCore;//Eg-Eg between cores; trigger any core
+  TH1F* hTimeDiffCeBrCebr;//Eg-Eg between cores; trigger any core
   TH2F* mCoreCore;
   TH1F* hMultCores;
   
