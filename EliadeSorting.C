@@ -357,6 +357,12 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    hEliade = new TH1F("hEliade", "hEliade", 4096, -0.5, 4095.5);
    fOutput->Add(hEliade);
    
+   hCeBr = new TH1F("hCeBr", "hCeBr", 4096, -0.5, 4095.5);
+   fOutput->Add(hCeBr);
+   
+   hCeBr_CS = new TH1F("hCeBr_CS", "hCeBr_CS", 4096, -0.5, 4095.5);
+   fOutput->Add(hCeBr_CS);
+   
    hTimeSort = new TH1F("hTimeSort", "hTimeSort", 1000, -500, 500);
    fOutput->Add(hTimeSort);
    
@@ -425,13 +431,14 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    hTimeDiffCoreCore = new TH1F("hTimeDiffCoreCore", "hTimeDiffCoreCore", 1000, -99.5, 899.5);
    fOutput->Add(hTimeDiffCoreCore);
    
-   hTimeDiffCeBrCebr = new TH1F("hTimeDiffCeBrCebr", "hTimeDiffCeBrCebr", 1000, 0, 1000000);
+   hTimeDiffCeBrCebr = new TH1F("hTimeDiffCeBrCebr", "hTimeDiffCeBrCebr", 1000, -99.5, 899.5);
    fOutput->Add(hTimeDiffCeBrCebr);
    
-   
+   hTimeDiffCeBrCebr = new TH1F("hTimeDiffCeBrCebr", "hTimeDiffCeBrCebr", 1000, -99.5, 899.5);
+   fOutput->Add(hTimeDiffCeBrCebr);
     
-   hTimeDiffSegSeg = new TH1F("hTimeDiffSegSeg", "hTimeDiffSegSeg", 1000, -99.5, 899.5);
-   fOutput->Add(hTimeDiffSegSeg);
+   hTimeDiffBGOCeBr = new TH1F("hTimeDiffBGOCeBr", "hTimeDiffBGOCeBr", 1000, -99.5, 899.5);
+   fOutput->Add(hTimeDiffBGOCeBr);
     
    hTimeDiffPulser = new TH1F("hTimeDiffPulser", "hTimeDiffPulser", 1000, -99.5, 899.5);
    fOutput->Add(hTimeDiffPulser);
@@ -583,8 +590,8 @@ Bool_t EliadeSorting::Process(Long64_t entry)
                 coincQu_cores.push_back(EliadeEvent);
              }
          }
-     }else if ((EliadeEvent.det_def == 3)&&(addBackMode == 0)){ //noaddback
-//  if ((domain >= 140)&&(addBackMode == 0)){ //for the pulser to check the time
+     }else if ((EliadeEvent.det_def == 33)&&(addBackMode == 0)){ //noaddback
+//  if ((domain >= 140)&&(addBackModze == 0)){ //for the pulser to check the time
          // std::cout<<" CeBr \n";
          if (coincQu_cores.empty()){coincQu_cores.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
          else
@@ -613,6 +620,62 @@ Bool_t EliadeSorting::Process(Long64_t entry)
                 coincQu_cores.push_back(EliadeEvent);
              }
          }
+     }  if ((EliadeEvent.det_def == 3)&&(addBackMode == 0)){ //noaddback
+//  if ((domain >= 140)&&(addBackMode == 0)){ //for the pulser to check the time
+//          std::cout<<" no add back \n";
+         if (coincQu_cores.empty()){coincQu_cores.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
+         else
+         {
+//              std::cout<<" no add back \n";
+             int time_diff = EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp;
+//                std::cout<<time_diff<<" time_diff \n";
+             hTimeDiffCoreCore->Fill(time_diff);
+             if (std::abs(time_diff) < 20) 
+             {
+                 coincQu_cores.push_back(EliadeEvent);
+             }
+             else
+             {
+                hMultCores->Fill(coincQu_cores.size());             
+                std::deque<TEliadeEvent>  ::iterator it1__ = coincQu_cores.begin();
+                std::deque<TEliadeEvent>  ::iterator it2__ = coincQu_cores.begin(); 
+                for (; it1__ != coincQu_cores.end(); ++it1__){
+                     hEliade->Fill((*it1__).EnergyCal);
+                  for (; it2__ != coincQu_cores.end(); ++it2__){
+                      if (it1__ == it2__) continue;
+                      mCoreCore->Fill((*it1__).EnergyCal, (*it2__).EnergyCal);
+                  };
+                };
+                coincQu_cores.clear();
+                coincQu_cores.push_back(EliadeEvent);
+             }
+         }
+     };
+     
+     
+     if (EliadeEvent.det_def == 5) {bgo_Qu.push_back(EliadeEvent);
+         
+        }else if ((EliadeEvent.det_def == 3)&&(addBackMode == 0)){ 
+         
+         bool bgo_pass = bgo_Qu.empty();
+         if (bgo_pass) hCeBr_CS->Fill(EliadeEvent.EnergyCal);
+         if (bgo_pass) std::cout<<"Empty "<< EliadeEvent.EnergyCal<<" \n";
+         
+          if ((EliadeEvent.domain == 172)&&(!bgo_pass)){
+             std::deque<TEliadeEvent>  ::iterator it1__ = bgo_Qu.begin();
+             int time_diff;
+             for (; it1__ != bgo_Qu.end(); ++it1__){
+                  time_diff = EliadeEvent.fTimeStamp - (*it1__).fTimeStamp;
+                  hTimeDiffBGOCeBr->Fill(time_diff);
+                  if (time_diff < 10){
+ //                   bgo_Qu.erase(it1__,it1__);
+                      bgo_Qu.pop_front();
+                  }
+              };
+             bgo_pass = bgo_Qu.empty();            
+             if (bgo_pass) hCeBr_CS->Fill(EliadeEvent.EnergyCal);
+         };
+        if (EliadeEvent.domain == 172) hCeBr->Fill(EliadeEvent.EnergyCal);
      };
      
      

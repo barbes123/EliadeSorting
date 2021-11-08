@@ -119,6 +119,7 @@ public :
   std::deque<TEliadeEvent> coincQu_pulser;
   std::deque<TEliadeEvent> coincQu_cores;
   std::deque<TEliadeEvent> coincQu_segments;
+  std::deque<TEliadeEvent> bgo_Qu;
   std::deque<float> enrergyQu;
 
 //   std::deque<TEliadeEvent> eliadeQu_sorted;
@@ -181,9 +182,13 @@ public :
   TH1F* hTimeDiffSegSeg;//Eg-Eg between segments; trigger any core
   TH2F* mSegmentSegment;
   TH1F* hMultSegments;
+  TH1F* hTimeDiffBGOCeBr;
   
   TH1F* hTimeDiffPulser;
   TH2F* mPulserPulser;
+  
+  TH1F* hCeBr;
+  TH1F* hCeBr_CS;
     
   std::clock_t start;
   double duration;
