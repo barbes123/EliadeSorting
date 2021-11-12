@@ -6,7 +6,7 @@
 FIRSTdomain=$1
 LASTdomain=$2
 activityCo60=$3
-activityCs137=$3
+
 
 CUR_DIR=$(pwd)
 cd $CUR_DIR
