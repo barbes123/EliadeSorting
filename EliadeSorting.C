@@ -434,8 +434,8 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    hTimeDiffCeBrCebr = new TH1F("hTimeDiffCeBrCebr", "hTimeDiffCeBrCebr", 1000, -99.5, 899.5);
    fOutput->Add(hTimeDiffCeBrCebr);
    
-   hTimeDiffCeBrCebr = new TH1F("hTimeDiffCeBrCebr", "hTimeDiffCeBrCebr", 1000, -99.5, 899.5);
-   fOutput->Add(hTimeDiffCeBrCebr);
+//    hTimeDiffCeBrCebr = new TH1F("hTimeDiffCeBrCebr", "hTimeDiffCeBrCebr", 1000, -99.5, 899.5);
+//    fOutput->Add(hTimeDiffCeBrCebr);
     
    hTimeDiffBGOCeBr = new TH1F("hTimeDiffBGOCeBr", "hTimeDiffBGOCeBr", 1000, -99.5, 899.5);
    fOutput->Add(hTimeDiffBGOCeBr);
@@ -590,7 +590,7 @@ Bool_t EliadeSorting::Process(Long64_t entry)
                 coincQu_cores.push_back(EliadeEvent);
              }
          }
-     }else if ((EliadeEvent.det_def == 33)&&(addBackMode == 0)){ //noaddback
+     }else if ((EliadeEvent.det_def == 3)&&(addBackMode == 0)){ //noaddback
 //  if ((domain >= 140)&&(addBackModze == 0)){ //for the pulser to check the time
          // std::cout<<" CeBr \n";
          if (coincQu_cores.empty()){coincQu_cores.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
@@ -598,11 +598,12 @@ Bool_t EliadeSorting::Process(Long64_t entry)
          {
 //              std::cout<<" no add back \n";
              int time_diff = EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp;
-//                std::cout<<time_diff<<" time_diff \n";
+             //std::cout<<time_diff<<" time_diff \n";
              hTimeDiffCeBrCebr->Fill(time_diff);
-             if (std::abs(time_diff) < 40000) 
+             if (std::abs(time_diff) < 20) 
              {
                  coincQu_cores.push_back(EliadeEvent);
+//                  std::cout<<time_diff<<" time_diff \n";
              }
              else
              {
@@ -620,7 +621,7 @@ Bool_t EliadeSorting::Process(Long64_t entry)
                 coincQu_cores.push_back(EliadeEvent);
              }
          }
-     }  if ((EliadeEvent.det_def == 3)&&(addBackMode == 0)){ //noaddback
+     }else if ((EliadeEvent.det_def == 33)&&(addBackMode == 0)){ //noaddback
 //  if ((domain >= 140)&&(addBackMode == 0)){ //for the pulser to check the time
 //          std::cout<<" no add back \n";
          if (coincQu_cores.empty()){coincQu_cores.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
@@ -629,7 +630,9 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 //              std::cout<<" no add back \n";
              int time_diff = EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp;
 //                std::cout<<time_diff<<" time_diff \n";
-             hTimeDiffCoreCore->Fill(time_diff);
+            // hTimeDiffCoreCore->Fill(time_diff);
+             hTimeDiffCeBrCebr->Fill(time_diff);
+
              if (std::abs(time_diff) < 20) 
              {
                  coincQu_cores.push_back(EliadeEvent);
@@ -659,7 +662,7 @@ Bool_t EliadeSorting::Process(Long64_t entry)
          
          bool bgo_pass = bgo_Qu.empty();
          if (bgo_pass) hCeBr_CS->Fill(EliadeEvent.EnergyCal);
-         if (bgo_pass) std::cout<<"Empty "<< EliadeEvent.EnergyCal<<" \n";
+//          if (bgo_pass) std::cout<<"Empty "<< EliadeEvent.EnergyCal<<" \n";
          
           if ((EliadeEvent.domain == 172)&&(!bgo_pass)){
              std::deque<TEliadeEvent>  ::iterator it1__ = bgo_Qu.begin();
