@@ -5,12 +5,8 @@
 # DIST=$1
 FIRSTdomain=$1
 LASTdomain=$2
-activityCo60=$3
-<<<<<<< HEAD
-
-=======
-//activityCs137=$3
->>>>>>> 025dec88d4710b5c986fc29d95fd6bca13c145c8
+activity152Eu=$3
+#activityCs137=$3
 
 CUR_DIR=$(pwd)
 cd $CUR_DIR
@@ -40,9 +36,9 @@ echo "Will run the calib for domains $FIRSTdomain upto $LASTdomain "
    	rm "res.temp"   
    fi
 ##################################      
-    if test -f "Co60.temp" 
+    if test -f "152Eu.temp" 
    then 
-   	rm "Co60.temp"   
+   	rm "152Eu.temp"   
    fi
 ##################################      
     if test -f "temp.calib" 
@@ -73,16 +69,16 @@ do
  
  if [[ "$domnb" == "109" ]] ||  [[ "$domnb" == "119" ]]||  [[ "$domnb" == "129" ]]||  [[ "$domnb" == "139" ]];
  then
-  lim1=600
+  lim1=100
   lim2=1600
   fwhm=4
   ampl=100
   echo "changed for core $domnb"
  else
-  lim1=1700
-  lim2=5000
+  lim1=200
+  lim2=4500
   fwhm=10
-  ampl=6
+  ampl=10
   echo "changed for segment $domnb"
  fi
  
@@ -91,8 +87,8 @@ do
       #get full data on calibration
       #/data/live/IT/tools/RecalEnergy -spe mEliade_raw_py_$domnb.spe -fmt A 16384 -lim $lim1 $lim2 -dwa $fwhm $ampl -60Co -v 2 -poly1 -ener 1460.82
       #/data/live/IT/tools/RecalEnergy -spe mEliade_raw_py_$domnb.spe -fmt A 16384 -lim $lim1 $lim2 -dwa $fwhm $ampl -60Co -v 2 -poly1 -ener 1460.82 > fulldata.calib
-      ~/EliadeSorting/EliadeTools/RecalEnergy -spe mEliade_raw_py_$domnb.spe -fmt A 16384 -lim $lim1 $lim2 -dwa $fwhm $ampl -60Co -40K -v 2 -poly1
-      ~/EliadeSorting/EliadeTools/RecalEnergy -spe mEliade_raw_py_$domnb.spe -fmt A 16384 -lim $lim1 $lim2 -dwa $fwhm $ampl -60Co -40K -v 2 -poly1 > fulldata.calib
+      ~/EliadeSorting/EliadeTools/RecalEnergy -spe mEliade_raw_py_$domnb.spe -fmt A 16384 -lim $lim1 $lim2 -dwa $fwhm $ampl -152Eu -40K -v 2 -poly2
+      ~/EliadeSorting/EliadeTools/RecalEnergy -spe mEliade_raw_py_$domnb.spe -fmt A 16384 -lim $lim1 $lim2 -dwa $fwhm $ampl -152Eu -40K -v 2 -poly2 > fulldata.calib
       #delete first 14 lines
       awk 'NR > 14 { print }' fulldata.calib >  temp.calib
       
@@ -104,27 +100,88 @@ do
  	else echo " ">> eliade.calib #if domain is emtry add a new line
 	fi 	
 	##################################      
-	if grep '1173.238' temp.calib
+	if grep '121.779' temp.calib
 	then
-           #echo -n "domain $domnb " >> Co60.calib    
- 	  #grep '1173.238'  temp.calib >> Co60.calib
- 	   grep '1173.238'  temp.calib >> res.temp
- 	   grep '1173.238'  temp.calib >> Co60.temp      
- 	   echo "Found 1173.238"
+           #echo -n "domain $domnb " >> 152Eu.calib    
+ 	  #grep '121.779'  temp.calib >> 152Eu.calib
+ 	   grep '121.779'  temp.calib >> res.temp
+ 	   grep '121.779'  temp.calib >> 152Eu.temp      
+ 	   echo "Found 121.779"
 	fi
-	if grep '1332.513' temp.calib	    
+	##################################     
+	if grep '244.693' temp.calib	    
 	then
-           #echo -n "domain $domnb " >> Co60.calib 
- 	   grep '1332.513'  temp.calib >> res.temp
- 	   grep '1332.513'  temp.calib >> Co60.temp      
- 	   echo "Found"
-	fi	
-	if grep '1460.81' temp.calib	    
-	then
-           #echo -n "domain $domnb " >> Co60.calib 
- 	   grep '1460.81'  temp.calib >> res.temp      
+           #echo -n "domain $domnb " >> 152Eu.calib 
+ 	   grep '244.693'  temp.calib >> res.temp
+ 	   grep '244.693'  temp.calib >> 152Eu.temp      
  	   echo "Found"
 	fi
+	##################################
+	if grep '344.272' temp.calib	    
+	then
+           #echo -n "domain $domnb " >> 152Eu.calib 
+ 	   grep '344.272'  temp.calib >> res.temp
+ 	   grep '344.272'  temp.calib >> 152Eu.temp      
+ 	   echo "Found"
+	fi
+	##################################     
+	if grep '411.111' temp.calib	    
+	then
+           #echo -n "domain $domnb " >> 152Eu.calib 
+ 	   grep '411.111'  temp.calib >> res.temp
+ 	   grep '411.111'  temp.calib >> 152Eu.temp      
+ 	   echo "Found"
+	fi
+	##################################     
+	if grep '443.979' temp.calib	    
+	then
+           #echo -n "domain $domnb " >> 152Eu.calib 
+ 	   grep '443.979'  temp.calib >> res.temp
+ 	   grep '443.979'  temp.calib >> 152Eu.temp      
+ 	   echo "Found"
+	fi
+	##################################     
+	if grep '778.890' temp.calib	    
+	then
+           #echo -n "domain $domnb " >> 152Eu.calib 
+ 	   grep '778.890'  temp.calib >> res.temp
+ 	   grep '778.890'  temp.calib >> 152Eu.temp      
+ 	   echo "Found"
+	fi
+	##################################     
+	if grep '964.014' temp.calib	    
+	then
+           #echo -n "domain $domnb " >> 152Eu.calib 
+ 	   grep '964.014'  temp.calib >> res.temp
+ 	   grep '964.014'  temp.calib >> 152Eu.temp      
+ 	   echo "Found"
+	fi
+	##################################     
+	if grep '1085.793' temp.calib	    
+	then
+           #echo -n "domain $domnb " >> 152Eu.calib 
+ 	   grep '1085.793'  temp.calib >> res.temp
+ 	   grep '1085.793'  temp.calib >> 152Eu.temp      
+ 	   echo "Found"
+	fi
+	##################################     
+	if grep '1112.070' temp.calib	    
+	then
+           #echo -n "domain $domnb " >> 152Eu.calib 
+ 	   grep '1112.070'  temp.calib >> res.temp
+ 	   grep '1112.070'  temp.calib >> 152Eu.temp      
+ 	   echo "Found"
+	fi
+	##################################     
+	if grep '1407.993' temp.calib	    
+	then
+           #echo -n "domain $domnb " >> 152Eu.calib 
+ 	   grep '1407.993'  temp.calib >> res.temp
+ 	   grep '1407.993'  temp.calib >> 152Eu.temp      
+ 	   echo "Found"
+	fi
+	##################################          	
+
 	if grep '#2' res.temp
 	then
  	   grep '#2'  res.temp >> data.calib      
@@ -138,7 +195,7 @@ do
    fi  
 
 sed -i "s/#2/$domnb/" data.calib
-sed -i "s/#2/$domnb/" Co60.temp
+sed -i "s/#2/$domnb/" 152Eu.temp
 
  rm res.temp
  rm temp.calib	
@@ -147,14 +204,19 @@ done
  
 cat eliade.calib | sed 's/|/ /' | awk '{print $2, $9, $10}' >  eliade.coeff
 
-#awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " keV"}' Co60.calib > resolution.txt
+#awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " keV"}' 152Eu.calib > resolution.txt
 
-#awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " keV eff: " $5/'$activity'}' Co60.calib > resolution.txt
+#awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " keV eff: " $5/'$activity'}' 152Eu.calib > resolution.txt
 
 awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " keV" }' data.calib > resolution.txt 
-awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " [keV]; eff [%]: " $5/'$activityCo60'*100}' Co60.temp > eff_60Co.txt
 
-rm Co60.temp
+
+awk '!/#/{print $0}' 152Eu.temp > 152Eu_1.temp # delete lines with "#"
+
+awk -F " " '{ print $1 " " $q5 " " $9 " " $6 " " $7 " " $7/$6*$9 " [keV]; eff [%]: " $5/'$activity152Eu'*100}' 152Eu_1.temp > eff_152Eu.txt
+
+rm 152Eu.temp
+rm 152Eu_1.temp
 rm data.calib
 
 # case  $DIST in

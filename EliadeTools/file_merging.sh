@@ -35,4 +35,4 @@ while test $volnb -le $volume2
 done
 
 echo "$command"
-#$command
+$command

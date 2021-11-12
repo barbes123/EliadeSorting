@@ -1,0 +1,5 @@
+#daq_ch domain det_def Phi Time_Offset UpperThresholdCS AwAe offset and slope nb_par_cal cal_pars 
+0  171 3  0  0 	      	10 	0  1 2 4.42902 0.223127 
+1  172 3  0  0 	      	10 	0  1 2  -2.98055 0.199373
+2  173 3  0  0 	      	10 	0  1 2  2.45782 0.228133
+3  174 3  0  0 	      	25 	0  1 2  -1.09372 0.267819
