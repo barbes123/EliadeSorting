@@ -600,7 +600,7 @@ Bool_t EliadeSorting::Process(Long64_t entry)
              int time_diff = EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp;
              //std::cout<<time_diff<<" time_diff \n";
              hTimeDiffCeBrCebr->Fill(time_diff);
-             if (std::abs(time_diff) < 20) 
+             if (std::abs(time_diff) < 10) 
              {
                  coincQu_cores.push_back(EliadeEvent);
 //                  std::cout<<time_diff<<" time_diff \n";
@@ -935,10 +935,15 @@ void EliadeSorting::Terminate()
   toks = option.Tokenize(",");
   TString RunID = ((TObjString*) toks->At(0))->GetString();
   TString VolID = ((TObjString*) toks->At(1))->GetString();
+  TString ServerID = ((TObjString*) toks->At(3))->GetString();
   
   std::stringstream OutputFile;
-  OutputFile << "sorted_run" << "_" << RunID <<"_"<<VolID<< ".root";
-  std::cout << "OUTFILE  sorted_run" << "_" << RunID<<"_"<<VolID<< ".root"<<std::endl;
+//   OutputFile << "sorted_run" << "_" << RunID <<"_"<<VolID<< ".root";
+  OutputFile << "sorted_run" << "_" << RunID <<"_"<<VolID;
+  if (atoi(ServerID) != 0) {OutputFile<<"_eliadeS"<<ServerID;std::cout<<"!!!!!!!!\n";};
+  OutputFile << ".root";
+//   std::cout << "OUTFILE  sorted_run" << "_" << RunID<<"_"<<VolID<< ".root"<<std::endl;
+  std::cout <<"ServerID "<<ServerID<<" "<< OutputFile.str().c_str() <<std::endl;
  
   /*
   std::stringstream OutputFile;
