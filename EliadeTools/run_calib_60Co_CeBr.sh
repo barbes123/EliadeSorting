@@ -6,11 +6,7 @@
 FIRSTdomain=$1
 LASTdomain=$2
 activityCo60=$3
-<<<<<<< HEAD
-
-=======
-//activityCs137=$3
->>>>>>> 025dec88d4710b5c986fc29d95fd6bca13c145c8
+#activityCs137=$3
 
 CUR_DIR=$(pwd)
 cd $CUR_DIR
@@ -79,10 +75,10 @@ do
   ampl=100
   echo "changed for core $domnb"
  else
-  lim1=1700
-  lim2=5000
-  fwhm=10
-  ampl=6
+  lim1=4000
+  lim2=8500
+  fwhm=160
+  ampl=20
   echo "changed for segment $domnb"
  fi
  
@@ -91,8 +87,8 @@ do
       #get full data on calibration
       #/data/live/IT/tools/RecalEnergy -spe mEliade_raw_py_$domnb.spe -fmt A 16384 -lim $lim1 $lim2 -dwa $fwhm $ampl -60Co -v 2 -poly1 -ener 1460.82
       #/data/live/IT/tools/RecalEnergy -spe mEliade_raw_py_$domnb.spe -fmt A 16384 -lim $lim1 $lim2 -dwa $fwhm $ampl -60Co -v 2 -poly1 -ener 1460.82 > fulldata.calib
-      ~/EliadeSorting/EliadeTools/RecalEnergy -spe mEliade_raw_py_$domnb.spe -fmt A 16384 -lim $lim1 $lim2 -dwa $fwhm $ampl -60Co -40K -v 2 -poly1
-      ~/EliadeSorting/EliadeTools/RecalEnergy -spe mEliade_raw_py_$domnb.spe -fmt A 16384 -lim $lim1 $lim2 -dwa $fwhm $ampl -60Co -40K -v 2 -poly1 > fulldata.calib
+      ~/EliadeSorting/EliadeTools/RecalEnergy -spe mEliade_raw_py_$domnb.spe -fmt A 16384 -lim $lim1 $lim2 -dwa $fwhm $ampl -60Co -v 2 -poly1
+      ~/EliadeSorting/EliadeTools/RecalEnergy -spe mEliade_raw_py_$domnb.spe -fmt A 16384 -lim $lim1 $lim2 -dwa $fwhm $ampl -60Co -v 2 -poly1 > fulldata.calib
       #delete first 14 lines
       awk 'NR > 14 { print }' fulldata.calib >  temp.calib
       
@@ -119,12 +115,6 @@ do
  	   grep '1332.513'  temp.calib >> Co60.temp      
  	   echo "Found"
 	fi	
-	if grep '1460.81' temp.calib	    
-	then
-           #echo -n "domain $domnb " >> Co60.calib 
- 	   grep '1460.81'  temp.calib >> res.temp      
- 	   echo "Found"
-	fi
 	if grep '#2' res.temp
 	then
  	   grep '#2'  res.temp >> data.calib      
