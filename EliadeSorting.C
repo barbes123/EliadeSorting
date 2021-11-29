@@ -693,8 +693,8 @@ Bool_t EliadeSorting::Process(Long64_t entry)
         for (; it1__ != waitingQu[EliadeEvent.cs_domain].end(); ++it1__){
                     int time_diff = EliadeEvent.fTimeStamp - it1__->fTimeStamp;
                     if (time_diff<=40) {
-                        if ((EliadeEvent.det_def == 3)&&(it1__->det_def == 5)){EliadeEventCS.fCS=1;}
-                        else if ((EliadeEvent.det_def == 5)&&(it1__->det_def == 3))it1__.fCS=1;}
+                        if ((EliadeEvent.det_def == 3)&&(it1__->det_def == 5)){EliadeEventCS.CS=1;}
+                        else if ((EliadeEvent.det_def == 5)&&(it1__->det_def == 3))it1__.CS=1;}
                     else{
 //                      if (EliadeEvent.det_def == 5){
                         if (it1__->det_def == 3){EliadeEventCS =  *it1__;outputTree->Fill();};                
