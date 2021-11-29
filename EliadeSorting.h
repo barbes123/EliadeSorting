@@ -270,7 +270,7 @@ void EliadeSorting::Init(TTree *tree)
   outputFile->cd();
   outputTree = new TTree("SelectedDelila","SelectedDelila");
   outputTree->Branch("fTEventTS",&EliadeEventCS.fTimeStamp,"TimeStamp/D");
-  outputTree->Branch("fEnergy",&EliadeEventCS.EnergyCal,"Energy/D");
+  outputTree->Branch("fEnergy",&EliadeEventCS.EnergyCal,"Energy/F");
   outputTree->Branch("fDomain",&EliadeEventCS.domain,"Domain/I");
   outputTree->Branch("fDetType",&EliadeEventCS.det_def,"def/I");
   outputTree->Branch("fCS",&EliadeEventCS.CS,"CS/I");
