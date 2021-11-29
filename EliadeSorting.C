@@ -116,8 +116,9 @@ void EliadeSorting::Read_ELIADE_LookUpTable() {
 //	curDet.direction.SetMagThetaPhi(210, theta, phi);
 	int pol_order = 0;
 	//Now we sorted_run_354.roottry to get the EeEw selection with a simple line
-	float offset_gate(0.),slope_gate(1.);
-	is >> offset_gate >> slope_gate;
+ 	float offset_gate(0.),slope_gate(1.);
+    is >> offset_gate;
+// 	is >> offset_gate >> slope_gate;
 	//curDet.rejectionEeEw = new TF1(Form("Ge_%2i_EeEw",curDet.domain),
 	//			       "pol1");
 	//curDet.rejectionEeEw->FixParameter(0,offset_gate);
