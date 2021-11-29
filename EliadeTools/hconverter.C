@@ -229,7 +229,7 @@ void ConvertTH2F (TH2* m)
 //  if (rebin_const!=0){m->Rebin(rebin_const);}
 
   int n_hists=m->GetXaxis()->GetNbins();
-  for (int j=100;j<=n_hists;j++){
+  for (int j=0;j<=n_hists;j++){
       TH1D *_py=m->ProjectionY("_py",j,j);
       if (_py->GetEntries() == 0) continue;
       
@@ -239,7 +239,8 @@ void ConvertTH2F (TH2* m)
   oname.Append("/");
   oname.Append(str);
   oname.Append("_py_");    
-  oname.Append(Form("%i",j));  
+  int domain = m->GetXaxis()->GetBinCenter(j);
+  oname.Append(Form("%i",domain));  
   //if (tkt) {oname.Append(".spe");}
   if (tkt) {oname.Append(".spe");}
   else {oname.Append(".dat");};      

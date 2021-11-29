@@ -158,6 +158,15 @@ public :
   TH2F* mCores;//keV
   TH2F* mSegments;//keV
   TH2F* mEliadeTD;
+  
+  //Part For RoSPHERE
+  TH2F* mLaBr_raw;  
+  TH2F* mLaBr_kev;
+  TH1F* hLaBr_kev;
+  TH1F* hLaBrCS_kev;
+  
+  
+  
 //  TH2F* mEliadeSegEnergy;
   TH2F* mEliadeMULT;
   TH1F* hTimeSort;
@@ -187,8 +196,8 @@ public :
   TH1F* hTimeDiffPulser;
   TH2F* mPulserPulser;
   
-  TH1F* hCeBr;
-  TH1F* hCeBr_CS;
+  
+  
     
   std::clock_t start;
   double duration;
