@@ -63,9 +63,10 @@
 
 class EliadeSorting : public TSelector {
 public :
-   TTreeReader     fReader;  //!the tree reader
-   TTree          *fChain = 0;   //!pointer to the analyzed TTree or TChain
-
+    TTreeReader     fReader;  //!the tree reader
+    TTree          *fChain = 0;   //!pointer to the analyzed TTree or TChain
+    TTree          *outputTree;
+    TFile          *outputFile;
    // Readers to access the data (delete the ones you do not need).
   // TTreeReaderValue<UChar_t> fMod = {fReader, "Mod"};
    //TTreeReaderValue<UChar_t> fCh = {fReader, "Ch"};
@@ -90,6 +91,7 @@ public :
     UShort_t        channel;//ch daq
     UShort_t        core;
     UShort_t        segment;
+    UShort_t        CS;//0 - no; 1 - yes
 
     //int make_board_ID(){return fMod*100}
     TEliadeEvent(): domain(-1),channel(-1),fTimeStamp(0),fEnergy(-1){};
@@ -257,6 +259,15 @@ void EliadeSorting::Init(TTree *tree)
    // (once per file to be processed).
 
    fReader.SetTree(tree);
+   
+   
+  outputFile->cd();
+  outputTree = new TTree("SelectedDelila","SelectedDelila");
+  outputTree->Branch("fTEventTS",&EliadeEvent.fTimeStamp,"TimeStamp/D");
+  outputTree->Branch("fEnergy",&EliadeEvent.EnergyCal,"Energy/D");
+  outputTree->Branch("fDomain",&EliadeEvent.domain,"Domain/I");
+  outputTree->Branch("fDetType",&EliadeEvent.det_def,"def/I");
+  outputTree->Branch("fCS",&EliadeEvent.CS,"CS/I");
 }
 
 Bool_t EliadeSorting::Notify()

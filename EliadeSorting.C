@@ -322,7 +322,7 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
  }
 
 
-   TString option = GetOption();
+//    TString option = GetOption();
    int ch_num = 0;
    for (int i = 1; i<=NumberOfClovers;i++){   
   	    for (int j = 0; j<=4; j++){
@@ -463,7 +463,20 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    mPulserPulser = new TH2F("mPulserPulser", "mPulserPulser",4096, -0.5, 8191.5, 4096, -0.5, 8195.5);
    fOutput->Add(mPulserPulser);
     
-    
+  TString option = GetOption();
+  toks = option.Tokenize(",");
+  TString RunID = ((TObjString*) toks->At(0))->GetString();
+  TString VolID = ((TObjString*) toks->At(1))->GetString();
+  TString ServerID = ((TObjString*) toks->At(3))->GetString();
+  
+  std::stringstream OutputFile;
+  OutputFile << "sorted_run" << "_" << RunID <<"_"<<VolID;
+  if (atoi(ServerID) != 0) {OutputFile<<"_eliadeS"<<ServerID;};
+  OutputFile << ".root";
+  std::cout <<"ServerID "<<ServerID<<" "<< OutputFile.str().c_str() <<std::endl;
+ 
+   
+  outputFile = new TFile (OutputFile.str().c_str(),"recreate"); 
    
    
     start = std::clock();
@@ -796,6 +809,9 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 
    //hHitPattern->Fill(EliadeEvent.fChannel);
    
+   EliadeEvent.CS = 0;
+   
+   outputTree->Fill();
    
    
   if ((entry) % int(nb_entries / 100) == 0 || (entry) % 100000 == 0) {
@@ -946,27 +962,7 @@ void EliadeSorting::Terminate()
   
   //std::sort(((eliadeQu.begin()).fTimeStamp, (eliadeQu.end()).fTimeStamp);
   
-  TString option = GetOption();
-  toks = option.Tokenize(",");
-  TString RunID = ((TObjString*) toks->At(0))->GetString();
-  TString VolID = ((TObjString*) toks->At(1))->GetString();
-  TString ServerID = ((TObjString*) toks->At(3))->GetString();
-  
-  std::stringstream OutputFile;
-//   OutputFile << "sorted_run" << "_" << RunID <<"_"<<VolID<< ".root";
-  OutputFile << "sorted_run" << "_" << RunID <<"_"<<VolID;
-  if (atoi(ServerID) != 0) {OutputFile<<"_eliadeS"<<ServerID;};
-  OutputFile << ".root";
-//   std::cout << "OUTFILE  sorted_run" << "_" << RunID<<"_"<<VolID<< ".root"<<std::endl;
-  std::cout <<"ServerID "<<ServerID<<" "<< OutputFile.str().c_str() <<std::endl;
- 
-  /*
-  std::stringstream OutputFile;
-  OutputFile << "sorted_run" << "_" << RunID << ".root";
-  std::cout << "sorted_run" << "_" << RunID << ".root"<<std::endl;*/
-  
-   
-  TFile ofile(OutputFile.str().c_str(),"recreate"); 
+
       TIter iter(fOutput);
       
 
@@ -985,6 +981,8 @@ void EliadeSorting::Terminate()
                 if (h2->GetEntries()>0) obj->Write();
             }
         };
+        
+        outputTree->Write();
    
 
 }
