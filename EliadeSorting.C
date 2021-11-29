@@ -37,6 +37,7 @@ using namespace std;
 
 int addBackMode = 1; //0 - no addback; 1- addback
 bool Trigger = false;
+bool CS = true;
 
 //TString LUT_Directory = "/data/live/IT/dsoft/EliadeSorting/";
 //TString LUT_Directory = "/home/eliade/EliadeSorting/";
@@ -48,7 +49,7 @@ bool Trigger = false;
 
 
 bool debug = false;
-bool doCS = false;
+// bool doCS = false;
 
 const int NumberOfClovers = 2;
 const int max_domain = 400;
@@ -105,7 +106,7 @@ void EliadeSorting::Read_ELIADE_LookUpTable() {
       std::istringstream is(oneline);
       if (debug) std::cout << is.str().c_str() << std::endl;
 //       is >> curDet.ch >> curDet.dom >> curDet.theta >> curDet.phi >> curDet.TimeOffset >> curDet.upperThreshold;
-      is >> curDet.ch >> curDet.dom >> curDet.detType >> curDet.phi >> curDet.TimeOffset >> curDet.upperThreshold;
+      is >> curDet.ch >> curDet.dom >> curDet.detType >> curDet.phi >> curDet.TimeOffset >> curDet.upperThreshold >> curDet.cs_dom;
     //  std::cout<<" curDet.ch  "<<curDet.ch <<" curDet.TimeOffset " <<curDet.TimeOffset<<std::endl;
       
       if (curDet.ch >= 0) {
@@ -620,7 +621,7 @@ Bool_t EliadeSorting::Process(Long64_t entry)
                 coincQu_cores.push_back(EliadeEvent);
              }
          }
-     }else if (EliadeEvent.det_def == 3){ //LaBr
+     }else if ((EliadeEvent.det_def == 3)&&!CS){ //LaBr
          if (coincQu_cores.empty()){coincQu_cores.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
          else
          {
@@ -684,30 +685,57 @@ Bool_t EliadeSorting::Process(Long64_t entry)
      };
      
      
-     if ((EliadeEvent.det_def == 5)&&(doCS)) {bgo_Qu.push_back(EliadeEvent);
+     
+     if (CS){
+      
+//          if (EliadeEvent.det_def == 5) {
+           waitingQu[EliadeEvent.cs_domain].push_back(EliadeEvent);  
+//          }
+//          else if (EliadeEvent.det_def == 3) {
          
-        }else if ((EliadeEvent.det_def == 3)&&(addBackMode == 0)){ 
+//              ;
+//         };
+
+
+        std::deque<TEliadeEvent>  ::iterator it1__ = waitingQu[EliadeEvent.cs_domain].begin(); 
+        for (; it1__ != waitingQu[EliadeEvent.cs_domain].end(); ++it1__){
+            if ((EliadeEvent.fTimeStamp - it1__->fTimeStamp) > 40)
+            {
+                if (it1__->det_def == 3){EliadeEventCS =  *it1__;outputTree->Fill();};                
+                it1__ = waitingQu[EliadeEvent.cs_domain].erase(it1__);
+            }else{
+                if (it1__->det_def == 3){it1__->CS = 1;};
+            };
+        };
          
-         bool bgo_pass = bgo_Qu.empty();
-         if (bgo_pass) hLaBrCS_kev->Fill(EliadeEvent.EnergyCal);
-//          if (bgo_pass) std::cout<<"Empty "<< EliadeEvent.EnergyCal<<" \n";
          
-          if ((EliadeEvent.domain == 172)&&(!bgo_pass)){
-             std::deque<TEliadeEvent>  ::iterator it1__ = bgo_Qu.begin();
-             int time_diff;
-             for (; it1__ != bgo_Qu.end(); ++it1__){
-                  time_diff = EliadeEvent.fTimeStamp - (*it1__).fTimeStamp;
-                  hTimeDiffBGOCeBr->Fill(time_diff);
-                  if (time_diff < 10){
- //                   bgo_Qu.erase(it1__,it1__);
-                      bgo_Qu.pop_front();
-                  }
-              };
-             bgo_pass = bgo_Qu.empty();            
-             if (bgo_pass) hLaBrCS_kev->Fill(EliadeEvent.EnergyCal);
-         };
-//         if (EliadeEvent.domain == 172) hLaBr->Fill(EliadeEvent.EnergyCal);
-     };
+     }
+     
+     
+//      if ((EliadeEvent.det_def == 5)&&(doCS)) {bgo_Qu.push_back(EliadeEvent);
+//          
+//         }else if ((EliadeEvent.det_def == 3)&&(addBackMode == 0)){ 
+//          
+//          bool bgo_pass = bgo_Qu.empty();
+//          if (bgo_pass) hLaBrCS_kev->Fill(EliadeEvent.EnergyCal);
+// //          if (bgo_pass) std::cout<<"Empty "<< EliadeEvent.EnergyCal<<" \n";
+//          
+//           if ((EliadeEvent.domain == 172)&&(!bgo_pass)){
+//              std::deque<TEliadeEvent>  ::iterator it1__ = bgo_Qu.begin();
+//              int time_diff;
+//              for (; it1__ != bgo_Qu.end(); ++it1__){
+//                   time_diff = EliadeEvent.fTimeStamp - (*it1__).fTimeStamp;
+//                   hTimeDiffBGOCeBr->Fill(time_diff);
+//                   if (time_diff < 10){
+//  //                   bgo_Qu.erase(it1__,it1__);
+//                       bgo_Qu.pop_front();
+//                   }
+//               };
+//              bgo_pass = bgo_Qu.empty();            
+//              if (bgo_pass) hLaBrCS_kev->Fill(EliadeEvent.EnergyCal);
+//          };
+// //         if (EliadeEvent.domain == 172) hLaBr->Fill(EliadeEvent.EnergyCal);
+//      };
      
      
     //Trying add-back
@@ -809,9 +837,9 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 
    //hHitPattern->Fill(EliadeEvent.fChannel);
    
-   EliadeEvent.CS = 0;
+//    EliadeEvent.CS = 0;
    
-   outputTree->Fill();
+//    outputTree->Fill();
    
    
   if ((entry) % int(nb_entries / 100) == 0 || (entry) % 100000 == 0) {

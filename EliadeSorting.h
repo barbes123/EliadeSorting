@@ -56,6 +56,7 @@
 #include "TTreeIndex.h"
 #include <stdio.h>      /* printf */
 #include <stdlib.h>     /* getenv */
+#include <map>
 
 //#include "TObjString.h."
 // Headers needed by this particular selector
@@ -88,13 +89,14 @@ public :
     UShort_t        det_def;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
     float	        EnergyCal;
     UShort_t        domain;
+    UShort_t        cs_domain;
     UShort_t        channel;//ch daq
     UShort_t        core;
     UShort_t        segment;
     UShort_t        CS;//0 - no; 1 - yes
 
     //int make_board_ID(){return fMod*100}
-    TEliadeEvent(): domain(-1),channel(-1),fTimeStamp(0),fEnergy(-1){};
+    TEliadeEvent(): domain(-1),channel(-1),fTimeStamp(0),fEnergy(-1),CS(0),cs_domain(0){};
  };
 
   class TEliadeDetector { 
@@ -107,6 +109,7 @@ public :
     Int_t	 TimeOffset; 
     Int_t 	 upperThreshold; 
     Int_t	 pol_order;
+    Int_t    cs_dom;
     std::vector<float> calibE;
     TEliadeDetector(): dom(-1),phi(-1),theta(-1),TimeOffset(0),calibE(0),upperThreshold(-1),ch(-1),pol_order(-1){};
  };
@@ -123,6 +126,8 @@ public :
   std::deque<TEliadeEvent> coincQu_segments;
   std::deque<TEliadeEvent> bgo_Qu;
   std::deque<float> enrergyQu;
+  
+   std::map<int,std::deque<TEliadeEvent>> waitingQu;
 
 //   std::deque<TEliadeEvent> eliadeQu_sorted;
   std::map<unsigned int, TEliadeDetector > LUT_ELIADE  ;
@@ -131,6 +136,7 @@ public :
  
  
   TEliadeEvent EliadeEvent;  
+  TEliadeEvent EliadeEventCS;
   TEliadeEvent lastEliadeEvent;  
   TEliadeEvent lastEliadeZeroEvent;  
   TEliadeEventCoinc EliadeCoincEvent[4];
@@ -263,11 +269,11 @@ void EliadeSorting::Init(TTree *tree)
    
   outputFile->cd();
   outputTree = new TTree("SelectedDelila","SelectedDelila");
-  outputTree->Branch("fTEventTS",&EliadeEvent.fTimeStamp,"TimeStamp/D");
-  outputTree->Branch("fEnergy",&EliadeEvent.EnergyCal,"Energy/D");
-  outputTree->Branch("fDomain",&EliadeEvent.domain,"Domain/I");
-  outputTree->Branch("fDetType",&EliadeEvent.det_def,"def/I");
-  outputTree->Branch("fCS",&EliadeEvent.CS,"CS/I");
+  outputTree->Branch("fTEventTS",&EliadeEventCS.fTimeStamp,"TimeStamp/D");
+  outputTree->Branch("fEnergy",&EliadeEventCS.EnergyCal,"Energy/D");
+  outputTree->Branch("fDomain",&EliadeEventCS.domain,"Domain/I");
+  outputTree->Branch("fDetType",&EliadeEventCS.det_def,"def/I");
+  outputTree->Branch("fCS",&EliadeEventCS.CS,"CS/I");
 }
 
 Bool_t EliadeSorting::Notify()
