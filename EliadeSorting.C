@@ -688,29 +688,50 @@ Bool_t EliadeSorting::Process(Long64_t entry)
      
      
      if (CS){
-      
-//          if (EliadeEvent.det_def == 5) {
-           waitingQu[EliadeEvent.cs_domain].push_back(EliadeEvent);  
-//          }
-//          else if (EliadeEvent.det_def == 3) {
          
-//              ;
-//         };
-
-
         std::deque<TEliadeEvent>  ::iterator it1__ = waitingQu[EliadeEvent.cs_domain].begin(); 
         for (; it1__ != waitingQu[EliadeEvent.cs_domain].end(); ++it1__){
-            if ((EliadeEvent.fTimeStamp - it1__->fTimeStamp) > 40)
-            {
-                if (it1__->det_def == 3){EliadeEventCS =  *it1__;outputTree->Fill();};                
-                it1__ = waitingQu[EliadeEvent.cs_domain].erase(it1__);
-            }else{
-                if (it1__->det_def == 3){it1__->CS = 1;};
-            };
+                    int time_diff = EliadeEvent.fTimeStamp - it1__->fTimeStamp;
+                    if (time_diff<=40) {
+                        if ((EliadeEvent.det_def == 3)&&(it1__->det_def == 5)){EliadeEventCS.fCS=1;}
+                        else if ((EliadeEvent.det_def == 5)&&(it1__->det_def == 3))it1__.fCS=1;}
+                    else{
+//                      if (EliadeEvent.det_def == 5){
+                        if (it1__->det_def == 3){EliadeEventCS =  *it1__;outputTree->Fill();};                
+                        it1__ = waitingQu[EliadeEvent.cs_domain].erase(it1__);
+//                         }
+                    }
+        waitingQu[EliadeEvent.cs_domain].push_back(EliadeEvent);
         };
+     };  
          
-         
-     }
+      
+//         if (EliadeEvent.det_def == 3) {
+//             std::deque<TEliadeEvent>  ::iterator it1__ = waitingQu[EliadeEvent.cs_domain].begin(); 
+//             for (; it1__ != waitingQu[EliadeEvent.cs_domain].end(); ++it1__){
+//                 if ((EliadeEvent.fTimeStamp - it1__->fTimeStamp) < 40)
+//                 {
+//                     if (it1__->det_def == 5){EliadeEventCS.fCS=1};                
+//                     }
+//                 };
+//           //  waitingQu[EliadeEvent.cs_domain].push_back(EliadeEvent);
+//             }
+//          else if (EliadeEvent.det_def == 5) {
+//             //waitingQu[EliadeEvent.cs_domain].push_back(EliadeEvent);  
+//             std::deque<TEliadeEvent>  ::iterator it1__ = waitingQu[EliadeEvent.cs_domain].begin(); 
+//             for (; it1__ != waitingQu[EliadeEvent.cs_domain].end(); ++it1__){
+//                 if ((EliadeEvent.fTimeStamp - it1__->fTimeStamp) > 40)
+//                 {
+//                     if (it1__->det_def == 3){EliadeEventCS =  *it1__;outputTree->Fill();};                
+//                     it1__ = waitingQu[EliadeEvent.cs_domain].erase(it1__);
+//                 }else{
+//                     if (it1__->det_def == 3){it1__->CS = 1;};
+//             };
+//         }  
+//              
+//            
+//         }
+//      }
      
      
 //      if ((EliadeEvent.det_def == 5)&&(doCS)) {bgo_Qu.push_back(EliadeEvent);
