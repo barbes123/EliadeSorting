@@ -161,7 +161,9 @@ public :
   TH1F* hSegmentHit;
   TH1F* hDetTypeHit;
   TH2F* mEliade;//keV
+  TH2F* mEliadeCS;//keV
   TH1F* hEliade;//keV
+  TH1F* hEliadeCS;//keV
   TH2F* mEliade_raw;
   TH2F* mCores;//keV
   TH2F* mSegments;//keV
@@ -203,6 +205,9 @@ public :
   
   TH1F* hTimeDiffPulser;
   TH2F* mPulserPulser;
+  
+  TH2F* mTimeDiffCS;
+
   
   
   

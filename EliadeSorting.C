@@ -361,8 +361,15 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    hEliade_no_addback = new TH1F("hEliade_no_addback", "hEliade_no_addback", 4096, -0.5, 4095.5);
    fOutput->Add(hEliade_no_addback);
    	
-   hEliade = new TH1F("hEliade", "hEliade", 4096, -0.5, 4095.5);
+   hEliade = new TH1F("hEliade", "hEliade", 4096, -0.5, 16383.5);
+   hEliade->GetYaxis()->SetTitle("counts");
+   hEliade->GetXaxis()->SetTitle("keV");
    fOutput->Add(hEliade);
+   
+   hEliadeCS = new TH1F("hEliadeCS", "hEliadeCS", 4096, -0.5, 16383.5);
+   hEliadeCS->GetYaxis()->SetTitle("counts");
+   hEliadeCS->GetXaxis()->SetTitle("keV");
+   fOutput->Add(hEliadeCS);
    
    hLaBr_kev = new TH1F("hLaBr_kev", "hLaBr_kev", 4096, -0.5, 16383.5);
    fOutput->Add(hLaBr_kev);
@@ -396,6 +403,15 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    mLaBr_kev->GetYaxis()->SetTitle("keV");
    fOutput->Add(mLaBr_kev);
    
+   mEliadeCS = new TH2F("mEliadeCS", "mEliadeCS", max_domain, 0, max_domain, 16384, -0.5, 16383.5);
+   mEliadeCS->GetXaxis()->SetTitle("domain");
+   mEliadeCS->GetYaxis()->SetTitle("keV");
+   fOutput->Add(mEliadeCS);
+   
+   mTimeDiffCS = new TH2F("mTimeDiffCS", "mTimeDiffCS", max_domain, 0, max_domain, 200, -99.5, 100.5);
+   mTimeDiffCS->GetXaxis()->SetTitle("domain");
+   mTimeDiffCS->GetYaxis()->SetTitle("ns/bin");
+   fOutput->Add(mTimeDiffCS);
       
    mSegments = new TH2F("mSegments", "mSegments", max_domain, 0, max_domain, 16384, -0.5, 16383.5);
    mSegments->GetXaxis()->SetTitle("domain");
@@ -544,6 +560,7 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, daq_ch);
 	EliadeEvent.domain = LUT_ELIADE[daq_ch].dom;
     EliadeEvent.det_def = LUT_ELIADE[daq_ch].detType;
+    EliadeEvent.cs_domain = LUT_ELIADE[daq_ch].cs_dom;
     hDetTypeHit->Fill(EliadeEvent.det_def);
 //     EliadeEvent.domain = LUT_ELIADE[daq_ch].dom;
 // 	EliadeEvent.core = (EliadeEvent.domain  - 100*current_clover)/10; // a % 10 = reminder
@@ -689,20 +706,30 @@ Bool_t EliadeSorting::Process(Long64_t entry)
      
      if (CS){
          
-        std::deque<TEliadeEvent>  ::iterator it1__ = waitingQu[EliadeEvent.cs_domain].begin(); 
-        for (; it1__ != waitingQu[EliadeEvent.cs_domain].end(); ++it1__){
+        if (EliadeEvent.det_def==3) hEliade->Fill(EliadeEvent.EnergyCal);
+        std::deque<TEliadeEvent>  ::iterator it1__ = waitingQu[EliadeEvent.cs_domain].begin();
+        for (; it1__ != waitingQu[EliadeEvent.cs_domain].end();){
                     int time_diff = EliadeEvent.fTimeStamp - it1__->fTimeStamp;
+                      if ((EliadeEvent.det_def == 3)&&(it1__->det_def == 5)){mTimeDiffCS->Fill(EliadeEvent.cs_domain,time_diff);}
+                         else if ((EliadeEvent.det_def == 5)&&(it1__->det_def == 3)/*&&(it1__->det_def == 0)*/){mTimeDiffCS->Fill(it1__->cs_domain*(-1),time_diff);};
+                    
+                    
                     if (time_diff<=40) {
                         if ((EliadeEvent.det_def == 3)&&(it1__->det_def == 5)){EliadeEventCS.CS=1;}
-                        else if ((EliadeEvent.det_def == 5)&&(it1__->det_def == 3))it1__->CS=1;}
+                        else if ((EliadeEvent.det_def == 5)&&(it1__->det_def == 3))it1__->CS=1;
+                         ++it1__;}
                     else{
 //                      if (EliadeEvent.det_def == 5){
-                        if (it1__->det_def == 3){EliadeEventCS =  *it1__;outputTree->Fill();};                
+                        if (it1__->det_def == 3){EliadeEventCS =  *it1__;outputTree->Fill();
+                            if (it1__->CS == 0 ){
+                                mEliadeCS->Fill(it1__->cs_domain,it1__->EnergyCal);hEliadeCS->Fill(it1__->EnergyCal);}
+                        };
                         it1__ = waitingQu[EliadeEvent.cs_domain].erase(it1__);
+//                         if (waitingQu[EliadeEvent.cs_domain].empty()) break;
 //                         }
                     }
+                };
         waitingQu[EliadeEvent.cs_domain].push_back(EliadeEvent);
-        };
      };  
          
       
