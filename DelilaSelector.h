@@ -1,14 +1,14 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
 // Tue Mar 23 13:02:03 2021 by ROOT version 6.22/06
-// from TTree EliadeSorting/Energy Station
+// from TTree DelilaSelector/Energy Station
 // found on file: run1005_03.root
 //////////////////////////////////////////////////////////
 
 #pragma once
 
-#ifndef EliadeSorting_h
-#define EliadeSorting_h
+#ifndef DelilaSelector_h
+#define DelilaSelector_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -62,20 +62,13 @@
 // Headers needed by this particular selector
 
 
-class EliadeSorting : public TSelector {
+class DelilaSelector : public TSelector {
 public :
     TTreeReader     fReader;  //!the tree reader
     TTree          *fChain = 0;   //!pointer to the analyzed TTree or TChain
-    TTree          *outputTree;
     TFile          *outputFile;
-   // Readers to access the data (delete the ones you do not need).
-  // TTreeReaderValue<UChar_t> fMod = {fReader, "Mod"};
-   //TTreeReaderValue<UChar_t> fCh = {fReader, "Ch"};
-//   TTreeReaderValue<ULong64_t> fTimeStamp = {fReader, "TimeStamp"};
-  /* TTreeReaderValue<UShort_t> fEnergy = {fReader, "Energy"};
-   TTreeReaderValue<UInt_t> fRecordLength = {fReader, "RecordLength"};
-   TTreeReaderArray<UShort_t> fTrace1 = {fReader, "Signal"};
-*/
+    TTree          *outputTree;
+
 
   UChar_t	 uMod; 
   UChar_t	 uChannel; 
@@ -154,7 +147,7 @@ public :
  // std::map<UInt_t,TH1F*> hEnergy_raw;
   //std::map<UInt_t,TH1F*> hEnergy_cal;
  
-  std::map<UInt_t, TEliadeEvent> last_board_event;
+//   std::map<UInt_t, TEliadeEvent> last_board_event;
  
   TH1F* hChannelHit;
   TH1F* hDomainHit;
@@ -175,44 +168,22 @@ public :
   TH1F* hLaBr_kev;
   TH1F* hLaBrCS_kev;
   
-  TH2F* mTimeCalib;
-  
-  
-  
 //  TH2F* mEliadeSegEnergy;
-  TH2F* mEliadeMULT;
-  TH1F* hTimeSort;
-  TH1F* hTimeZero;
-  TH1F* hEliade_no_addback;
-  TH1F* hCheckCore2AddBack;
-  TH1F* hCoreHit;
-  TH2F* mBoardTimeDiff;
-  TH2F* mZeroTimeDiff_vs_Enegy;
-  TH2F* mSegmentsPerCore;
-  
-  TH2F *mDomTimeDiff;
+//   TH2F *mDomTimeDiff;
   TH2F *mPulser0TimeDiff;
-  TH2F *mDom0TimeDiff;
-  TH2F *mDom0TimeDiffEnergy;
-  
-  TH1F* hTimeDiffCoreCore;//Eg-Eg between cores; trigger any core
-  TH1F* hTimeDiffCeBrCebr;//Eg-Eg between cores; trigger any core
-  TH2F* mCoreCore;
-  TH1F* hMultCores;
-  
-  TH1F* hTimeDiffSegSeg;//Eg-Eg between segments; trigger any core
-  TH2F* mSegmentSegment;
-  TH1F* hMultSegments;
-  TH1F* hTimeDiffBGOCeBr;
+//   TH2F *mDom0TimeDiff;
+//   TH2F *mDom0TimeDiffEnergy;
   
   TH1F* hTimeDiffPulser;
   TH2F* mPulserPulser;
   
   TH2F* mTimeDiffCS;
+  
+  TH1F* hTimeZero;
+  TH1F* hTimeSort;
+    
+  TH2F* mTimeCalib;
 
-  
-  
-  
     
   std::clock_t start;
   double duration;
@@ -220,11 +191,13 @@ public :
   ULong64_t nevents;
   ULong64_t nevents_reset;
   int reset_counter;
+ 
+  ULong64_t lastTime;
   
   TObjArray *toks;
 
-   EliadeSorting(TTree * /*tree*/ =0) { }
-   virtual ~EliadeSorting() { }
+   DelilaSelector(TTree * /*tree*/ =0) { }
+   virtual ~DelilaSelector() { }
    virtual Int_t   Version() const { return 2; }
    virtual void    Begin(TTree *tree);
    virtual void    SlaveBegin(TTree *tree);
@@ -240,29 +213,20 @@ public :
    virtual void    Terminate();
    virtual Long64_t GetEntries() { return fChain ? fChain->GetEntries() : 0;}
 
-   virtual void  CheckCoincInCrystal(TEliadeEvent ev_);
    virtual void  Read_ELIADE_LookUpTable();
    virtual void  Print_ELIADE_LookUpTable();
    virtual float CalibDet(float,int);
-   virtual void PrioritySorting(TEliadeEvent ev_);
-   virtual void CheckSorting(std::deque<TEliadeEvent> myQu);
-   virtual void AddBack();
-   virtual void AddBackCoreAB();//0 and 1
-   virtual void AddBackCoreBC();//1 and 2
-   virtual void AddBackCoreCD();//2 and 3
-   virtual void AddBackCoreDA();//3 and 0
    virtual int CheckTimeAlignment(int to_domain);
-   virtual int  CoreSegmentHitID(std::deque<TEliadeEvent>, int coincID);
    
 
-   ClassDef(EliadeSorting,0);
+   ClassDef(DelilaSelector,0);
 
 };
 
 #endif
 
-#ifdef EliadeSorting_cxx
-void EliadeSorting::Init(TTree *tree)
+#ifdef DelilaSelector_cxx
+void DelilaSelector::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the reader is initialized.
@@ -283,7 +247,7 @@ void EliadeSorting::Init(TTree *tree)
   outputTree->Branch("fCS",&EliadeEventCS.CS,"CS/b");
 }
 
-Bool_t EliadeSorting::Notify()
+Bool_t DelilaSelector::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -295,7 +259,7 @@ Bool_t EliadeSorting::Notify()
 }
 
 
-#endif // #ifdef EliadeSorting_cxx
+#endif // #ifdef DelilaSelector_cxx
 // R G // 2 1
 // W B // 3 0
 // B0 G1 R2 W3

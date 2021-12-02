@@ -1,14 +1,14 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
 // Tue Mar 23 13:02:03 2021 by ROOT version 6.22/06
-// from TTree EliadeSorting/Energy Station
+// from TTree RosphereSelector/Energy Station
 // found on file: run1005_03.root
 //////////////////////////////////////////////////////////
 
 #pragma once
 
-#ifndef EliadeSorting_h
-#define EliadeSorting_h
+#ifndef RosphereSelector_h
+#define RosphereSelector_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -62,11 +62,11 @@
 // Headers needed by this particular selector
 
 
-class EliadeSorting : public TSelector {
+class RosphereSelector : public TSelector {
 public :
     TTreeReader     fReader;  //!the tree reader
     TTree          *fChain = 0;   //!pointer to the analyzed TTree or TChain
-    TTree          *outputTree;
+//     TTree          *outputTree;
     TFile          *outputFile;
    // Readers to access the data (delete the ones you do not need).
   // TTreeReaderValue<UChar_t> fMod = {fReader, "Mod"};
@@ -88,12 +88,12 @@ public :
     UShort_t	    fEnergy;  
     UShort_t        det_def;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
     float	        EnergyCal;
-    UShort_t        domain;
+    UChar_t         domain;
     UShort_t        cs_domain;
     UShort_t        channel;//ch daq
     UShort_t        core;
     UShort_t        segment;
-    UShort_t        CS;//0 - no; 1 - yes
+    UChar_t         CS;//0 - no; 1 - yes
 
     //int make_board_ID(){return fMod*100}
     TEliadeEvent(): domain(-1),channel(-1),fTimeStamp(0),fEnergy(-1),CS(0),cs_domain(0){};
@@ -138,23 +138,25 @@ public :
   TEliadeEvent EliadeEvent;  
   TEliadeEvent EliadeEventCS;
   TEliadeEvent lastEliadeEvent;  
-  TEliadeEvent lastEliadeZeroEvent;  
-  TEliadeEventCoinc EliadeCoincEvent[4];
+//   TEliadeEvent lastEliadeZeroEvent;  
+//   TEliadeEventCoinc EliadeCoincEvent[4];
   
   TEliadeEvent startEventCore;  
   TEliadeEvent startEventSegment;  
 
-  TBranch *b_channel;
   TBranch *b_tstmp;
   TBranch *b_energ;  
-  TBranch *b_mod;  
+  TBranch *b_domain;
+  TBranch *b_cs;    
+  TBranch *b_det_def;    
+
   
   Long64_t nb_entries;
   
  // std::map<UInt_t,TH1F*> hEnergy_raw;
   //std::map<UInt_t,TH1F*> hEnergy_cal;
  
-  std::map<UInt_t, TEliadeEvent> last_board_event;
+//   std::map<UInt_t, TEliadeEvent> last_board_event;
  
   TH1F* hChannelHit;
   TH1F* hDomainHit;
@@ -169,17 +171,11 @@ public :
   TH2F* mSegments;//keV
   TH2F* mEliadeTD;
   
-  //Part For RoSPHERE
   TH2F* mLaBr_raw;  
   TH2F* mLaBr_kev;
   TH1F* hLaBr_kev;
   TH1F* hLaBrCS_kev;
   
-  TH2F* mTimeCalib;
-  
-  
-  
-//  TH2F* mEliadeSegEnergy;
   TH2F* mEliadeMULT;
   TH1F* hTimeSort;
   TH1F* hTimeZero;
@@ -223,8 +219,8 @@ public :
   
   TObjArray *toks;
 
-   EliadeSorting(TTree * /*tree*/ =0) { }
-   virtual ~EliadeSorting() { }
+   RosphereSelector(TTree * /*tree*/ =0) { }
+   virtual ~RosphereSelector() { }
    virtual Int_t   Version() const { return 2; }
    virtual void    Begin(TTree *tree);
    virtual void    SlaveBegin(TTree *tree);
@@ -240,29 +236,22 @@ public :
    virtual void    Terminate();
    virtual Long64_t GetEntries() { return fChain ? fChain->GetEntries() : 0;}
 
-   virtual void  CheckCoincInCrystal(TEliadeEvent ev_);
    virtual void  Read_ELIADE_LookUpTable();
    virtual void  Print_ELIADE_LookUpTable();
    virtual float CalibDet(float,int);
    virtual void PrioritySorting(TEliadeEvent ev_);
    virtual void CheckSorting(std::deque<TEliadeEvent> myQu);
-   virtual void AddBack();
-   virtual void AddBackCoreAB();//0 and 1
-   virtual void AddBackCoreBC();//1 and 2
-   virtual void AddBackCoreCD();//2 and 3
-   virtual void AddBackCoreDA();//3 and 0
    virtual int CheckTimeAlignment(int to_domain);
-   virtual int  CoreSegmentHitID(std::deque<TEliadeEvent>, int coincID);
    
 
-   ClassDef(EliadeSorting,0);
+   ClassDef(RosphereSelector,0);
 
 };
 
 #endif
 
-#ifdef EliadeSorting_cxx
-void EliadeSorting::Init(TTree *tree)
+#ifdef RosphereSelector_cxx
+void RosphereSelector::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the reader is initialized.
@@ -274,16 +263,16 @@ void EliadeSorting::Init(TTree *tree)
    fReader.SetTree(tree);
    
    
-  outputFile->cd();
-  outputTree = new TTree("SelectedDelila","SelectedDelila");
-  outputTree->Branch("fTEventTS",&EliadeEventCS.fTimeStamp,"TimeStamp/l");
-  outputTree->Branch("fEnergy",&EliadeEventCS.EnergyCal,"Energy/F");
-  outputTree->Branch("fDomain",&EliadeEventCS.domain,"Domain/b");
-  outputTree->Branch("fDetType",&EliadeEventCS.det_def,"def/b");
-  outputTree->Branch("fCS",&EliadeEventCS.CS,"CS/b");
+//   outputFile->cd();
+//   outputTree = new TTree("SelectedDelila","SelectedDelila");
+//   outputTree->Branch("fTEventTS",&EliadeEventCS.fTimeStamp,"TimeStamp/l");
+//   outputTree->Branch("fEnergy",&EliadeEventCS.EnergyCal,"Energy/F");
+//   outputTree->Branch("fDomain",&EliadeEventCS.domain,"Domain/b");
+//   outputTree->Branch("fDetType",&EliadeEventCS.det_def,"def/b");
+//   outputTree->Branch("fCS",&EliadeEventCS.CS,"CS/b");
 }
 
-Bool_t EliadeSorting::Notify()
+Bool_t RosphereSelector::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -295,7 +284,7 @@ Bool_t EliadeSorting::Notify()
 }
 
 
-#endif // #ifdef EliadeSorting_cxx
+#endif // #ifdef RosphereSelector_cxx
 // R G // 2 1
 // W B // 3 0
 // B0 G1 R2 W3
