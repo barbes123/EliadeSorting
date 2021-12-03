@@ -113,12 +113,13 @@ public :
       int mult;
  };
  
-  std::deque<TEliadeEvent> eliadeQu;
+//   std::deque<TEliadeEvent> eliadeQu;
   std::deque<TEliadeEvent> coincQu_pulser;
-  std::deque<TEliadeEvent> coincQu_cores;
-  std::deque<TEliadeEvent> coincQu_segments;
-  std::deque<TEliadeEvent> bgo_Qu;
-  std::deque<float> enrergyQu;
+  std::deque<TEliadeEvent> coincQu_CS;
+  std::deque<TEliadeEvent> outputQu;
+//   std::deque<TEliadeEvent> coincQu_segments;
+//   std::deque<TEliadeEvent> bgo_Qu;
+//   std::deque<float> enrergyQu;
   
    std::map<int,std::deque<TEliadeEvent>> waitingQu;
 
@@ -220,6 +221,15 @@ public :
    
 
    ClassDef(DelilaSelector,0);
+   
+   
+//     bool friend operator<(const TEliadeEvent& ev1, const TEliadeEvent& ev2);//{return ev1.TimeStamp < ev2.TimeStamp;}
+     // this will return true when second person
+    // has greater height. Suppose we have p1.height=5
+    // and p2.height=5.5 then the object which
+    // have max height will be at the top(or
+    // max priority)
+ 
 
 };
 

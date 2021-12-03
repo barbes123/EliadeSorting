@@ -62,6 +62,9 @@ std::unordered_set<int> crystal2mask = {1,3,5};
 //std::unordered_set<int> frontsegments = {};
 //std::unordered_set<int> cores = { 101,111,121};
 
+// bool & DelilaSelector::operator<(const TEliadeEvent& ev1, const TEliadeEvent& ev2){return ev1.TimeStamp < ev2.TimeStamp;}
+
+
 void DelilaSelector::Read_ELIADE_LookUpTable() {
   std::cout << "I am Reading ELIADE LookUpTable ... ";
 //  std::stringstream CUTFile;
@@ -244,10 +247,10 @@ void DelilaSelector::SlaveBegin(TTree * /*tree*/)
  nevents = 0;
  nevents_reset=0;
  reset_counter = 0;
- if ( !eliadeQu.empty()) 
- {
-    eliadeQu.clear();
- }
+//  if ( !eliadeQu.empty()) 
+//  {
+//     eliadeQu.clear();
+//  }
 
 
 //    TString option = GetOption();
@@ -372,6 +375,7 @@ void DelilaSelector::SlaveBegin(TTree * /*tree*/)
     
     lastEliadeEvent.fTimeStamp = 0;
     lastEliadeZeroEvent.fTimeStamp = 0;
+    outputQu.clear();
     
     /*std::map<UInt_t, TEliadeEvent> ::iterator it__ = LUT_ELIADE.begin();
     for (; it__ != LUT_ELIADE.end(); ++it__) {
@@ -464,10 +468,10 @@ Bool_t DelilaSelector::Process(Long64_t entry)
      if (CS){
          
          
-            if (coincQu_cores.empty()){coincQu_cores.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
+            if (coincQu_CS.empty()){coincQu_CS.push_back(EliadeEvent);/*std::cout<<"Empty Coic \n";*/}
          else
          {
-             int time_diff = EliadeEvent.fTimeStamp - coincQu_cores.front().fTimeStamp;
+             int time_diff = EliadeEvent.fTimeStamp - coincQu_CS.front().fTimeStamp;
 //                std::cout<<time_diff<<" time_diff \n";
             // hTimeDiffCoreCore->Fill(time_diff);
 //              hTimeDiffCeBrCebr->Fill(time_diff);
@@ -475,20 +479,20 @@ Bool_t DelilaSelector::Process(Long64_t entry)
 
              if (std::abs(time_diff) < 40) 
              {
-                 coincQu_cores.push_back(EliadeEvent);
+                 coincQu_CS.push_back(EliadeEvent);
              }
              else
              {
-                std::deque<TEliadeEvent>  ::iterator it1__ = coincQu_cores.begin();
-                std::deque<TEliadeEvent>  ::iterator it2__ = coincQu_cores.begin(); 
-                for (; it1__ != coincQu_cores.end(); ++it1__){
-                  for (; it2__ != coincQu_cores.end(); ++it2__){
+                std::deque<TEliadeEvent>  ::iterator it1__ = coincQu_CS.begin();
+                std::deque<TEliadeEvent>  ::iterator it2__ = coincQu_CS.begin(); 
+                for (; it1__ != coincQu_CS.end(); ++it1__){
+                  for (; it2__ != coincQu_CS.end(); ++it2__){
                       time_diff = it1__->fTimeStamp - it2__->fTimeStamp;
                       mTimeCalib->Fill(it1__->domain*100+it2__->domain ,time_diff); 
                   };
                 };
-                coincQu_cores.clear();
-                coincQu_cores.push_back(EliadeEvent);
+                coincQu_CS.clear();
+                coincQu_CS.push_back(EliadeEvent);
              }
          }
          
@@ -509,7 +513,15 @@ Bool_t DelilaSelector::Process(Long64_t entry)
 //                      if (EliadeEvent.det_def == 5){
                         if (it1__->det_def == 3){EliadeEventCS =  *it1__;outputTree->Fill();
                             if (it1__->CS == 0 ){
-                                mEliadeCS->Fill(it1__->cs_domain,it1__->EnergyCal);hEliadeCS->Fill(it1__->EnergyCal);
+                                mEliadeCS->Fill(it1__->cs_domain,it1__->EnergyCal);//hEliadeCS->Fill(it1__->EnergyCal);
+                                
+//                                 std::deque<TEliadeEvent>  ::iterator it_out__ = outputQu.begin();
+//                                         for (; it1__ != outputQu.end();++it_out__){
+//                                             if 
+//                                         };
+
+
+                                
                                 double time_diff = it1__->fTimeStamp - lastTime;
                                 if (time_diff<0){std::cout<<time_diff<<"\n";};
                                 lastTime=it1__->fTimeStamp;};
