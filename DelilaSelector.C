@@ -513,17 +513,17 @@ Bool_t DelilaSelector::Process(Long64_t entry)
 //                      if (EliadeEvent.det_def == 5){
                         if (it1__->det_def == 3){EliadeEventCS =  *it1__;outputTree->Fill();
                             if (it1__->CS == 0 ){
-                                mEliadeCS->Fill(it1__->cs_domain,it1__->EnergyCal);//hEliadeCS->Fill(it1__->EnergyCal);
+                                mEliadeCS->Fill(it1__->cs_domain,it1__->EnergyCal);hEliadeCS->Fill(it1__->EnergyCal);
+                                
+                                
+                                output_pQu.push(*it1__);
                                 
 //                                 std::deque<TEliadeEvent>  ::iterator it_out__ = outputQu.begin();
 //                                         for (; it1__ != outputQu.end();++it_out__){
 //                                             if 
 //                                         };
-
-
-                                
-                                double time_diff = it1__->fTimeStamp - lastTime;
-                                if (time_diff<0){std::cout<<time_diff<<"\n";};
+                                double time_diff1 = it1__->fTimeStamp - lastTime;
+                                if (time_diff1<0){std::cout<<time_diff1<<"\n";};
                                 lastTime=it1__->fTimeStamp;};
                         };
                         
@@ -571,10 +571,27 @@ void DelilaSelector::Terminate()
    // a query. It always runs on the clieint coreID, nt, it can be used to present
    // the results graphically or save the results to file.
 
-  std::cout<<"I  will terminate soon... "<<std::endl;   
-//  CheckSorting(eliadeQu);
-
+  std::cout<<"I  will terminate soon... "<<std::endl;  
   
+  
+      while (!output_pQu.empty()) {
+//         Person p = Q.top();
+//         Q.pop();
+        cout << output_pQu.top().fTimeStamp<< " " << output_pQu.top().fTimeStamp<< "\n";
+        output_pQu.top().pop();
+    }
+  
+  
+//  CheckSorting(eliadeQu);
+//     priority_queue<TEliadeEvent, vector<TEliadeEvent>, CompareTimeStamp>::iterator it_out__ = output_pQu.begin();
+    
+    
+
+//       std::deque<TEliadeEvent>  ::iterator it_out__ = outputQu.begin();
+//                                          for (; it1__ != outputQu.end();++it_out__){
+//                                              if 
+//                                          };
+      
   //std::sort(((eliadeQu.begin()).fTimeStamp, (eliadeQu.end()).fTimeStamp);
   
 
