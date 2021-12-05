@@ -28,7 +28,7 @@ do
  done
 
 # rootcommand=Chain_selector.C"($runnb,$runnb,$volume1,$volnb)"
- rootcommand=Rosphere_selector.C+"($runnb,$runnb,$volume1,$volume2)"  
+ rootcommand=Delila_selector.C+"($runnb,$runnb,$volume1,$volume2)"  
 
  root -l -b -q $rootcommand
  
