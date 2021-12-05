@@ -11,7 +11,7 @@ using namespace std;
 void Rosphere_selector(UInt_t first_run=195,  UInt_t last_run=195, UInt_t vol0=1, UInt_t vol1=1){
 
  
- std::cout<<" Chain_selector.C is running "<<std::endl;
+ std::cout<<" Rosphere_selector.C is running "<<std::endl;
  std::cout<<" vol0 "<<vol0<<" vol1 "<<vol1<<std::endl;
   
  //UInt_t last_run = first_run;
@@ -27,9 +27,9 @@ void Rosphere_selector(UInt_t first_run=195,  UInt_t last_run=195, UInt_t vol0=1
 
         std::stringstream ifile;
 //        ifile<<Form("/eliadedisks/s%i/root_files/run%s_%s_eliadeS%i.root", serverID, szRun.c_str(),szVol.c_str(),serverID);
-              ifile<<Form("/rosphere/ROSPHERE/DELILA/selector_files/selected_run%s_%s.root",  szRun.c_str(),szVol.c_str());
+              ifile<<Form("~/live/work/ELI/data/selector_files/selected_run%s_%s.root",  szRun.c_str(),szVol.c_str());
         std::cout<<"File "<<ifile.str().c_str()<<std::endl;  
-        ch->Add(Form("/rosphere/ROSPHERE/DELILA/selector_files/selected_run_%s_%s.root",  szRun.c_str(),szVol.c_str()));
+        ch->Add(Form("~/live/work/ELI/data/selector_files/selected_run_%s_%s.root",  szRun.c_str(),szVol.c_str()));
          
         std::ostringstream options;
         options<<run<<","<<vol<<","<<","<<","<<0<<","<<"0";

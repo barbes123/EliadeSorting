@@ -424,7 +424,17 @@ Bool_t DelilaSelector::Process(Long64_t entry)
 //        if (mod > 7) return kTRUE;
 	
 	//int num = 100*current_clover+(mod)*10+ch;
-        int daq_ch = (mod)*100+ch;
+    int daq_ch = (mod)*100+ch;
+ 	hChannelHit->Fill(daq_ch);
+//     if (LUT_ELIADE(daq_ch))
+    
+    std::map<unsigned int, TEliadeDetector >::iterator it = LUT_ELIADE.find(daq_ch);
+    if(it == LUT_ELIADE.end()){return kTRUE;};
+
+    
+    
+    
+    
 	EliadeEvent.channel = daq_ch;
 	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, daq_ch);
 	EliadeEvent.domain = LUT_ELIADE[daq_ch].dom;
@@ -442,7 +452,6 @@ Bool_t DelilaSelector::Process(Long64_t entry)
 	int domain = EliadeEvent.domain;
     if ((EliadeEvent.fEnergy < LUT_ELIADE[daq_ch].upperThreshold))  {/*std::cout<<EliadeEvent.fEnergy<< " "<< LUT_ELIADE[daq_ch].upperThreshold<<std::endl; */return kTRUE;}
             
-   	hChannelHit->Fill(daq_ch);
   	hDomainHit->Fill(domain);
 	mEliade_raw->Fill(domain,EliadeEvent.fEnergy);
 	mEliade->Fill(domain,EliadeEvent.EnergyCal);
@@ -456,9 +465,9 @@ Bool_t DelilaSelector::Process(Long64_t entry)
        else if (EliadeEvent.det_def == 2) {mSegments->Fill(domain, EliadeEvent.EnergyCal);};
     //Check Pulser TimeAlignment
        if (EliadeEvent.det_def == 9){
-            int time_diff_pulser = EliadeEvent.fTimeStamp - lastTime_pulser;
+         /*   int time_diff_pulser = EliadeEvent.fTimeStamp - lastTime_pulser;
             mPulser0TimeDiff->Fill(EliadeEvent.domain, time_diff_pulser);
-            if (EliadeEvent.domain == 150) lastTime_pulser = EliadeEvent.fTimeStamp;        
+            if (EliadeEvent.domain == 150) lastTime_pulser = EliadeEvent.fTimeStamp;*/        
             return kTRUE;
            
         }; 
@@ -500,23 +509,41 @@ Bool_t DelilaSelector::Process(Long64_t entry)
         if (EliadeEvent.det_def==3) hEliade->Fill(EliadeEvent.EnergyCal);
         std::deque<TEliadeEvent>  ::iterator it1__ = waitingQu[EliadeEvent.cs_domain].begin();
         for (; it1__ != waitingQu[EliadeEvent.cs_domain].end();){
-                    int time_diff = EliadeEvent.fTimeStamp - it1__->fTimeStamp;
-                      if ((EliadeEvent.det_def == 3)&&(it1__->det_def == 5)){mTimeDiffCS->Fill(EliadeEvent.cs_domain,time_diff);}
-                         else if ((EliadeEvent.det_def == 5)&&(it1__->det_def == 3)/*&&(it1__->det_def == 0)*/){mTimeDiffCS->Fill(it1__->cs_domain*(-1),time_diff);};
+                    int time_diff_cs_gamma = EliadeEvent.fTimeStamp - it1__->fTimeStamp;
+                      if ((EliadeEvent.det_def == 3)&&(it1__->det_def == 5)){mTimeDiffCS->Fill(EliadeEvent.cs_domain,time_diff_cs_gamma);}
+                         else if ((EliadeEvent.det_def == 5)&&(it1__->det_def == 3)/*&&(it1__->det_def == 0)*/){mTimeDiffCS->Fill(it1__->cs_domain,time_diff_cs_gamma*(-1));};
                     
                     
-                    if (time_diff<=40) {
-                        if ((EliadeEvent.det_def == 3)&&(it1__->det_def == 5)){EliadeEventCS.CS=1;}
+                    if (time_diff_cs_gamma<=40) {
+                        if ((EliadeEvent.det_def == 3)&&(it1__->det_def == 5)){EliadeEvent.CS=1;}
                         else if ((EliadeEvent.det_def == 5)&&(it1__->det_def == 3))it1__->CS=1;
                          ++it1__;}
                     else{
 //                      if (EliadeEvent.det_def == 5){
-                        if (it1__->det_def == 3){EliadeEventCS =  *it1__;outputTree->Fill();
+                        if (it1__->det_def == 3){
+//                             EliadeEventCS =  *it1__;//(?) why i neede it?
+//                            
+                            
+                                  
+                           output_pQu.push(*it1__);
+//                            std::cout << output_pQu.size()<< " size \n";
+
+                                
+                            if (output_pQu.size()>2000000) //Write to file in order not to keep to big queue in the memory
+                            {
+                               int i = 1; 
+                               while ((!output_pQu.empty())&&(i<1000000)) {
+//                                 cout << output_pQu.top().fTimeStamp<< " 555 " << output_pQu.top().fTimeStamp<< "\n";
+                                EliadeEventCS =  output_pQu.top();
+                                outputTree->Fill();
+                                output_pQu.pop();
+                                i++;
+                                };
+                             };
+                            
+                            
                             if (it1__->CS == 0 ){
                                 mEliadeCS->Fill(it1__->cs_domain,it1__->EnergyCal);hEliadeCS->Fill(it1__->EnergyCal);
-                                
-                                
-                                output_pQu.push(*it1__);
                                 
 //                                 std::deque<TEliadeEvent>  ::iterator it_out__ = outputQu.begin();
 //                                         for (; it1__ != outputQu.end();++it_out__){
@@ -570,17 +597,26 @@ void DelilaSelector::Terminate()
    // The Terminate() function is the last function to be called during
    // a query. It always runs on the clieint coreID, nt, it can be used to present
    // the results graphically or save the results to file.
+    
+  //finish filling the Tree if the queue was not empty   
+    while ((!output_pQu.empty())) {
+//      cout << output_pQu.top().fTimeStamp<< " " << output_pQu.top().fTimeStamp<< " 111 \n";
+     EliadeEventCS =  output_pQu.top();
+     outputTree->Fill();
+     output_pQu.pop();
+  }; 
+    
 
   std::cout<<"I  will terminate soon... "<<std::endl;  
   
-  
+/*  
       while (!output_pQu.empty()) {
 //         Person p = Q.top();
 //         Q.pop();
         cout << output_pQu.top().fTimeStamp<< " " << output_pQu.top().fTimeStamp<< "\n";
-        output_pQu.top().pop();
+        output_pQu.pop();
     }
-  
+  */
   
 //  CheckSorting(eliadeQu);
 //     priority_queue<TEliadeEvent, vector<TEliadeEvent>, CompareTimeStamp>::iterator it_out__ = output_pQu.begin();

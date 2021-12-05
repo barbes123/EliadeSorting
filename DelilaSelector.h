@@ -231,7 +231,7 @@ public :
     {
         // return "true" if "p1" is ordered
         // before "p2", for example:
-        return ev1.fTimeStamp< ev2.fTimeStamp;
+        return ev1.fTimeStamp> ev2.fTimeStamp;
         }
     };
     
