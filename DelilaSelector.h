@@ -57,6 +57,9 @@
 #include <stdio.h>      /* printf */
 #include <stdlib.h>     /* getenv */
 #include <map>
+#include <functional>
+#include <queue>
+#include <vector>
 
 //#include "TObjString.h."
 // Headers needed by this particular selector
@@ -223,6 +226,30 @@ public :
    ClassDef(DelilaSelector,0);
    
    
+   struct CompareTimeStamp{
+   bool operator()(TEliadeEvent const& ev1, TEliadeEvent const& ev2)
+    {
+        // return "true" if "p1" is ordered
+        // before "p2", for example:
+        return ev1.fTimeStamp< ev2.fTimeStamp;
+        }
+    };
+    
+    priority_queue<TEliadeEvent, vector<TEliadeEvent>, CompareTimeStamp> output_pQu;
+ 
+// bool operator<(const TEliadeEvent& ev1, const TEliadeEvent& ev2)
+// {
+//  
+//     // this will return true when second person
+//     // has greater height. Suppose we have p1.height=5
+//     // and p2.height=5.5 then the object which
+//     // have max height will be at the top(or
+//     // max priority)
+//     return ev1.fTimeStamp < ev2.fTimeStamp;
+// }   
+   
+   
+//    DelilaSelector& operator<(const TEliadeEvent& ev1, const TEliadeEvent& ev2);
 //     bool friend operator<(const TEliadeEvent& ev1, const TEliadeEvent& ev2);//{return ev1.TimeStamp < ev2.TimeStamp;}
      // this will return true when second person
     // has greater height. Suppose we have p1.height=5
@@ -273,3 +300,4 @@ Bool_t DelilaSelector::Notify()
 // R G // 2 1
 // W B // 3 0
 // B0 G1 R2 W3
+
