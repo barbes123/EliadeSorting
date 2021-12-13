@@ -78,7 +78,7 @@ void DelilaSelector::Read_ELIADE_LookUpTable() {
 
 
   std::stringstream LUTFile;
-  LUTFile << pLUT_Path <<"/"<<"LUT_ELIADE.dat";
+  LUTFile << pLUT_Path <<"/"<<"LUT_DELILA.dat";
   //LUTFile << LUT_Directory << "LUT_ELIADE.dat";
   const int nbr_of_ch = 200;
   std::ifstream lookuptable(LUTFile.str().c_str());

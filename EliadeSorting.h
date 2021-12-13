@@ -135,7 +135,8 @@ public :
 
  
  
-  TEliadeEvent EliadeEvent;  
+  TEliadeEvent EliadeEvent;
+  TEliadeEvent PulserEvent;  
   TEliadeEvent EliadeEventCS;
   TEliadeEvent lastEliadeEvent;  
   TEliadeEvent lastEliadeZeroEvent;  
@@ -253,6 +254,7 @@ public :
    virtual void AddBackCoreDA();//3 and 0
    virtual int CheckTimeAlignment(int to_domain);
    virtual int  CoreSegmentHitID(std::deque<TEliadeEvent>, int coincID);
+   virtual void CheckPulserAllignement(int zero_dom);
    
 
    ClassDef(EliadeSorting,0);

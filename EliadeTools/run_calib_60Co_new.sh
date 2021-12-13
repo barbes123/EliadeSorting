@@ -6,11 +6,8 @@
 FIRSTdomain=$1
 LASTdomain=$2
 activityCo60=$3
-<<<<<<< HEAD
+#$activityCs137=$3
 
-=======
-//activityCs137=$3
->>>>>>> 025dec88d4710b5c986fc29d95fd6bca13c145c8
 
 CUR_DIR=$(pwd)
 cd $CUR_DIR
@@ -73,8 +70,8 @@ do
  
  if [[ "$domnb" == "109" ]] ||  [[ "$domnb" == "119" ]]||  [[ "$domnb" == "129" ]]||  [[ "$domnb" == "139" ]];
  then
-  lim1=600
-  lim2=1600
+  lim1=1600
+  lim2=2300
   fwhm=4
   ampl=100
   echo "changed for core $domnb"
@@ -156,6 +153,11 @@ awk -F " " '{ print $1 " " $5 " " $9 " " $6 " " $7 " " $7/$6*$9 " [keV]; eff [%]
 
 rm Co60.temp
 rm data.calib
+
+grep '1332.513' resolution.txt >> resolution_1332.txt
+grep '1173.238' resolution.txt >> resolution_1173.txt
+
+
 
 # case  $DIST in
 # ##########################################################################################################

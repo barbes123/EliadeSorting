@@ -39,15 +39,6 @@ int addBackMode = 1; //0 - no addback; 1- addback
 bool Trigger = false;
 bool CS = true;
 
-//TString LUT_Directory = "/data/live/IT/dsoft/EliadeSorting/";
-//TString LUT_Directory = "/home/eliade/EliadeSorting/";
-
-// TString LUT_Directory = "/home/eliade/EliadeSorting/";
-//TString LUT_Directory = "/home/testov/EliadeSorting/";
-//TString LUT_Directory = "/home/work/EliadeSorting/";
-//TString LUT_Directory = "~/EliadeSorting/";
-
-
 bool debug = false;
 // bool doCS = false;
 
@@ -60,7 +51,6 @@ const int max_mod = 7;
 const int nbr_of_boards = 8;
 const int nbr_of_ch = 200;
 // const int zero_channel = 101; //for time allignement
-ULong64_t lastTime_pulser = 0;
 ULong64_t lastTime_dom0 = 0;
 ULong64_t lastTimeStamp = 0;
 
@@ -393,15 +383,15 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    mEliade->GetYaxis()->SetTitle("keV");
    fOutput->Add(mEliade);
    
-   mLaBr_raw = new TH2F("mLaBr_raw", "mLaBr_raw", max_domain, 0, max_domain, 16384, -0.5, 16383.5);
-   mLaBr_raw->GetXaxis()->SetTitle("domain");
-   mLaBr_raw->GetYaxis()->SetTitle("ADC channels");   
-   fOutput->Add(mLaBr_raw);
-   
-   mLaBr_kev = new TH2F("mLaBr_kev", "mLaBr_kev", max_domain, 0, max_domain, 16384, -0.5, 16383.5);
-   mLaBr_kev->GetXaxis()->SetTitle("domain");
-   mLaBr_kev->GetYaxis()->SetTitle("keV");
-   fOutput->Add(mLaBr_kev);
+//    mLaBr_raw = new TH2F("mLaBr_raw", "mLaBr_raw", max_domain, 0, max_domain, 16384, -0.5, 16383.5);
+//    mLaBr_raw->GetXaxis()->SetTitle("domain");
+//    mLaBr_raw->GetYaxis()->SetTitle("ADC channels");   
+//    fOutput->Add(mLaBr_raw);
+//    
+//    mLaBr_kev = new TH2F("mLaBr_kev", "mLaBr_kev", max_domain, 0, max_domain, 16384, -0.5, 16383.5);
+//    mLaBr_kev->GetXaxis()->SetTitle("domain");
+//    mLaBr_kev->GetYaxis()->SetTitle("keV");
+//    fOutput->Add(mLaBr_kev);
    
    mEliadeCS = new TH2F("mEliadeCS", "mEliadeCS", max_domain, 0, max_domain, 16384, -0.5, 16383.5);
    mEliadeCS->GetXaxis()->SetTitle("domain");
@@ -449,7 +439,7 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    mDom0TimeDiffEnergy = new TH2F("mDom0TimeDiffEnergy", "mDom0TimeDiffEnergy",16384, -0.5, 16383.5, 500, -99.5, 899.5);
    fOutput->Add(mDom0TimeDiffEnergy);//time_diff relevant to the 1st channel (101), i.e. ch 101 is a trigger
    
-   mPulser0TimeDiff = new TH2F("mPulser0TimeDiff", "mPulser0TimeDiff", 200, 0.5, 200.5, 500, -99.5, 899.5);
+   mPulser0TimeDiff = new TH2F("mPulser0TimeDiff", "mPulser0TimeDiff", 300, 0.5, 300.5, 4000, -99.5, 7899.5);
    fOutput->Add(mPulser0TimeDiff);//time_diff relevant to the 1st channel (101), i.e. ch 101 is a trigger
        
    mZeroTimeDiff_vs_Enegy = new TH2F("mZeroTimeDiff_vs_Enegy", "mZeroTimeDiff_vs_Enegy", 16384, -0.5, 16383.5, 1000, -99.5, 899.5);
@@ -508,6 +498,9 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
     lastEliadeEvent.fTimeStamp = 0;
     lastEliadeZeroEvent.fTimeStamp = 0;
     
+    
+    PulserEvent.fTimeStamp = 0;
+    
     /*std::map<UInt_t, TEliadeEvent> ::iterator it__ = LUT_ELIADE.begin();
     for (; it__ != LUT_ELIADE.end(); ++it__) {
     //      particle_id[it__->second] = it__->first;
@@ -561,7 +554,13 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 //        if (mod > 7) return kTRUE;
 	
 	//int num = 100*current_clover+(mod)*10+ch;
-        int daq_ch = (mod)*100+ch;
+    int daq_ch = (mod)*100+ch;
+    hChannelHit->Fill(daq_ch);
+      
+    std::map<unsigned int, TEliadeDetector >::iterator it = LUT_ELIADE.find(daq_ch);
+    if(it == LUT_ELIADE.end()){return kTRUE;};
+    
+    
 	EliadeEvent.channel = daq_ch;
 	EliadeEvent.EnergyCal = CalibDet(EliadeEvent.fEnergy, daq_ch);
 	EliadeEvent.domain = LUT_ELIADE[daq_ch].dom;
@@ -580,7 +579,6 @@ Bool_t EliadeSorting::Process(Long64_t entry)
 	int domain = EliadeEvent.domain;
     if ((EliadeEvent.fEnergy < LUT_ELIADE[daq_ch].upperThreshold))  {/*std::cout<<EliadeEvent.fEnergy<< " "<< LUT_ELIADE[daq_ch].upperThreshold<<std::endl; */return kTRUE;}
             
-   	hChannelHit->Fill(daq_ch);
   	hDomainHit->Fill(domain);
 	mEliade_raw->Fill(domain,EliadeEvent.fEnergy);
 	mEliade->Fill(domain,EliadeEvent.EnergyCal);
@@ -599,12 +597,10 @@ Bool_t EliadeSorting::Process(Long64_t entry)
     
     //Check Pulser TimeAlignment
        if (EliadeEvent.det_def == 9){
-            int time_diff_pulser = EliadeEvent.fTimeStamp - lastTime_pulser;
-            mPulser0TimeDiff->Fill(EliadeEvent.domain, time_diff_pulser);
-            if (EliadeEvent.domain == 150) lastTime_pulser = EliadeEvent.fTimeStamp;        
-            return kTRUE;
-           
-        } else if (EliadeEvent.det_def == 1)
+           CheckPulserAllignement(50);
+           return kTRUE;
+        };
+       if (EliadeEvent.det_def == 1)
           {
    //Check Eliade TimeAlignment
             int time_diff_dom0 = EliadeEvent.fTimeStamp - lastTime_dom0;
@@ -1104,10 +1100,22 @@ void EliadeSorting::Terminate()
             }
         };
         
-        outputTree->Write();
+//         outputTree->Write();
    
 
 }
+
+void EliadeSorting::CheckPulserAllignement(int zero_dom)
+{
+   int time_diff_pulser;
+   int cur_dom = EliadeEvent.domain;
+   if (cur_dom != zero_dom){
+       time_diff_pulser =  EliadeEvent.fTimeStamp - PulserEvent.fTimeStamp;
+       mPulser0TimeDiff->Fill(EliadeEvent.domain, time_diff_pulser);
+   }else PulserEvent = EliadeEvent;
+   return;
+}
+
 
 int EliadeSorting::CheckTimeAlignment(int to_domain)
 {
