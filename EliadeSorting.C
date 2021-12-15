@@ -439,7 +439,8 @@ void EliadeSorting::SlaveBegin(TTree * /*tree*/)
    mDom0TimeDiffEnergy = new TH2F("mDom0TimeDiffEnergy", "mDom0TimeDiffEnergy",16384, -0.5, 16383.5, 500, -99.5, 899.5);
    fOutput->Add(mDom0TimeDiffEnergy);//time_diff relevant to the 1st channel (101), i.e. ch 101 is a trigger
    
-   mPulser0TimeDiff = new TH2F("mPulser0TimeDiff", "mPulser0TimeDiff", 300, 0.5, 300.5, 4000, -99.5, 7899.5);
+//    mPulser0TimeDiff = new TH2F("mPulser0TimeDiff", "mPulser0TimeDiff", 300, 0.5, 300.5, 4000, -99.5, 7899.5);
+   mPulser0TimeDiff = new TH2F("mPulser0TimeDiff", "mPulser0TimeDiff", 300, 0.5, 300.5, 6000, -99.5, 59900.5);
    fOutput->Add(mPulser0TimeDiff);//time_diff relevant to the 1st channel (101), i.e. ch 101 is a trigger
        
    mZeroTimeDiff_vs_Enegy = new TH2F("mZeroTimeDiff_vs_Enegy", "mZeroTimeDiff_vs_Enegy", 16384, -0.5, 16383.5, 1000, -99.5, 899.5);
@@ -1112,6 +1113,8 @@ void EliadeSorting::CheckPulserAllignement(int zero_dom)
    if (cur_dom != zero_dom){
        time_diff_pulser =  EliadeEvent.fTimeStamp - PulserEvent.fTimeStamp;
        mPulser0TimeDiff->Fill(EliadeEvent.domain, time_diff_pulser);
+       if (EliadeEvent.domain == 57) std::cout<<" time_diff_pulser #50 - #57 "<<time_diff_pulser<<" \n";
+       if (EliadeEvent.domain == 51) std::cout<<" time_diff_pulser #50 - #51 "<<time_diff_pulser<<" \n";
    }else PulserEvent = EliadeEvent;
    return;
 }
