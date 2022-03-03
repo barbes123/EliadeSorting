@@ -39,7 +39,7 @@ using namespace std;
 bool blGammaGamma = false;
 bool blGammaGammaCS = true;
 bool blCS = true;
-bool blIsTrigger = true; //trigger signal is present
+bool blIsTrigger = false; //the trigger is open
 // bool blTriggerMode = false;//to reset the queues after each trigger - to be implemented
 bool blOutTree = true;
 // bool blTimeEnergy = false;
@@ -887,6 +887,12 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     mDelila_raw->Fill(domain,DelilaEvent.fEnergy);
     hDomainHit->Fill(domain);
     hDetTypeHit->Fill(DelilaEvent.det_def);
+   
+    DelilaEvent.EnergyCal = CalibDet(DelilaEvent.fEnergy, daq_ch);
+    
+    if ((DelilaEvent.EnergyCal < LUT_DELILA[daq_ch].threshold)&&(DelilaEvent.det_def < 9)) return kTRUE;
+    
+    
     DelilaEvent.cs_domain = LUT_DELILA[daq_ch].cs_dom;
     DelilaEvent.theta= LUT_DELILA[daq_ch].theta;
     DelilaEvent.phi= LUT_DELILA[daq_ch].phi;
@@ -1084,7 +1090,7 @@ void DelilaSelectorEliade::TreatDelilaEvent()
     UShort_t daq_ch = DelilaEvent.channel;
     UShort_t domain = DelilaEvent.domain;
     
-    DelilaEvent.EnergyCal = CalibDet(DelilaEvent.fEnergy, daq_ch);
+//     DelilaEvent.EnergyCal = CalibDet(DelilaEvent.fEnergy, daq_ch);
     double costheta = TMath::Cos(LUT_DELILA[daq_ch].theta);
     DelilaEvent.EnergyDC = DelilaEvent.EnergyCal*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
     
