@@ -36,10 +36,10 @@ using namespace std;
 
 
 ////////////////////////////////Please, modify if needed////////////////////////////////////////////
-bool blGammaGamma = true;
-bool blCS = true;
+bool blGammaGamma = false;
+bool blCS = false;
 bool blOutTree = true;
-bool blFold = true;
+bool blFold = false;
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 int addBackMode = 0; //0 - no addback; 1- addback;//not in use for ELIFANT
 bool blIsTrigger = false; //the trigger is open
