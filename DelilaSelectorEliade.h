@@ -129,7 +129,7 @@ public :
   std::map<int, double_t > LUT_TA_TRG;
 
   TDelilaEvent DelilaEvent;  
-  TDelilaEvent DelilaEventCS;
+  TDelilaEvent DelilaEventTreated ;
   TDelilaEvent lastDelilaEvent;  
   TDelilaEvent lastEliadeZeroEvent;
   TDelilaEvent LastTriggerEvent;
@@ -280,14 +280,16 @@ public :
    virtual void  Print_TimeAlignment_LookUpTable();
    virtual float CalibDet(float,int);
    virtual int GetCoincTimeCorrection(int dom1, int dom2);
-   virtual void cs();
+   virtual void cs()
    virtual void gamma_gamma();
    virtual void TreatDelilaEvent();
-   virtual void TreatFold(); 
+   virtual void TreatFold(int det); 
    virtual int GetCoincID(int dom1, int dom2);
    virtual int GetCoinc_det_def(int det_def1, int det_def2);
    virtual void CheckPulserAllignement(int zero_dom);
    virtual void PrintDelilaEvent(TDelilaEvent &ev_);
+   virtual void SetUpNewTrigger();
+   virtual void FillOutputTree();
  
 
    ClassDef(DelilaSelectorEliade,0);
@@ -311,18 +313,18 @@ void DelilaSelectorEliade::Init(TTree *tree)
    
   foutFile->cd();
   outputTree = new TTree("SelectedDelila","SelectedDelila");
-//   outputTree->Branch("fTEventTS",&DelilaEventCS.fTimeStamp,"TimeStamp/l");
-//   outputTree->Branch("fTEventFS",&DelilaEventCS.fTimeStampFS,"TimeStamp/D");
-  outputTree->Branch("fTimeBunch",&DelilaEventCS.TimeBunch,"TimeBunch/D");
-  outputTree->Branch("fTime",&DelilaEventCS.Time,"Time/D");
-  outputTree->Branch("fEnergy",&DelilaEventCS.fEnergy,"Energy/F");
-  outputTree->Branch("fEnergy_kev",&DelilaEventCS.EnergyCal,"Energy_kev/F");
-  outputTree->Branch("fEnergyDC",&DelilaEventCS.EnergyDC,"EnergyDC/F");
-  outputTree->Branch("fDomain",&DelilaEventCS.domain,"Domain/b");
-  outputTree->Branch("fDetType",&DelilaEventCS.det_def,"def/b");
-  outputTree->Branch("fCS",&DelilaEventCS.CS,"CS/b");
-  outputTree->Branch("fTRG",&DelilaEventCS.trg,"Trigger/b");
-  outputTree->Branch("fFold",&DelilaEventCS.fold,"Fold/b");
+//   outputTree->Branch("fTEventTS",&DelilaEventTreated .fTimeStamp,"TimeStamp/l");
+//   outputTree->Branch("fTEventFS",&DelilaEventTreated .fTimeStampFS,"TimeStamp/D");
+  outputTree->Branch("fTimeBunch",&DelilaEventTreated .TimeBunch,"TimeBunch/D");
+  outputTree->Branch("fTime",&DelilaEventTreated .Time,"Time/D");
+  outputTree->Branch("fEnergy",&DelilaEventTreated .fEnergy,"Energy/F");
+  outputTree->Branch("fEnergy_kev",&DelilaEventTreated .EnergyCal,"Energy_kev/F");
+  outputTree->Branch("fEnergyDC",&DelilaEventTreated .EnergyDC,"EnergyDC/F");
+  outputTree->Branch("fDomain",&DelilaEventTreated .domain,"Domain/b");
+  outputTree->Branch("fDetType",&DelilaEventTreated .det_def,"def/b");
+  outputTree->Branch("fCS",&DelilaEventTreated .CS,"CS/b");
+  outputTree->Branch("fTRG",&DelilaEventTreated .trg,"Trigger/b");
+  outputTree->Branch("fFold",&DelilaEventTreated .fold,"Fold/b");
 }
 
 Bool_t DelilaSelectorEliade::Notify()

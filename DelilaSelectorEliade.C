@@ -36,17 +36,13 @@ using namespace std;
 
 
 ////////////////////////////////Please, modify if needed////////////////////////////////////////////
-bool blGammaGamma = false;
-bool blGammaGammaCS = true;
+bool blGammaGamma = true;
 bool blCS = true;
-bool blIsTrigger = false; //the trigger is open
-// bool blTriggerMode = false;//to reset the queues after each trigger - to be implemented
 bool blOutTree = true;
-// bool blTimeEnergy = false;
-
-
+bool blFold = true;
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 int addBackMode = 0; //0 - no addback; 1- addback;//not in use for ELIFANT
+bool blIsTrigger = false; //the trigger is open
 // bool blTrigger = false;
 // double_t trigger_shift = 112969; //ps
 // double_t bunch_distance = 400000;//ps
@@ -892,7 +888,6 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     
     if ((DelilaEvent.EnergyCal < LUT_DELILA[daq_ch].threshold)&&(DelilaEvent.det_def < 9)) return kTRUE;
     
-    
     DelilaEvent.cs_domain = LUT_DELILA[daq_ch].cs_dom;
     DelilaEvent.theta= LUT_DELILA[daq_ch].theta;
     DelilaEvent.phi= LUT_DELILA[daq_ch].phi;
@@ -913,68 +908,38 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
           return kTRUE;
     };
     
-   if (DelilaEvent.domain == 99){//new trigger
-        hTriggerTrigger->Fill(DelilaEvent.Time - LastTriggerEvent.Time);
-        LastTriggerEvent = DelilaEvent;
-        LastBunchEvent = DelilaEvent;
-        
-        if (blCS) cs();
-        if (blGammaGamma) gamma_gamma();
-        TreatFold();
-        
-        hdelilaQu_size->Fill(delilaQu.size());
-        delilaQu.clear();
-        
-     
-        
-        nn_current_bunch = 0;
-        hEventsPerTrigger->Fill(trigger_events);   
-        trigger_events = 0;        
-        trigger_cnt++;
-        return kTRUE;        
-    }else {
-        trigger_events++;
-        //DelilaEvent.TimeBunch = DelilaEvent.Time - LastBunchEvent.Time;
-        DelilaEvent.TimeTrg = DelilaEvent.Time - LastTriggerEvent.Time;
-        int nn =  DelilaEvent.TimeTrg  / bunch_length;
-        DelilaEvent.TimeBunch = DelilaEvent.TimeTrg  - nn * bunch_length;
-
-
-        mDomainTimeDiff_trigger->Fill(DelilaEvent.domain,DelilaEvent.TimeTrg);
-        mDomainTimeDiff_bunch->Fill(DelilaEvent.domain,DelilaEvent.TimeBunch); 
-        hNBunch->Fill(nn);
-        
-        TreatDelilaEvent();
-           if (DelilaEvent.TimeBunch >= bunch_length){
-               if (blCS) cs();
-               if (blGammaGamma) gamma_gamma();
-               TreatFold();
-               hdelilaQu_size->Fill(delilaQu.size());
-               delilaQu.clear();
-               
-                if (DelilaEvent.TimeBunch < 0) std::cout<<"Warning  DelilaEvent.TimeBunch < 0 "<< DelilaEvent.TimeBunch <<" \n";
-                nn_current_bunch = nn;
-            };
-            
-            
-            if ((DelilaEvent.det_def == 3)||(DelilaEvent.det_def == 1)){
-                    mEnergy_time_diff[domain]->Fill(DelilaEvent.EnergyCal,DelilaEvent.TimeBunch);
-            }; 
-            
-            
-             if (DelilaEvent.TimeBunch < bunch_reset)
-             {
-                hTimeInBunch->Fill(DelilaEvent.TimeBunch);         
-                DelilaEvent.bunch = nn_current_bunch;
-                DelilaEvent.trg = trigger_cnt;
-                delilaQu.push_back(DelilaEvent);
-//                 if (DelilaEvent.det_def == 3) {
-//                     nfold++;
-//                     foldQu.push_back(DelilaEvent);
-//                 };
-             };
-    };
-    
+   TreatDelilaEvent();
+   //first core open the trigger if not open before;
+   if ((!blIsTrigger)&&(DelilaEvent.det_def == 1)) SetUpNewTrigger();
+   
+   if (blIsTrigger){
+       
+       double time_diff_trigger = DelilaEvent.Time - LastTriggerEvent.Time;
+       
+       delilaQu.push_back(DelilaEvent);
+       DelilaEvent.trg = trigger_cnt;
+       DelilaEvent.TimeBunch = time_diff_trigger;
+       
+       trigger_cnt++;
+       
+       if ((DelilaEvent.det_def == 3)||(DelilaEvent.det_def == 1)){
+           mEnergy_time_diff[domain]->Fill(DelilaEvent.EnergyCal,DelilaEvent.TimeBunch);
+        }; 
+       
+       if (time_diff_trigger > bunch_length){//close event
+           
+           if (blCS) cs();
+           if (blGammaGamma) gamma_gamma();
+           if (blFold) TreatFold();
+           if (blOutTree) FillOutputTree();
+           
+           hdelilaQu_size->Fill(delilaQu.size());
+           delilaQu.clear();
+           blIsTrigger = false;
+           
+           if (DelilaEvent.det_def == 1) SetUpNewTrigger();               
+       };
+   };
 
 
   if ((entry) % int(nb_entries / 100) == 0 || (entry) % 100000 == 0) {
@@ -994,7 +959,18 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
    return kTRUE;
 }
 
-void DelilaSelectorEliade::TreatFold()
+void DelilaSelectorEliade::FillOutputTree(){
+    
+ std::deque<TDelilaEvent>::iterator it_delila_ = delilaQu.begin();
+  for (; it_delila_!= delilaQu.end();++it_delila_){
+      DelilaEventTreated = *it_delila_;
+      outputTree->Fill();   
+  };
+  return;
+}
+
+
+void DelilaSelectorEliade::TreatFold(int det)
 {
    if (delilaQu.empty())return;
 //      Int_t fold_size = foldQu.size();
@@ -1002,20 +978,20 @@ void DelilaSelectorEliade::TreatFold()
      std::deque<TDelilaEvent>::iterator it_delila_ = delilaQu.begin();
 
      for (; it_delila_!= delilaQu.end();++it_delila_){
-         if (it_delila_->det_def == 3) nfold++;
+         if (it_delila_->det_def == det) nfold++;
         };
          
     hBunchFold->Fill(nfold);
     it_delila_ = delilaQu.begin();
      
      for (; it_delila_!= delilaQu.end();++it_delila_){
-         if (it_delila_->det_def == 3) {
+         if (it_delila_->det_def == det) {
              it_delila_->fold = nfold;
-             mFoldEnergy->Fill(nfold,it_delila_->EnergyCal);
-             if (blOutTree) {
-                DelilaEventCS = *it_delila_;                
-                outputTree->Fill();
-             };
+//              mFoldEnergy->Fill(nfold,it_delila_->EnergyCal);
+//              if (blOutTree) {
+//                 DelilaEventTreated = *it_delila_;                
+//                 outputTree->Fill();
+//              };
             };
         };
     nfold = 0;
@@ -1061,27 +1037,18 @@ void DelilaSelectorEliade::gamma_gamma()
         
 };
 
-// void DelilaSelectorEliade::TreatFold()//older version
-// {
-//    if (!foldQu.empty()){
-//      Int_t fold_size = foldQu.size();
-//      std::deque<TDelilaEvent>::iterator it_fold_ = foldQu.begin();
-// 
-//      for (; it_fold_ != foldQu.end();++it_fold_){
-//           mFoldEnergy->Fill(fold_size,it_fold_->EnergyCal);
-//            it_fold_->fold = fold_size;
-//            if (blOutTree) {
-//                 DelilaEventCS = *it_fold_;                
-//                 outputTree->Fill();
-//              };
-//          };
-//         
-//      };
-//     
-//     hBunchFold->Fill(nfold);
-//     nfold = 0;
-//     foldQu.clear();
-// }
+void DelilaSelectorEliade::SetUpNewTrigger(){
+
+    hTriggerTrigger->Fill(DelilaEvent.Time - LastTriggerEvent.Time);
+    LastTriggerEvent = DelilaEvent;
+    blIsTrigger = true;
+    delilaQu.push_back(DelilaEvent);
+    hEventsPerTrigger->Fill(trigger_events);
+    trigger_events = 0;
+    trigger_cnt++;
+    return;
+}
+
 
 
 void DelilaSelectorEliade::TreatDelilaEvent()
