@@ -104,11 +104,11 @@ void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
       if (oneline.empty())   continue; // ignore empty lines
       TDelilaDetector curDet;
       Float_t theta(-1.), phi(-1.);
-      int upperThreshold = 1e6;
+      int threshold = 1e6;
       std::istringstream is(oneline);
       if (debug) std::cout << is.str().c_str() << std::endl;
-//       is >> curDet.ch >> curDet.dom >> curDet.theta >> curDet.phi >> curDet.TimeOffset >> curDet.upperThreshold;
-      is >> curDet.ch >> curDet.dom >> curDet.detType >> curDet.serial >> curDet.TimeOffset >> curDet.theta >> curDet.phi >> curDet.upperThreshold >> curDet.cs_dom;
+//       is >> curDet.ch >> curDet.dom >> curDet.theta >> curDet.phi >> curDet.TimeOffset >> curDet.threshold;
+      is >> curDet.ch >> curDet.dom >> curDet.detType >> curDet.serial >> curDet.TimeOffset >> curDet.theta >> curDet.phi >> curDet.threshold >> curDet.cs_dom;
     //  std::cout<<" curDfalseet.ch  "<<curDet.ch <<" curDet.TimeOffset " <<curDet.TimeOffset<<std::endl;
       
       if (curDet.ch >= 0) {
@@ -306,8 +306,8 @@ void DelilaSelectorEliade::Print_ELIADE_LookUpTable()
     std::cout<<"Print_ELIADE_LookUpTable \n";		
     std::map<unsigned int, TDelilaDetector > ::iterator it__ = LUT_DELILA.begin();
     for (; it__ != LUT_DELILA.end(); ++it__) {
-     // is >> curDet.ch >> curDet.dom >> theta >> phi >> curDet.TimeOffset >> curDet.upperThreshold;
-	std::cout<<" Ch "<<LUT_DELILA[it__->first].ch<<" Dom "<< LUT_DELILA[it__->first].dom<<" "<< LUT_DELILA[it__->first].theta<<" "<< LUT_DELILA[it__->first].phi <<" offset "<< LUT_DELILA[it__->first].TimeOffset<<" Thr "<< LUT_DELILA[it__->first].upperThreshold<<" serial "<<LUT_DELILA[it__->first].serial<<" theta" <<LUT_DELILA[it__->first].theta<<" phi "<<LUT_DELILA[it__->first].phi <<" cs_dom: "<<LUT_DELILA[it__->first].cs_dom<<" pol_order: " <<LUT_DELILA[it__->first].pol_order <<std::endl;
+     // is >> curDet.ch >> curDet.dom >> theta >> phi >> curDet.TimeOffset >> curDet.threshold;
+	std::cout<<" Ch "<<LUT_DELILA[it__->first].ch<<" Dom "<< LUT_DELILA[it__->first].dom<<" "<< LUT_DELILA[it__->first].theta<<" "<< LUT_DELILA[it__->first].phi <<" offset "<< LUT_DELILA[it__->first].TimeOffset<<" Thr "<< LUT_DELILA[it__->first].threshold<<" serial "<<LUT_DELILA[it__->first].serial<<" theta" <<LUT_DELILA[it__->first].theta<<" phi "<<LUT_DELILA[it__->first].phi <<" cs_dom: "<<LUT_DELILA[it__->first].cs_dom<<" pol_order: " <<LUT_DELILA[it__->first].pol_order <<std::endl;
     }
 };
 
@@ -316,7 +316,7 @@ void DelilaSelectorEliade::Print_TimeAlignment_LookUpTable()
     std::cout<<"Print_TimeAlignment_LookUpTable \n";		
     std::map<int, int > ::iterator it__ = LUT_TA.begin();
     for (; it__ != LUT_TA.end(); ++it__) {
-     // is >> curDet.ch >> curDet.dom >> theta >> phi >> curDet.TimeOffset >> curDet.upperThreshold;
+     // is >> curDet.ch >> curDet.dom >> theta >> phi >> curDet.TimeOffset >> curDet.threshold;
 	std::cout<<" coinc_id "<<it__->first<<" time_corr "<< it__->second<<std::endl;
     }
 };
@@ -930,7 +930,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
            
            if (blCS) cs();
            if (blGammaGamma) gamma_gamma();
-           if (blFold) TreatFold();
+           if (blFold) TreatFold(3);
            if (blOutTree) FillOutputTree();
            
            hdelilaQu_size->Fill(delilaQu.size());
