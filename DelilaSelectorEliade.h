@@ -210,11 +210,11 @@ public :
   std::map<int, TH2F*> mGG_DC_long;
   std::map<int, TH2F*> mGG_CS_DC_long;
   
-  std::map<int, TH2F*> mTimeDiff;
+//   std::map<int, TH2F*> mTimeDiff;
   std::map<int, TH1F*> hMult;
 
   std::map<UInt_t, std::string> gg_coinc_id;
-  std::map<UInt_t, UInt_t> coinc_gates;//in ps
+  std::map<UInt_t, Float_t> coinc_gates;//in ps
 
   
   std::map<int, std::string> domain_list;
@@ -242,7 +242,9 @@ public :
   TH1F* hTimeSort;
     
   TH2F* mTimeCalib;
-  TH2F* mTimeCalibDomain0;
+  TH2F* mTimeCalibBGO;
+//   TH2F* mTimeCalibDomain0;
+  
     
   std::clock_t start;
   double duration;
@@ -278,6 +280,8 @@ public :
    virtual void  Read_Confs();
    virtual void  Print_ELIADE_LookUpTable();
    virtual void  Print_TimeAlignment_LookUpTable();
+   virtual void  Print_TimeAlignment_Trigger_LookUpTable();
+
    virtual float CalibDet(float,int);
    virtual int GetCoincTimeCorrection(int dom1, int dom2);
    virtual void cs();
@@ -290,6 +294,8 @@ public :
    virtual void PrintDelilaEvent(TDelilaEvent &ev_);
    virtual void SetUpNewTrigger();
    virtual void FillOutputTree();
+   virtual void TimeAlignement();
+   virtual bool TriggerDecision();
  
 
    ClassDef(DelilaSelectorEliade,0);
