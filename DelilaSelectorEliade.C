@@ -1193,6 +1193,7 @@ void DelilaSelectorEliade::Terminate()
         
 //        outputTree->Write();
        foutFile->Close();
+       delilaQu.clear();
        
 //        std::cout<<"trigger_cnt "<<trigger_cnt<<std::endl;
    
