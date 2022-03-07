@@ -40,7 +40,7 @@ bool blGammaGamma = true;
 bool blCS = false;
 bool blOutTree = true;
 bool blFold = false;
-bool blTimeAlignement = true;
+bool blTimeAlignement = false;
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 int addBackMode = 0; //0 - no addback; 1- addback;//not in use for ELIFANT
 bool blIsTrigger = false; //the trigger is open
@@ -836,7 +836,8 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
     
   //std::stringstream OutputFile;
   OutputFile.str(std::string());
-  OutputFile << "selected_trg_run" << "_" << RunID <<"_"<<VolID;
+//   OutputFile << "selected_trg_run" << "_" << RunID <<"_"<<VolID;
+    OutputFile << "selected_run" << "_" << RunID <<"_"<<VolID;
   if (atoi(ServerID) != 0) {OutputFile<<"_eliadeS"<<ServerID;};
   OutputFile << ".root";
 //   std::cout <<"ServerID "<<ServerID<<" "<< OutputFile.str().c_str() <<std::endl;
