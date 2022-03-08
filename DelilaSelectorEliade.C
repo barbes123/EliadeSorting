@@ -45,13 +45,7 @@ bool blTimeAlignement = false;
 int addBackMode = 0; //0 - no addback; 1- addback;//not in use for ELIFANT
 bool blIsTrigger = false; //the trigger is open
 double lastDelilaTime = 0;
-// bool blTrigger = false;
-// double_t trigger_shift = 112969; //ps
-// double_t bunch_distance = 400000;//ps
-// bool blBunchIsValidated = true;
-// bool blBunch = true;
 bool blFirstTrigger = false;
-// bool blPulserTimeAllignement = false; // for normal use should be false
 double det_def_trg = 1;
 bool debug = false;
 
@@ -161,8 +155,9 @@ void DelilaSelectorEliade::Read_TimeAlignment_LookUpTable() {
   if (!lookuptable.good()) {
     std::ostringstream os;
     os << "Could not open " << LUTFile.str().c_str()
-       << " and I need it ;(\n";
-    Abort(os.str().c_str());
+    << " no time alignment will be done\n";
+//        << " and I need it ;(\n";
+//     Abort(os.str().c_str());
   } else {
     while (lookuptable.good()) {
       std::string oneline;
@@ -402,8 +397,8 @@ void DelilaSelectorEliade::Begin(TTree * tree)
   lastDelilaTime = 0;
   
   Read_ELIADE_LookUpTable();
-//   Read_TimeAlignment_LookUpTable();
-  Read_TimeAlignment_Trigger();
+  Read_TimeAlignment_LookUpTable();
+//   Read_TimeAlignment_Trigger();
   Read_Confs();
   
 //   Print_TimeAlignment_LookUpTable();
@@ -768,15 +763,17 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    mFoldEnergy->SetTitle("Fold vs Energy");
    fOutput->Add(mFoldEnergy);
    
-   mTimeCalib = new TH2F("mTimeCalib", "mTimeCalib", 10000, 0, 10000, 2e3, -1e6, 1e6);
+//    mTimeCalib = new TH2F("mTimeCalib", "mTimeCalib", 10000, 0, 10000, 2e3, -1e6, 1e6);
+   mTimeCalib = new TH2F("mTimeCalib", "mTimeCalib", 10000, 0, 10000, 4e3, -2e5, 2e5);
    mTimeCalib->GetXaxis()->SetTitle("coinc ID");
-   mTimeCalib->GetYaxis()->SetTitle("ps");
+   mTimeCalib->GetYaxis()->SetTitle("100 ps / bin");
    mTimeCalib->SetTitle("Sci time diff");
    fOutput->Add(mTimeCalib);
    
-   mTimeCalibBGO = new TH2F("mTimeCalibBGO", "mTimeCalibBGO", max_domain, 0, max_domain, 2e3, -1e6, 1e6);
+//    mTimeCalibBGO = new TH2F("mTimeCalibBGO", "mTimeCalibBGO", max_domain, 0, max_domain, 2e3, -1e6, 1e6);
+   mTimeCalibBGO = new TH2F("mTimeCalibBGO", "mTimeCalibBGO", max_domain, 0, max_domain, 4e3, -2e5, 2e5);
    mTimeCalibBGO->GetXaxis()->SetTitle("coinc ID");
-   mTimeCalibBGO->GetYaxis()->SetTitle("ps");
+   mTimeCalibBGO->GetYaxis()->SetTitle("100 ps / bin");
    mTimeCalibBGO->SetTitle("BGO - HPGe/LaBr time diff");
    fOutput->Add(mTimeCalibBGO);
    
@@ -937,8 +934,8 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      
      lastDelilaTime = fTimeStampFS;     
      
-     DelilaEvent.Time-=LUT_TA_TRG[DelilaEvent.domain];
-//      lastDelilaEvent = DelilaEvent;
+     //DelilaEvent.Time-=LUT_TA_TRG[DelilaEvent.domain]; //this is for the trigger version
+
           
     if (DelilaEvent.det_def == 9){//pulser
         CheckPulserAllignement(90);
@@ -1077,7 +1074,7 @@ void DelilaSelectorEliade::gamma_gamma()
                 it2_ = it_tmp_;
             };
             
-              double_t time_diff_gg = it1_->TimeBunch - it2_->TimeBunch;
+              double_t time_diff_gg = it1_->TimeBunch - it2_->TimeBunch - GetCoincTimeCorrection(it1_->domain, it2_->domain);
 //             double_t time_diff_gg = it1_->Time - it2_->Time;
             mGG_time_diff[coinc_id]->Fill(it1_->domain,time_diff_gg);
 //             std::cout<<" "<<time_diff_coinc<<" time_diff_coinc \n ";
@@ -1368,7 +1365,7 @@ void DelilaSelectorEliade::TimeAlignement()
            int coincID = GetCoinc_det_def(it1_->det_def,it2_->det_def);
 //            double time_diff_temp = it1_->Time - it2_->Time;
            //double time_diff_temp = delilaQu.front().Time - it2_->Time;
-           double time_diff_temp = LastTriggerEvent.Time - it2_->Time;
+           double time_diff_temp = it2_->Time - LastTriggerEvent.Time;// - ;
            
            switch (coincID) 
            {
