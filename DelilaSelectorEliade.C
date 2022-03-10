@@ -545,7 +545,9 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    detector_name[1]="HPGe";
    detector_name[2]="seg";
    detector_name[3]="LabBr";
-   detector_name[5]="BGO";
+   detector_name[4]="CsI";
+   detector_name[5]="BGOF";
+   detector_name[6]="BGOS";
    detector_name[9]="pulser";
    
    std::map<UInt_t, Float_t>::iterator it_c_gates_ =  coinc_gates.begin();
