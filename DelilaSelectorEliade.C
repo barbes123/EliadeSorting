@@ -36,11 +36,11 @@ using namespace std;
 
 
 ////////////////////////////////Please, modify if needed////////////////////////////////////////////
-bool blGammaGamma = true;
-bool blCS = false;
-bool blOutTree = true;
-bool blFold = false;
-bool blTimeAlignement = false;
+bool blGammaGamma       = false;
+bool blCS               = false;
+bool blOutTree          = false;
+bool blFold             = false;
+bool blTimeAlignement   = false;
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 int addBackMode = 0; //0 - no addback; 1- addback;//not in use for ELIFANT
 bool blIsTrigger = false; //the trigger is open
@@ -891,6 +891,18 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     DelilaEvent.channel = daq_ch;
  	hChannelHit->Fill(daq_ch);
     
+    //Check that daq_ch is defined in LUT
+//     bool check_daq_ch = false;
+//     std::map<unsigned, TDelilaDetector >::iterator it_daq_ch_ = LUT_DELILA.begin();
+//     for (;it_daq_ch_!= LUT_DELILA.end();++it_daq_ch_){
+//            if (LUT_DELILA[it_daq_ch_->first].ch == daq_ch){
+//              check_daq_ch = true;
+//              continue;
+//            };
+//            std::cout<<"i am here daq_ch  "<< daq_ch<<" it_daq_ch_->first "<<LUT_DELILA[it_daq_ch_->first].ch<<"\n";
+//     };
+//      if (!check_daq_ch) return kTRUE;
+    
      //Waiting for the first trigger to come
 //     if ((DelilaEvent.det_def == 99)&&(!blFirstTrigger)) {
 //        blFirstTrigger = true;
@@ -905,7 +917,8 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     //Check that daq_ch is defined in LUT
     std::map<unsigned int, TDelilaDetector >::iterator it = LUT_DELILA.find(daq_ch);
     if(it == LUT_DELILA.end()){return kTRUE;};
-    
+//     std::cout<<"i am here daq_ch  "<< daq_ch<<" it->first "<<LUT_DELILA[it->first].ch<<"\n";
+    if(LUT_DELILA[it->first].ch < 0){return kTRUE;};
     
     DelilaEvent.domain = LUT_DELILA[daq_ch].dom;   
     int domain = DelilaEvent.domain;
