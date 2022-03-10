@@ -1365,7 +1365,7 @@ void DelilaSelectorEliade::TimeAlignement()
            int coincID = GetCoinc_det_def(it1_->det_def,it2_->det_def);
 //            double time_diff_temp = it1_->Time - it2_->Time;
            //double time_diff_temp = delilaQu.front().Time - it2_->Time;
-           double time_diff_temp = it2_->Time - LastTriggerEvent.Time;// - ;
+           double time_diff_temp = it2_->Time - LastTriggerEvent.Time  - GetCoincTimeCorrection(it1_->domain, it2_->domain);
            
            switch (coincID) 
            {
