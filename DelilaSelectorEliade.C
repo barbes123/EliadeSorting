@@ -273,7 +273,7 @@ void DelilaSelectorEliade::Read_Confs() {
           };
           case 9999:{
                det_def_trg = value;
-               std::cout<<"det_def_trg  "<<det_def_trg<<" \n";
+//                std::cout<<"det_def_trg  "<<det_def_trg<<" \n";
               break;
           }
           default:
@@ -643,7 +643,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    
    if (itna->first == 11){//for core-core
 //     mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), 100, 0, 100, 10e3, -2e6, 2e6);//was tuned like that
-       mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 4e4, -2e6, 2e6);
+       mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 1e3, -5e6, 5e6);
 
    }else{
      mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 4e4, -2e6, 2e6);
