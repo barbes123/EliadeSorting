@@ -160,13 +160,13 @@ public :
 
   std::map<int, TH1F*> hDelila;
   std::map<int, TH1F*> hDelilaCS;
-  std::map<int, TH1F*> hDelilaDC;
-  std::map<int, TH1F*> hDelilaCS_DC;
+//   std::map<int, TH1F*> hDelilaDC;
+//   std::map<int, TH1F*> hDelilaCS_DC;
   
   std::map<int, TH1F*> hDelila_long;
   std::map<int, TH1F*> hDelilaCS_long;
-  std::map<int, TH1F*> hDelilaDC_long;
-  std::map<int, TH1F*> hDelilaCS_DC_long;
+//   std::map<int, TH1F*> hDelilaDC_long;
+//   std::map<int, TH1F*> hDelilaCS_DC_long;
 
   std::map<UInt_t, std::string> detector_name;
 
@@ -184,13 +184,13 @@ public :
   TH2F* mDelila_raw;
   TH2F* mDelilaCS;
   TH2F* mDelilaDC;//keV
-  TH2F* mDelilaCS_DC;//keV
+//   TH2F* mDelilaCS_DC;//keV
   
   TH2F* mDelila_long;
   TH2F* mDelila_raw_long;
   TH2F* mDelilaCS_long;
-  TH2F* mDelilaDC_long;//keV
-  TH2F* mDelilaCS_DC_long;//keV
+//   TH2F* mDelilaDC_long;//keV
+//   TH2F* mDelilaCS_DC_long;//keV
 
   TH2F* mGammaGammaDC;
   TH2F* mGammaGammaCS_DC;
@@ -201,14 +201,14 @@ public :
   
   std::map<int, TH2F*> mGG;
   std::map<int, TH2F*> mGG_CS;
-  std::map<int, TH2F*> mGG_DC;
-  std::map<int, TH2F*> mGG_CS_DC;
+//   std::map<int, TH2F*> mGG_DC;
+//   std::map<int, TH2F*> mGG_CS_DC;
   std::map<int, TH2F*> mGG_time_diff;
   
   std::map<int, TH2F*> mGG_long;
   std::map<int, TH2F*> mGG_CS_long;
-  std::map<int, TH2F*> mGG_DC_long;
-  std::map<int, TH2F*> mGG_CS_DC_long;
+//   std::map<int, TH2F*> mGG_DC_long;
+//   std::map<int, TH2F*> mGG/*_C*/S_DC_long;
   
 //   std::map<int, TH2F*> mTimeDiff;
   std::map<int, TH1F*> hMult;
