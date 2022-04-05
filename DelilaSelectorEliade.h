@@ -110,7 +110,7 @@ public :
   public:
     Int_t	 dom;
     Int_t	 ch;//ch daq
-    Int_t	 serial;
+    TString	 serial;
     Float_t  theta;
     Float_t	 phi;  
     UShort_t detType;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
@@ -230,7 +230,9 @@ public :
   TH2F* mTimeDiff_gg_CS;
   TH1F* hMult_gg_CS;
   
-  TH2F* mLaBr_LabBr_time_diff;
+//   TH2F* mLaBr_LabBr_time_diff;
+  
+  TH2F* mTS_FTS;
 
   
   TH2F *mPulser0TimeDiff;
@@ -239,12 +241,14 @@ public :
   TH2F* mPulserPulser;
   
   TH1F* hTimeZero;
-  TH1F* hTimeSort;
+  TH1F* hChargeZero;
+  TH1F* hTimeSort; 
+  TH1F* hCoincID;
+
     
   TH2F* mTimeCalib;
   TH2F* mTimeCalibBGO;
-//   TH2F* mTimeCalibDomain0;
-  
+//   TH2F* mTimeCalibDomain0;  
     
   std::clock_t start;
   double duration;
