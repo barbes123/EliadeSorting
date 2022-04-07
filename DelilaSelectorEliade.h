@@ -247,6 +247,7 @@ public :
 
     
   TH2F* mTimeCalib;
+  TH2F* mTimeCalibPulser;
   TH2F* mTimeCalibBGO;
 //   TH2F* mTimeCalibDomain0;  
     

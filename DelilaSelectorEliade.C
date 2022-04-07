@@ -40,7 +40,7 @@ bool blGammaGamma       = true;
 bool blCS               = false;
 bool blOutTree          = false;
 bool blFold             = false;
-bool blTimeAlignement   = false;
+bool blTimeAlignement   = true;
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 int addBackMode = 0; //0 - no addback; 1- addback;//not in use for ELIFANT
 bool blIsTrigger = false; //the trigger is open
@@ -243,7 +243,7 @@ void DelilaSelectorEliade::Read_Confs() {
       switch (coinc_id){
           case 1000: {
               bunch_length = value;
-//               std::cout<<"bunch_length "<<bunch_length<<" ps \n";
+              std::cout<<"event_length "<<bunch_length<<" ps \n";
               break;
           }
           case 1001:
@@ -254,19 +254,19 @@ void DelilaSelectorEliade::Read_Confs() {
           }
           case 1111:{
                beta = value;
-//                std::cout<<"Beta is "<<beta<<" % \n";
+               std::cout<<"Beta is "<<beta<<" % \n";
               break;
           };
           case 9999:{
                det_def_trg = value;
-//                std::cout<<"det_def_trg  "<<det_def_trg<<" \n";
+               std::cout<<"Trigger  "<<det_def_trg<<" \n";
               break;
           }
           default:
           {
               //LUT_CONF[coinc_id] = value;
               coinc_gates[coinc_id] = value;
-              std::cout<<coinc_name<<" coin_id " << coinc_id <<" value "<<value <<" ps \n";
+              std::cout<<coinc_name<<" gate[coin_id] " << coinc_id <<" value "<<value <<" ps \n";
               break;
           };
       };
@@ -307,8 +307,6 @@ void DelilaSelectorEliade::Print_TimeAlignment_Trigger_LookUpTable()
 	std::cout<<" coinc_id "<<it__->first<<" time_corr "<< it__->second<<std::endl;
     }
 };
-
-
 
 float DelilaSelectorEliade::CalibDet(float val, int ch)
 {
@@ -767,11 +765,18 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    fOutput->Add(mFoldEnergy);
    
 //    mTimeCalib = new TH2F("mTimeCalib", "mTimeCalib", 10000, 0, 10000, 2e3, -1e6, 1e6);
-   mTimeCalib = new TH2F("mTimeCalib", "mTimeCalib", 10000, 0, 10000, 4e3, -2e5, 2e5);
+//       mPulser0TimeDiff = new TH2F("mPulser0TimeDiff", "mPulser0TimeDiff", 100, 0.5, 100.5, 1e4, -5e5, 5e5);
+   mTimeCalib = new TH2F("mTimeCalib", "mTimeCalib", 10000, 0, 10000, 2e4, -1e6, 1e6);
    mTimeCalib->GetXaxis()->SetTitle("coinc ID");
    mTimeCalib->GetYaxis()->SetTitle("100 ps / bin");
-   mTimeCalib->SetTitle("Sci time diff");
+   mTimeCalib->SetTitle("domain time diff");
    fOutput->Add(mTimeCalib);
+   
+   mTimeCalibPulser = new TH2F("mTimeCalibPulser", "mTimeCalibPulser", 2000, 5000, 7000, 2e4, -1e6, 1e6);
+   mTimeCalibPulser->GetXaxis()->SetTitle("coinc ID");
+   mTimeCalibPulser->GetYaxis()->SetTitle("100 ps / bin");
+   mTimeCalibPulser->SetTitle("pulser time diff");
+   fOutput->Add(mTimeCalibPulser);
    
 //    mTimeCalibBGO = new TH2F("mTimeCalibBGO", "mTimeCalibBGO", max_domain, 0, max_domain, 2e3, -1e6, 1e6);
    mTimeCalibBGO = new TH2F("mTimeCalibBGO", "mTimeCalibBGO", max_domain, 0, max_domain, 4e3, -2e5, 2e5);
@@ -807,7 +812,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 //    fOutput->Add(mLaBr_LabBr_time_diff);
 
   // mPulser0TimeDiff = new TH2F("mPulser0TimeDiff", "mPulser0TimeDiff", 100, 0.5, 100.5, 2e5, -1e9, 1e9);
-   mPulser0TimeDiff = new TH2F("mPulser0TimeDiff", "mPulser0TimeDiff", 100, 0.5, 100.5, 1e5, -5e5, 5e5);
+   mPulser0TimeDiff = new TH2F("mPulser0TimeDiff", "mPulser0TimeDiff", 100, 0.5, 100.5, 1e4, -5e5, 5e5);
    mPulser0TimeDiff->GetXaxis()->SetTitle("domain");
    mPulser0TimeDiff->GetYaxis()->SetTitle("ps");
    mPulser0TimeDiff->SetTitle("PulsePulser time diff");
@@ -950,7 +955,6 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
 
      //Check if the tree is time sorted
      DelilaEvent.Time = fTimeStampFS;
-//      mTS_FTS->Fill(fTimeStamp, fTimeStampFS);
      
      double time_diff_last = DelilaEvent.Time - lastDelilaTime;
      //Check that the Tree is sorted in Time
@@ -959,7 +963,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      hTimeSort->Fill(time_diff_last);
      
      lastDelilaTime = fTimeStampFS; 
-     
+
      //Time alignment
      DelilaEvent.Time-=LUT_DELILA[daq_ch].TimeOffset;
           if (DelilaEvent.det_def == 9){//pulser
@@ -1399,7 +1403,14 @@ void DelilaSelectorEliade::TimeAlignement()
            
            switch (coincID) 
            {
-               case 11: case 12: case 13: case 33: case 99:{
+               case 11:{    
+                   int zdom1=(*it1_).domain/100;
+                   int zdom2=(*it2_).domain/100;
+//                    std::cout<<zdom1<<" "<<zdom2<<"\n";
+                   mTimeCalib->Fill(GetCoincID(zdom1, zdom2), time_diff_temp); 
+                   break;
+            }; 
+               case 12: case 13: case 33:{               
                    mTimeCalib->Fill(GetCoincID((*it1_).domain, (*it2_).domain), time_diff_temp); 
                    break;
             };             
@@ -1410,8 +1421,11 @@ void DelilaSelectorEliade::TimeAlignement()
                    if (it1_->cs_domain == it2_->cs_domain) mTimeCalibBGO->Fill(it1_->cs_domain, time_diff_temp);
                    break;
                };
+               case 99:{
+                   mTimeCalibPulser->Fill(GetCoincID((*it1_).domain, (*it2_).domain), time_diff_temp); 
+               };
                default:{
-                std::cout<<"Warning TimeAlignement unknown coincID "<<coincID<<" \n";   
+//                 std::cout<<"Warning TimeAlignement unknown coincID "<<coincID<<" \n";   
                }
             };
         };
@@ -1424,6 +1438,7 @@ void DelilaSelectorEliade::TimeAlignement()
 
 bool DelilaSelectorEliade::TriggerDecision()
 {
+   if (det_def_trg == 0) return true; 
    if (DelilaEvent.det_def == det_def_trg/1) return true;
 //   if (DelilaEvent.domain == 109 ) return true; 
   
