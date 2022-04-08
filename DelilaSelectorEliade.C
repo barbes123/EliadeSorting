@@ -766,13 +766,13 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    
 //    mTimeCalib = new TH2F("mTimeCalib", "mTimeCalib", 10000, 0, 10000, 2e3, -1e6, 1e6);
 //       mPulser0TimeDiff = new TH2F("mPulser0TimeDiff", "mPulser0TimeDiff", 100, 0.5, 100.5, 1e4, -5e5, 5e5);
-   mTimeCalib = new TH2F("mTimeCalib", "mTimeCalib", 10000, 0, 10000, 2e4, -1e6, 1e6);
+   mTimeCalib = new TH2F("mTimeCalib", "mTimeCalib", 10000, 0, 10000, 2e3, -1e6, 1e6);
    mTimeCalib->GetXaxis()->SetTitle("coinc ID");
    mTimeCalib->GetYaxis()->SetTitle("100 ps / bin");
    mTimeCalib->SetTitle("domain time diff");
    fOutput->Add(mTimeCalib);
    
-   mTimeCalibPulser = new TH2F("mTimeCalibPulser", "mTimeCalibPulser", 2000, 5000, 7000, 2e4, -1e6, 1e6);
+   mTimeCalibPulser = new TH2F("mTimeCalibPulser", "mTimeCalibPulser", 2000, 5000, 7000, 2e3, -1e6, 1e6);
    mTimeCalibPulser->GetXaxis()->SetTitle("coinc ID");
    mTimeCalibPulser->GetYaxis()->SetTitle("100 ps / bin");
    mTimeCalibPulser->SetTitle("pulser time diff");
