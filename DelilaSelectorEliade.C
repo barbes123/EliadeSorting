@@ -491,9 +491,15 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    hCoincID->SetTitle("CoincID");
    fOutput->Add(hCoincID);
    
+   hTriggerDomain= new TH1F("hTriggerDomain", "hTriggerDomain", 100,0,100);
+   hTriggerDomain->GetYaxis()->SetTitle("Counts");
+   hTriggerDomain->GetXaxis()->SetTitle("Trigger Domain");
+   hTriggerDomain->SetTitle("Trigger Domain");
+   fOutput->Add(hTriggerDomain);
    
    
-   hdelilaQu_size = new TH1F("hdelilaQu_size", "hdelilaQu_size", 20,0,20);
+   
+   hdelilaQu_size = new TH1F("hdelilaQu_size", "hdelilaQu_size", 200,0,200);
    hdelilaQu_size->GetXaxis()->SetTitle("size");
    hdelilaQu_size->GetYaxis()->SetTitle("counts");
    fOutput->Add(hdelilaQu_size);
@@ -966,7 +972,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
 
      //Time alignment
      DelilaEvent.Time-=LUT_DELILA[daq_ch].TimeOffset;
-          if (DelilaEvent.det_def == 9){//pulser
+     if (DelilaEvent.det_def == 9){//pulser
 //          std::cout<<"HERE: det_def "<<DelilaEvent.det_def<<"\n";
         CheckPulserAllignement(50);
 //         return kTRUE;
@@ -1005,13 +1011,13 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
          
            delilaQu.push_back(DelilaEvent);
            DelilaEvent.trg = trigger_cnt;
-           DelilaEvent.TimeBunch = time_diff_trigger;
+//            DelilaEvent.TimeBunch = time_diff_trigger;
        
 //        trigger_cnt++;
 //        if ((DelilaEvent.det_def == 3)||(DelilaEvent.det_def == 1)){
 //            mEnergy_time_diff[domain]->Fill(DelilaEvent.EnergyCal,DelilaEvent.TimeBunch);
-           if (blTimeAlignement) {TimeAlignement();}
-            else mTimeCalib->Fill(DelilaEvent.domain,DelilaEvent.TimeBunch);
+           if (blTimeAlignement) {TimeAlignement();};
+//             else mTimeCalib->Fill(DelilaEvent.domain,DelilaEvent.TimeBunch);
 //         }; 
        };
        
@@ -1127,7 +1133,8 @@ void DelilaSelectorEliade::SetUpNewTrigger(){
     hTriggerTrigger->Fill(DelilaEvent.Time - LastTriggerEvent.Time);
     LastTriggerEvent = DelilaEvent;
     blIsTrigger = true;
-//     delilaQu.push_back(DelilaEvent);
+    hTriggerDomain->Fill(DelilaEvent.domain);
+    delilaQu.push_back(DelilaEvent);
 //     hEventsPerTrigger->Fill(trigger_events);
 //     trigger_events = 0;
     trigger_cnt++;

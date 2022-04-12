@@ -244,6 +244,7 @@ public :
   TH1F* hChargeZero;
   TH1F* hTimeSort; 
   TH1F* hCoincID;
+  TH1F* hTriggerDomain;
 
     
   TH2F* mTimeCalib;
