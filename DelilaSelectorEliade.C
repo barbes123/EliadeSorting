@@ -53,7 +53,7 @@ bool debug = false;
 ULong64_t trigger_cnt = 0;
 ULong64_t trigger_events = 0;
 
-// const int NumberOfClovers = 2;
+const int NumberOfClovers = 3;
 const int max_domain = 500;
 const int nbr_of_ch = 500;
 // ULong64_t lastTimeStampTrigger = 0;
@@ -771,7 +771,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    
 //    mTimeCalib = new TH2F("mTimeCalib", "mTimeCalib", 10000, 0, 10000, 2e3, -1e6, 1e6);
 //       mPulser0TimeDiff = new TH2F("mPulser0TimeDiff", "mPulser0TimeDiff", 100, 0.5, 100.5, 1e4, -5e5, 5e5);
-   mTimeCalib = new TH2F("mTimeCalib", "mTimeCalib", 10000, 0, 10000, 2e3, -1e6, 1e6);
+   mTimeCalib = new TH2F("mTimeCalib", "mTimeCalib", 10000, 0, 10000, 2e2, -1e6, 1e6);//was 1e3 bins for 1e6 max
    mTimeCalib->GetXaxis()->SetTitle("coinc ID");
    mTimeCalib->GetYaxis()->SetTitle("1000 ps / bin");
    mTimeCalib->SetTitle("domain time diff");
@@ -831,6 +831,17 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
        
    mPulserPulser = new TH2F("mPulserPulser", "mPulserPulser",4096, -0.5, 8191.5, 4096, -0.5, 8195.5);
    fOutput->Add(mPulserPulser);
+   
+   
+   
+    for (int ii=1;ii<=NumberOfClovers;ii++){
+//             mTimeDiffClover[ii] = new TH2F(Form("mTimeDiff_Clover%i", ii), Form("mTimeDiff_Clover%i_%s", ii, LUT_DELILA[ii*100+9].serial.c_str()), 4000, 0, 4000, 2e2, -1e6, 1e6);//was 1e3 bins for 1e6 max
+        mTimeDiffClover[ii] = new TH2F(Form("mTimeDiff_Clover%i", ii), Form("mTimeDiff_Clover%i", ii), 4000, 0, 4000, 2e2, -1e6, 1e6);    
+        mTimeDiffClover[ii]->GetXaxis()->SetTitle("Coinc ID Clover");
+            mTimeDiffClover[ii]->GetYaxis()->SetTitle("10000 ps / bin");
+            mTimeDiffClover[ii]->SetTitle("domain time diff");
+            fOutput->Add(mTimeDiffClover[ii]);
+    };
    
    
    //uncomment if needed    
@@ -1421,8 +1432,21 @@ void DelilaSelectorEliade::TimeAlignement()
 //                    std::cout<<(*it1_).domain<<" "<<(*it2_).domain<<" "<<zdom1<<" "<<zdom2<<" "<<GetCoincID(zdom1, zdom2)<<"\n";
                    mTimeCalib->Fill(GetCoincID(zdom1, zdom2), time_diff_temp); 
                    break;
-            }; 
-               case 12: case 13: case 33:{            //also we need case 22:   
+                }; 
+               case 12: case 22:
+               {
+                 int clover1=(*it1_).domain/100;
+                 int clover2=(*it2_).domain/100;
+                 if (clover1 == clover2 ) {//std::cout<<(*it1_).domain<<" "<<(*it2_).domain<<" "<<zcl1<<" "<<zcl2<<" "<<GetCoincID(zcl1, zcl2)<<"\n";
+                     int seg1=(*it1_).domain%100;
+                     int seg2=(*it2_).domain%100;//but could be also a core
+                     std::map<int, TH2F*>::iterator it = mTimeDiffClover.find(clover1);
+                     if(it == mTimeDiffClover.end()){std::cout<<"Warning mTimeDiffClover is invalid Clover "<<clover1<<"\n";return;};
+                     mTimeDiffClover[clover1]->Fill(GetCoincID(seg1,seg2),time_diff_temp);
+                 };
+                   break;  
+               };
+               case 13: case 33:{
 //                    mTimeCalib->Fill(GetCoincID((*it1_).domain, (*it2_).domain), time_diff_temp); 
                    break;
             };             

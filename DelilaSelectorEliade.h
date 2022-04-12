@@ -110,7 +110,7 @@ public :
   public:
     Int_t	 dom;
     Int_t	 ch;//ch daq
-    TString	 serial;
+    string	 serial;
     Float_t  theta;
     Float_t	 phi;  
     UShort_t detType;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
@@ -251,6 +251,7 @@ public :
   TH2F* mTimeCalibPulser;
   TH2F* mTimeCalibBGO;
 //   TH2F* mTimeCalibDomain0;  
+  std::map<int, TH2F*> mTimeDiffClover;
     
   std::clock_t start;
   double duration;
