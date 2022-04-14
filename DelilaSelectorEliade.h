@@ -125,7 +125,7 @@ public :
   std::deque<TDelilaEvent> delilaQu;
 
   std::map<unsigned int, TDelilaDetector > LUT_DELILA;  
-  std::map<int, int > LUT_TA;
+  std::map<int, float > LUT_TA;
   std::map<int, double_t > LUT_TA_TRG;
 
   TDelilaEvent DelilaEvent;  
@@ -247,10 +247,10 @@ public :
   TH1F* hTriggerDomain;
 
     
+  TH2F* mTimeCalibDomain0;
   TH2F* mTimeCalib;
   TH2F* mTimeCalibPulser;
   TH2F* mTimeCalibBGO;
-//   TH2F* mTimeCalibDomain0;  
   std::map<int, TH2F*> mTimeDiffClover;
     
   std::clock_t start;
@@ -290,18 +290,19 @@ public :
    virtual void  Print_TimeAlignment_Trigger_LookUpTable();
 
    virtual float CalibDet(float,int);
-   virtual int GetCoincTimeCorrection(int dom1, int dom2);
+   virtual float GetCoincTimeCorrection(int dom1, int dom2, int base);
    virtual void cs();
    virtual void gamma_gamma();
    virtual void TreatDelilaEvent();
    virtual void TreatFold(int det); 
-   virtual int GetCoincID(int dom1, int dom2);
+   virtual int GetCoincID(int dom1, int dom2, int base);
    virtual int GetCoinc_det_def(int det_def1, int det_def2);
    virtual void CheckPulserAllignement(int zero_dom);
    virtual void PrintDelilaEvent(TDelilaEvent &ev_);
    virtual void SetUpNewTrigger();
    virtual void FillOutputTree();
    virtual void TimeAlignement();
+   virtual void TimeAlignementTrigger();
    virtual bool TriggerDecision();
  
 
