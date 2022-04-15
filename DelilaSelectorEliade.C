@@ -1005,9 +1005,6 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
 
     if ((DelilaEvent.EnergyCal < LUT_DELILA[daq_ch].threshold)&&(DelilaEvent.det_def < 9)) return kTRUE;
     TreatDelilaEvent();
-//    std::cout<<"HERE: det_def "<<DelilaEvent.det_def<<"\n";
-   
-//    blIsTrigger = true;
     //first core open the trigger if not open before;
    if ((!blIsTrigger)&&(TriggerDecision())) {
        SetUpNewTrigger();
