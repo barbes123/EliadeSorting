@@ -37,17 +37,18 @@ using namespace std;
 
 ////////////////////////////////Please, modify if needed////////////////////////////////////////////
 bool blGammaGamma       = true;
-bool blCS               = false;
+bool blCS               = true;
 bool blOutTree          = false;
 bool blFold             = false;
-bool blTimeAlignement   = true;
+bool blTimeAlignement   = false;
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 int addBackMode = 0; //0 - no addback; 1- addback;//not in use for ELIFANT
 bool blTimeOffset = false;
 bool blIsTrigger = false; //the trigger is open
 double lastDelilaTime = 0;
 bool blFirstTrigger = false;
-double det_def_trg = 1;
+int det_def_trg = 1;
+int domain0 = 109;
 bool debug = false;
 
 ULong64_t trigger_cnt = 0;
@@ -259,10 +260,15 @@ void DelilaSelectorEliade::Read_Confs() {
               break;
           };
           case 9999:{
-               det_def_trg = value;
+               det_def_trg = value/1;
                std::cout<<"Trigger  "<<det_def_trg<<" \n";
               break;
           }
+//           case 8888:{
+//                domain0 = value/1;
+//                std::cout<<"Domain0 (for TA):  "<<domain0<<" \n";
+//               break;
+//           }
           default:
           {
               //LUT_CONF[coinc_id] = value;
@@ -649,8 +655,9 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    };
    
    if (itna->first == 11){//for core-core
-//     mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), 100, 0, 100, 10e3, -2e6, 2e6);//was tuned like that
-       mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, -0.5, max_domain+0.5, 2e2, -1e6, 1e6);
+//     mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), 100, 0, 100, 10e3, -2e6, 2e6);//was tuned like that       
+       mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, -0.5, max_domain+0.5, 1e4, -5e6, 5e6);
+       mGG_time_diff[itna->first]->GetXaxis()->SetTitle("100 ps / bin");
 
    }else{
      mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, -0.5, max_domain+0.5, 4e4, -2e6, 2e6);
@@ -793,10 +800,10 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    mTimeCalibBGO->SetTitle("BGO - HPGe/LaBr time diff");
    fOutput->Add(mTimeCalibBGO);
    
-   mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5,  2e2, -1e6, 1e6);
-   mTimeCalibDomain0->GetXaxis()->SetTitle("coinc ID");
-   mTimeCalibDomain0->GetYaxis()->SetTitle("ps");
-   mTimeCalibDomain0->SetTitle("Sci time diff");
+   mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5,  2e3, -1e6, 1e6);
+   mTimeCalibDomain0->GetXaxis()->SetTitle("domain");
+   mTimeCalibDomain0->GetYaxis()->SetTitle("1000 ps / bin");
+   mTimeCalibDomain0->SetTitle("Time Diff domain0 - domain");
    fOutput->Add(mTimeCalibDomain0);
    
    mTimeDiffCS = new TH2F("mTimeDiffCS", "mTimeDiffCS", 100, 0, 100, 4e3, -2e6, 2e6);
@@ -887,8 +894,11 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 //     nn_current_bunch = 0;
     delilaQu.clear();
     
-   std::cout<<"bunch_length "<<bunch_length<<" ps \n";
-   std::cout<<"bunch_reset "<<bunch_reset <<" ps \n";
+//    int dom_trigger
+   mTimeCalibDomain0->SetTitle(Form("Time Diff dom - dom%i", det_def_trg)); 
+    
+   std::cout<<"Event Length "<<bunch_length<<" ps \n";
+//    std::cout<<"bunch_reset "<<bunch_reset <<" ps \n";
    std::cout<<"Beta is "<<beta<<" % \n"; 
 
     
@@ -1119,22 +1129,23 @@ void DelilaSelectorEliade::gamma_gamma()
    
 
      for (; it1_!= delilaQu.end();++it1_){
-//          if ((it1_->det_def != 1 )||(it1_->det_def != 2 )||(it1_->det_def != 3 )) continue;
+          if ((it1_->det_def != 1 )&&(it1_->det_def != 2 )&&(it1_->det_def != 3 )) continue;
 //              std::cout<<" HEREEE 2 \n ";
          for (; it2_!= delilaQu.end();++it2_){
              if (it1_ == it2_) continue;
-//              if ((it2_->det_def != 1 )||(it2_->det_def != 2 )||(it2_->det_def != 3 )) continue;
+              if ((it2_->det_def != 1 )&&(it2_->det_def != 2 )&&(it2_->det_def != 3 )) continue;
               int coinc_id = GetCoinc_det_def(it1_->det_def, it2_->det_def);
 //              int coinc_id = 11;
 
-             //Check that daq_ch is defined in LUT
+             //Check that coinc_id is defined in CONF
             std::map<UInt_t, Float_t> ::iterator it_c_gates_ = coinc_gates.find(coinc_id);
             if(it_c_gates_ == coinc_gates.end()) continue;
             
             if ((it1_->det_def == 1)&&(it2_->det_def == 3)){//ge-labr the time of labr is first
-                it_tmp_ = it1_;
-                it1_ = it2_;
-                it2_ = it_tmp_;
+//                 swap(it1_, it2_);
+                 it_tmp_ = it1_;
+                 it1_ = it2_;
+                 it2_ = it_tmp_;
             };
             
 //               double_t time_diff_gg = it1_->TimeBunch - it2_->TimeBunch - GetCoincTimeCorrection(it1_->domain, it2_->domain);
@@ -1226,7 +1237,6 @@ void DelilaSelectorEliade::Terminate()
       
       foutFile->mkdir("GammaGamma","GammaGamma");
       foutFile->mkdir("long","long");
-      foutFile->mkdir("Energy_time_diff","Energy_time_diff");
 
       outputTree->Write();
       
@@ -1236,8 +1246,6 @@ void DelilaSelectorEliade::Terminate()
 
            if(name.Contains("mDelila_long")){
            foutFile->cd(Form("%s:/", OutputFile.str().c_str()));
-           }else if(name.Contains("mEnergy_time_diff")){
-               foutFile->cd(Form("%s:/Energy_time_diff", OutputFile.str().c_str()));      
            }else if (name.Contains("mgg_")){
              foutFile->cd(Form("%s:/GammaGamma", OutputFile.str().c_str()));      
 //              std::cout<<Form("%s:/GammaGamma", OutputFile.str().c_str())<<std::endl;
@@ -1283,13 +1291,14 @@ float DelilaSelectorEliade::GetCoincTimeCorrection(int dom1, int dom2, int base)
 void DelilaSelectorEliade::cs()
 {
     if (delilaQu.empty()) return;
-    
+//     std::cout<<" new event \n";
     //BGO-GAMMA forward
     std::map<int, double> last_bgo_time;
     
     std::map<unsigned int, TDelilaDetector >::iterator it_lut_ = LUT_DELILA.begin();
     for (; it_lut_ != LUT_DELILA.end(); ++it_lut_){
         last_bgo_time[LUT_DELILA[it_lut_->first].cs_dom] = -1;
+//         std::cout<<" LUT_DELILA[it_lut_->first].cs_dom "<<LUT_DELILA[it_lut_->first].cs_dom<< "\n";
     }
     
 
@@ -1301,10 +1310,12 @@ void DelilaSelectorEliade::cs()
         int cs_dom = (*it_ev__).cs_domain;
         int det = (*it_ev__).det_def;
         
+//         std::cout<<" forward cs_dom "<< cs_dom<< "\n";
+        
         switch (det)
         {
             case 4: case 5: case 6:{
-                last_bgo_time[cs_dom] = (*it_ev__).TimeBunch; 
+                last_bgo_time[cs_dom] = (*it_ev__).Time; 
                 break;
             };
             case 1: case 2: case 3: {
@@ -1312,7 +1323,7 @@ void DelilaSelectorEliade::cs()
                {
                  break;  
                }else{
-                 time_diff_bgo =  (*it_ev__).TimeBunch - last_bgo_time[cs_dom];
+                 time_diff_bgo =  (*it_ev__).Time - last_bgo_time[cs_dom];
                  mTimeDiffCS ->Fill(cs_dom, time_diff_bgo);
 //                  std::cout<<"time_diff_bgo forw "<<time_diff_bgo<<" bunch ID "<<(*it_ev__).bunch <<"\n";
                  if (abs(time_diff_bgo) < coinc_gates[det*10+5]) //10000)
@@ -1343,10 +1354,12 @@ void DelilaSelectorEliade::cs()
         int cs_dom = (*it_ev__).cs_domain;
         int det = (*it_ev__).det_def;
         
+//         std::cout<<" back cs_dom "<< cs_dom<< "\n";
+        
         switch (det)
         {
             case 4: case 5: case 6:{
-                last_bgo_time[cs_dom] = (*it_ev__).TimeBunch; 
+                last_bgo_time[cs_dom] = (*it_ev__).Time; 
                 break;
             };
             case 1: case 3: {
@@ -1354,12 +1367,14 @@ void DelilaSelectorEliade::cs()
                {
                  break;  
                }else{
-                 time_diff_bgo =  (*it_ev__).TimeBunch - last_bgo_time[cs_dom];
+                 time_diff_bgo =  (*it_ev__).Time - last_bgo_time[cs_dom];
                  mTimeDiffCS ->Fill(cs_dom, time_diff_bgo);
 //                  std::cout<<"time_diff_bgo back "<<time_diff_bgo<<" bunch ID "<<(*it_ev__).bunch <<"\n";
+//                  std::cout<<" back coinc_gates[det*10+5] "<< coinc_gates[det*10+5]<< " time_diff_bgo "<< time_diff_bgo <<"\n";
                 if (abs(time_diff_bgo) < coinc_gates[det*10+5]) //10000)
                  {
                       (*it_ev__).CS = 1;  
+//                        std::cout<<" back  (*it_ev__).CS "<<  (*it_ev__).CS<< "\n";
                  }else{
                      last_bgo_time[cs_dom] = -1;
                  };
@@ -1370,14 +1385,14 @@ void DelilaSelectorEliade::cs()
         };
         
     };
-    
+//      std::cout<<" event done \n";
     it_ev__ = delilaQu.begin();
     
     for (; it_ev__ != delilaQu.end(); ++it_ev__){
          if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 3)) hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).EnergyCal);
          if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 1)) hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).EnergyCal);
     };
-    
+//     std::cout<<" histo filled \n";
 };
 
 
@@ -1520,14 +1535,41 @@ bool DelilaSelectorEliade::TriggerDecision()
    
 //    std::cout<< nn;
    
-   if ((nn == 0 )&&(DelilaEvent.det_def == det_def_trg/1))   return true;
-   if ((nn >= 10 )&&(DelilaEvent.domain == det_def_trg/1))  return true; 
+   if ((nn == 0 )&&(DelilaEvent.det_def == det_def_trg))   return true;
+   if ((nn >= 10 )&&(DelilaEvent.domain == det_def_trg))  return true; 
 //    std::cout<<"Wartning wrong trigger channel \n";
 //    if (DelilaEvent.det_def == det_def_trg/1) return true;
 //    if (DelilaEvent.domain == 109 ) return true; 
   
   return false;
 };
+
+void DelilaSelectorEliade::Oliver()
+{
+    //delilaQu conains all the events with time <(time_trigger + time_window)
+    if (delilaQu().empty()) return;
+    
+    std::deque<TDelilaEvent>::iterator it1_= delilaQu.begin();
+    std::deque<TDelilaEvent>::iterator it2_= delilaQu.begin();
+    
+    int gate = 40000;
+    
+      for (; it1_!= delilaQu.end();++it1_){
+          if (it1_.det_def != 1) continue;
+          for (; it2_!= delilaQu.end();++it2_){
+              if (it2_.det_def != 1) continue;
+              if (it1_==it2_) continue;
+              
+              double time_diff = (*it1_).Time - (*it2_).Time;
+              
+              mGG_time_diff[11]->Fill((*it2_).domain. time_diff);
+              
+              if (mGG_time_diff < gate) mGG[11]->Fill((*it1_).EnergyCal, (*it2_).EnergyCal);
+          
+    };
+    return;
+}
+
 
 
 
