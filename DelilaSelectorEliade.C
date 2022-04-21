@@ -1546,27 +1546,27 @@ bool DelilaSelectorEliade::TriggerDecision()
 
 void DelilaSelectorEliade::Oliver()
 {
-    //delilaQu conains all the events with time <(time_trigger + time_window)
-    if (delilaQu().empty()) return;
-    
-    std::deque<TDelilaEvent>::iterator it1_= delilaQu.begin();
-    std::deque<TDelilaEvent>::iterator it2_= delilaQu.begin();
-    
-    int gate = 40000;
-    
-      for (; it1_!= delilaQu.end();++it1_){
-          if (it1_.det_def != 1) continue;
-          for (; it2_!= delilaQu.end();++it2_){
-              if (it2_.det_def != 1) continue;
-              if (it1_==it2_) continue;
-              
-              double time_diff = (*it1_).Time - (*it2_).Time;
-              
-              mGG_time_diff[11]->Fill((*it2_).domain. time_diff);
-              
-              if (mGG_time_diff < gate) mGG[11]->Fill((*it1_).EnergyCal, (*it2_).EnergyCal);
-          
-    };
+//     //delilaQu conains all the events with time <(time_trigger + time_window)
+//     if (delilaQu().empty()) return;
+//     
+//     std::deque<TDelilaEvent>::iterator it1_= delilaQu.begin();
+//     std::deque<TDelilaEvent>::iterator it2_= delilaQu.begin();
+//     
+//     int gate = 40000;
+//     
+//       for (; it1_!= delilaQu.end();++it1_){
+//           if (it1_.det_def != 1) continue;
+//           for (; it2_!= delilaQu.end();++it2_){
+//               if (it2_.det_def != 1) continue;
+//               if (it1_==it2_) continue;
+//               
+//               double time_diff = (*it1_).Time - (*it2_).Time;
+//               
+//               mGG_time_diff[11]->Fill((*it2_).domain. time_diff);
+//               
+//               if (mGG_time_diff < gate) mGG[11]->Fill((*it1_).EnergyCal, (*it2_).EnergyCal);
+//           
+//     };
     return;
 }
 
