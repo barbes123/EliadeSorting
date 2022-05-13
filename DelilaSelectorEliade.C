@@ -1129,6 +1129,7 @@ void DelilaSelectorEliade::gamma_gamma()
    
 
      for (; it1_!= delilaQu.end();++it1_){
+          it2_= delilaQu.begin();
           if ((it1_->det_def != 1 )&&(it1_->det_def != 2 )&&(it1_->det_def != 3 )) continue;
 //              std::cout<<" HEREEE 2 \n ";
          for (; it2_!= delilaQu.end();++it2_){

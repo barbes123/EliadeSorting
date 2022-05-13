@@ -304,7 +304,8 @@ public :
    virtual void TimeAlignement();
    virtual void TimeAlignementTrigger();
    virtual bool TriggerDecision();
-   virtual void Oliver();
+   virtual void OliverAddBack();
+   virtual void FanACS();
 
 
    ClassDef(DelilaSelectorEliade,0);
