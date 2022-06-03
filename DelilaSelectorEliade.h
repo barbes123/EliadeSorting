@@ -40,6 +40,7 @@
 #include <TTreeReaderValue.h>
 #include <TTreeReaderArray.h>
 #include <TVector3.h>
+#include <TH3.h>
 #include <TH2.h>
 #include <TH1.h>
 #include <TF1.h>
@@ -61,6 +62,12 @@
 #include <queue>
 #include <vector>
 
+#include "DelilaEvent.h"
+#include "HPGeTreeEvent.h"
+#include "HPGeSegTreeEvent.h"
+#include "LaBrTreeEvent.h"
+#include "ElissaTreeEvent.h"
+
 //#include "TObjString.h."
 // Headers needed by this particular selector
 
@@ -71,50 +78,22 @@ public :
     TTree          *fChain = 0;   //!pointer to the analyzed TTree or TChain
     TFile          *foutFile;
     TTree          *outputTree;
-
-
-//   UChar_t	 uMod; 
-//   UChar_t	 uChannel; 
-
- class TDelilaEvent {
- public:
-    UChar_t	        fMod; 
-    UChar_t	        fChannel;    
-//     ULong64_t	    fTimeStamp;
-//     double_t	    fTimeStampFS;//FineTS
-    UShort_t	    fEnergy;//ChargeLong
-//     UShort_t	    fEnergyShort;//ChargeShot  
-    UShort_t        det_def;//0 - nothing; 1 - core/single HPge; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 7 -BGO - 3; 8 - solar cell; 9 - pulser
-    float	        EnergyCal;
-    float           EnergyDC;
-    UShort_t        domain;
-    UShort_t        cs_domain;
-    UShort_t        channel;//ch daq
-    UShort_t        CS;//0 - no; 1 - yes
-    double_t        Time;
-    double_t        TimeTrg;
-    double_t        TimeBunch;
-    Float_t         theta;
-    Float_t	        phi;
-    ULong64_t       trg;
-    UShort_t        bunch;
-    UShort_t        fold;
-    TDelilaEvent(): domain(-1),channel(-1),fEnergy(-1),CS(0),cs_domain(0),Time(0),trg(0),bunch(0),fold(0){};
- };
- 
     ULong64_t	    fTimeStamp;
     double_t	    fTimeStampFS;//FineTS
-    UShort_t	    fEnergyShort;//ChargeShot  
+    UShort_t	    fEnergyShort;
+    UShort_t	    fEnergyLong;
 
   class TDelilaDetector { 
   public:
     Int_t	 dom;
-    Int_t	 ch;//ch daq
-    string	 serial;
+    int	 ch;//ch daq
+//     Int_t	 serial;
+    TString	 serial;
     Float_t  theta;
     Float_t	 phi;  
     UShort_t detType;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
-    Int_t	 TimeOffset; 
+    Int_t	 TimeOffset;
+    double_t bgo_time_offset;
     Int_t 	 threshold; 
     Int_t	 pol_order;
     Int_t    cs_dom;
@@ -122,51 +101,78 @@ public :
     TDelilaDetector(): dom(-1),phi(-1),theta(-1),TimeOffset(0),calibE(0),threshold(-1),ch(-1),pol_order(-1){};
  };
  
-  std::deque<TDelilaEvent> delilaQu;
-
-  std::map<unsigned int, TDelilaDetector > LUT_DELILA;  
-  std::map<int, float > LUT_TA;
-  std::map<int, double_t > LUT_TA_TRG;
-
-  TDelilaEvent DelilaEvent;  
-  TDelilaEvent DelilaEventTreated ;
-  TDelilaEvent lastDelilaEvent;  
-  TDelilaEvent lastEliadeZeroEvent;
-  TDelilaEvent LastTriggerEvent;
-  TDelilaEvent LastBunchEvent;    
+//   DelilaEvent     delila_tree_event;
+  HPGeTreeEvent     hpge_tree_event;
+  HPGeSegTreeEvent  hpge_seg_tree_event;
+  LaBrTreeEvent     labr_tree_event;
+  ElissaTreeEvent   elissa_tree_event;
+ 
+  std::vector<HPGeTreeEvent>    *HPGeEvent;
+  std::vector<LaBrTreeEvent>    *LabrEvent;
+  std::vector<ElissaTreeEvent>  *ElissaEvent;
+  std::vector<HPGeSegTreeEvent> *HPGeSegEvent;
   
-  TDelilaEvent PulserEvent;
-  TDelilaEvent DomainZeroEvent;    
+  std::deque<DelilaEvent>      delilaQu;
+  std::deque<DelilaEvent>      delilaPreQu;
   
-  TDelilaEvent startEventCore;  
-  TDelilaEvent startEventSegment;  
+  std::map<int,std::deque<DelilaEvent>> waitingQu_gamma; //for CeBr
+  std::map<int,std::deque<DelilaEvent>> waitingQu_bgo; //for CS
+  
+  //Part for PHA
+  short          fSignal[2000]; // add by saka //RecordLength branch is not read we assume rl = 2000
+  
+//   std::map<unsigned int, TDelilaDetector > LUT_ELIADE;
+  std::map<int, TDelilaDetector >       LUT_ELIADE;    
+  std::map<int, int >                   LUT_TA;
+  std::map<int, double_t >              LUT_TA_TRG;
+
+  DelilaEvent DelilaEvent_;  
+  DelilaEvent DelilaEventTreated ;
+  DelilaEvent lastDelilaEvent;  
+  DelilaEvent lastEliadeZeroEvent;
+  DelilaEvent LastTriggerEvent;
+  DelilaEvent LastBunchEvent;    
+  
+  DelilaEvent PulserEvent;
+  DelilaEvent DomainZeroEvent;    
+  
 
   TBranch *b_channel;
   TBranch *b_tstmp;
   TBranch *b_tstmp_fine;
   TBranch *b_energ;  //ChargeLong
   TBranch *b_energ_short;  //ChargeShot
-  TBranch *b_mod;  
+  TBranch *b_mod;
+  TBranch *b_signal;
   
   Long64_t nb_entries;
   
-  Long64_t bunch_length;
+  Long64_t event_length;
+  Long64_t pre_event_length;
   Long64_t bunch_reset;
+  
+  UChar_t	        fMod; 
+  UChar_t	        fChannel; 
  
   TH1F* hChannelHit;
   TH1F* hDomainHit;
   TH1F* hSegmentHit;
   TH1F* hDetTypeHit;
 
-  std::map<int, TH1F*> hDelila;
+  std::map<int, TH1F*> hDelila0; //before event_builder
+  std::map<int, TH1F*> hDelila_single; //after event builder
+
   std::map<int, TH1F*> hDelilaCS;
-//   std::map<int, TH1F*> hDelilaDC;
-//   std::map<int, TH1F*> hDelilaCS_DC;
+  std::map<int, TH1F*> hDelilaDC;
+  std::map<int, TH1F*> hDelilaCS_DC;
+  
+  TH1F* hLaBrElissa;
+  
   
   std::map<int, TH1F*> hDelila_long;
   std::map<int, TH1F*> hDelilaCS_long;
-//   std::map<int, TH1F*> hDelilaDC_long;
-//   std::map<int, TH1F*> hDelilaCS_DC_long;
+  std::map<int, TH1F*> hDelilaDC_long;
+  std::map<int, TH1F*> hDelilaCS_DC_long;
 
   std::map<UInt_t, std::string> detector_name;
 
@@ -178,19 +184,25 @@ public :
   TH1F* hEventsPerTrigger;
   TH2F* mFoldEnergy;
   
+  TH1F* hCoincID;
+  TH1F* hTriggerDomain;
+  
   TH1F* hdelilaQu_size;
+  TH1F* hdelilaPreQu_size; //number of validated events in preQu
+
   
   TH2F* mDelila;
+  TH2F* mElissa;
   TH2F* mDelila_raw;
   TH2F* mDelilaCS;
   TH2F* mDelilaDC;//keV
-//   TH2F* mDelilaCS_DC;//keV
+  TH2F* mDelilaCS_DC;//keV
   
   TH2F* mDelila_long;
   TH2F* mDelila_raw_long;
   TH2F* mDelilaCS_long;
-//   TH2F* mDelilaDC_long;//keV
-//   TH2F* mDelilaCS_DC_long;//keV
+  TH2F* mDelilaDC_long;//keV
+  TH2F* mDelilaCS_DC_long;//keV
 
   TH2F* mGammaGammaDC;
   TH2F* mGammaGammaCS_DC;
@@ -200,17 +212,18 @@ public :
   TH2F* mDomainTimeDiff_bunch;
   
   std::map<int, TH2F*> mGG;
+  std::map<int, TH2F*> mGG_theta;
   std::map<int, TH2F*> mGG_CS;
-//   std::map<int, TH2F*> mGG_DC;
-//   std::map<int, TH2F*> mGG_CS_DC;
+  std::map<int, TH2F*> mGG_DC;
+  std::map<int, TH2F*> mGG_CS_DC;
   std::map<int, TH2F*> mGG_time_diff;
   
   std::map<int, TH2F*> mGG_long;
   std::map<int, TH2F*> mGG_CS_long;
-//   std::map<int, TH2F*> mGG_DC_long;
-//   std::map<int, TH2F*> mGG/*_C*/S_DC_long;
+  std::map<int, TH2F*> mGG_DC_long;
+  std::map<int, TH2F*> mGG_CS_DC_long;
   
-//   std::map<int, TH2F*> mTimeDiff;
+//   std::map<int, TH2F*> mTimeDiffselected_run_2022_0.root;
   std::map<int, TH1F*> hMult;
 
   std::map<UInt_t, std::string> gg_coinc_id;
@@ -219,6 +232,9 @@ public :
   
   std::map<int, std::string> domain_list;
   std::map<int, TH2F*> mEnergy_time_diff;
+   
+  std::map<int, TH2F*> mAmaxEnergyDom;
+
   
   TH2F* mTimeDiffCS;
   
@@ -230,9 +246,7 @@ public :
   TH2F* mTimeDiff_gg_CS;
   TH1F* hMult_gg_CS;
   
-//   TH2F* mLaBr_LabBr_time_diff;
-  
-  TH2F* mTS_FTS;
+  TH2F* mLaBr_LabBr_time_diff;
 
   
   TH2F *mPulser0TimeDiff;
@@ -241,23 +255,31 @@ public :
   TH2F* mPulserPulser;
   
   TH1F* hTimeZero;
-  TH1F* hChargeZero;
-  TH1F* hTimeSort; 
-  TH1F* hCoincID;
-  TH1F* hTriggerDomain;
-
+  TH1F* hTimeSort;
     
   TH2F* mTimeCalibDomain0;
   TH2F* mTimeCalib;
-  TH2F* mTimeCalibPulser;
   TH2F* mTimeCalibBGO;
-  std::map<int, TH2F*> mTimeDiffClover;
+  TH2F* mTimeCalibBGO_cs_dom;
+  
+  TH2F* mNeutron;
+  TH2F* mShortLong;
+//   TH2F* mTimeCalibDomain0;
+  
+  TH1F *hAmax;
+  TH2F *mAmaxEnergy;
+
+  int det_def_trg;
+  int channel_trg;
+  double TriggerTimeFlag;
+  double lastDelilaTime;
+
     
   std::clock_t start;
   double duration;
  
   ULong64_t nevents;
-  ULong64_t nevents_reset;
+//   ULong64_t nevents_reset;
   int reset_counter;
  
   ULong64_t lastTime;
@@ -290,26 +312,47 @@ public :
    virtual void  Print_TimeAlignment_Trigger_LookUpTable();
 
    virtual float CalibDet(float,int);
-   virtual float GetCoincTimeCorrection(int dom1, int dom2, int base);
+   virtual int GetCoincTimeCorrection(int dom1, int dom2);
    virtual void cs();
-   virtual void gamma_gamma();
+   
    virtual void TreatDelilaEvent();
    virtual void TreatFold(int det); 
-   virtual int GetCoincID(int dom1, int dom2, int base);
-   virtual int GetCoinc_det_def(int det_def1, int det_def2);
+   virtual int  GetCoincID(int dom1, int dom2);
+   virtual int  GetCoinc_det_def(int det_def1, int det_def2);
    virtual void CheckPulserAllignement(int zero_dom);
-   virtual void PrintDelilaEvent(TDelilaEvent &ev_);
-   virtual void SetUpNewTrigger();
+   virtual void PrintDelilaEvent(DelilaEvent &ev_);
+   
    virtual void FillOutputTree();
-   virtual void TimeAlignement();
    virtual void TimeAlignementTrigger();
+   
+   
+   virtual void EventBuilderSimple();
+   virtual void EventBuilderPreTrigger();
    virtual bool TriggerDecision();
-   virtual void OliverAddBack();
-   virtual void FanACS();
+   virtual void SetUpNewTrigger();
+   virtual void CheckPreQu();
+   virtual void MovePreQu2Qu();
+
+   
+   virtual void TreatLaBrSingle();
+   virtual void TreatHpGeSingle();
+   virtual void TreatHPGeSegmentSingle();
+   virtual void TreatNeutronSingle();
+   virtual void TreatElissaSingle();
+   virtual void TreatBGOSingle();
+   virtual void TreatACS();
+   
+   virtual void TreatGammaGammaCoinc();
+   virtual void TreatSolarLaBrCoinc();
+   
+   virtual std::vector<float> trapezoidal(short wave[],int length, int L, int G);//L = 20; G = 0
+   
+   std::map<std::string, bool> has_detector;
 
 
    ClassDef(DelilaSelectorEliade,0);
-   
+
+  
 };
 
 #endif
@@ -323,24 +366,70 @@ void DelilaSelectorEliade::Init(TTree *tree)
    // code, but the routine can be extended by the user if needed.
    // Init() will be called many times when running on PROOF
    // (once per file to be processed).
-
-   fReader.SetTree(tree);
-   
+  
+  if(!tree) {std::cout<<" TTree NOT found "<<std::endl; return;};
+  
+//   std::cout<<" Delila Sorting "<<std::endl;
+  std::cout<<" TTree found "<<std::endl;
+  fChain = tree;
+  fChain->SetMakeClass(1);  
+  fChain->SetBranchAddress("ChargeLong", 	&fEnergyLong,            	   &b_energ);
+  fChain->SetBranchAddress("ChargeShort", 	&fEnergyShort, 	               &b_energ_short);
+  fChain->SetBranchAddress("FineTS", 	    &fTimeStampFS, 	               &b_tstmp_fine);
+  fChain->SetBranchAddress("TimeStamp",     &fTimeStamp,                   &b_tstmp); 
+  fChain->SetBranchAddress("Ch", 	        &fChannel,                     &b_channel);
+  fChain->SetBranchAddress("Mod", 	        &fMod,                         &b_mod);
+  fChain->SetBranchAddress("Signal",        &fSignal,                      &b_signal);// add by saka 
+  
+  fReader.SetTree(tree);
+       
    
   foutFile->cd();
   outputTree = new TTree("SelectedDelila","SelectedDelila");
-//   outputTree->Branch("fTEventTS",&DelilaEventTreated .fTimeStamp,"TimeStamp/l");
-//   outputTree->Branch("fTEventFS",&DelilaEventTreated .fTimeStampFS,"TimeStamp/D");
-  outputTree->Branch("fTimeBunch",&DelilaEventTreated .TimeBunch,"TimeBunch/D");
-  outputTree->Branch("fTime",&DelilaEventTreated .Time,"Time/D");
-  outputTree->Branch("fEnergy",&DelilaEventTreated .fEnergy,"Energy/F");
-  outputTree->Branch("fEnergy_kev",&DelilaEventTreated .EnergyCal,"Energy_kev/F");
-  outputTree->Branch("fEnergyDC",&DelilaEventTreated .EnergyDC,"EnergyDC/F");
-  outputTree->Branch("fDomain",&DelilaEventTreated .domain,"Domain/b");
-  outputTree->Branch("fDetType",&DelilaEventTreated .det_def,"def/b");
-  outputTree->Branch("fCS",&DelilaEventTreated .CS,"CS/b");
-  outputTree->Branch("fTRG",&DelilaEventTreated .trg,"Trigger/b");
-  outputTree->Branch("fFold",&DelilaEventTreated .fold,"Fold/b");
+  
+
+  lastDelilaTime = 0;
+  
+//   Read_ELIADE_LookUpTable();
+//   Read_TimeAlignment_LookUpTable();
+  
+//   Print_ELIADE_LookUpTable();
+  
+  if (has_detector["HPGe"]){
+      HPGeEvent= new std::vector<HPGeTreeEvent>;
+      outputTree->Branch("HPGeEvents",&HPGeEvent);
+    };
+    
+  if (has_detector["SEG"]){
+      HPGeSegEvent= new std::vector<HPGeSegTreeEvent>;
+      outputTree->Branch("HPGeSegEvents",&HPGeSegEvent);
+    };
+  
+  if (has_detector["LaBr"]){
+      LabrEvent= new std::vector<LaBrTreeEvent>;
+      outputTree->Branch("LaBrEvents",&LabrEvent);
+    };
+  
+  if (has_detector["Elissa"]){
+      ElissaEvent= new std::vector<ElissaTreeEvent>;
+      outputTree->Branch("ElissaEvents",&ElissaEvent);
+  };
+  
+  
+  std::cout<<" === Present detectors === \n";
+  std::cout<<" HPGe     " << has_detector["HPGe"] <<"  \n";
+  std::cout<<" HPGeSeg  " << has_detector["SEG"] <<"  \n";
+  std::cout<<" LaBr     " << has_detector["LaBr"] <<"  \n";
+  std::cout<<" ACS      " << has_detector["ACS"] <<"  \n";
+  std::cout<<" Elissa   " << has_detector["Elissa"] <<" \n";
+  std::cout<<" === Time settings ps === \n";
+  std::map<UInt_t, Float_t> ::iterator itcc_ = coinc_gates.begin();
+  for (; itcc_ != coinc_gates.end(); ++itcc_) {
+     std::cout<<" coin_id " << itcc_->first <<"  coinc_gate "<< itcc_->second <<" ps \n";
+  }
+  std::cout<<" event_length     " << event_length      <<" ps \n";
+  std::cout<<" pre_event_length " << pre_event_length  <<" ps \n";
+  std::cout<<" ===                            === \n";
 }
 
 Bool_t DelilaSelectorEliade::Notify()

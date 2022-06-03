@@ -1,30 +1,49 @@
 #!/bin/bash
 
-AddBAck=$1
-server=$2
-runnb=$3
+runnb=$1
 #LASTrun=$3
-volume1=$4
-volume2=$5
-
-#echo "Will run the selector for runs $FIRSTrun upto $LASTrun "
-#echo "Will run the selector for volumes $volume1 upto $volume2 "		
-
+volume1=${2:-0}
+volume2=${3:-$volume1}
+AddBAck=${4:-0}
+server=${5:-5}
+nevents=${6:-0}
+#VAR=${1:-DEFAULTVALUE}    
 echo "Put Parameters: AddBack (0 - if none); server_nbr (0 - if none); run_nbr; volume_from; volume_to;"
+
+lut_path="$HOME/onlineEliade/LookUpTables/"
+lut_link="$HOME/EliadeSorting/"
+
+
+#lut_file="LUT_ELIADE_ACS.dat"
+lut_file="LUT_ELIADE_S5_3clovers.dat"
+#lut_file="LUT_ELIADE_S5_3pulsers.dat"
+#lut_file="LUT_ELIADE_S5_cut.dat"
+
+lut_conf="coinc_gates_test_new.dat"
+
+echo "$lut_path$lut_file" "$lut_link""LUT_ELIADE.dat"
+
+unlink "$lut_link""LUT_ELIADE.dat"
+ln -s "$lut_path$lut_file" "$lut_link""LUT_ELIADE.dat"
+
+echo "--------------------------------------------------------"
+echo "Setting of LUT(s)"
+echo "--------------------------------------------------------"	
+echo -ne "LUT  file:: "; tput setaf 2; echo " $lut_file";tput sgr0;
+echo -ne "CONF file:: "; tput setaf 2; echo " $lut_conf";tput sgr0;
+echo "--------------------------------------------------------"
 
 volnb=$volume1
 while test $volnb -le $volume2
 do 
   echo "Now I am starting run the selector run$runnb"_"$volnb.root"	
-  rootcommand=sorting_eliade.C+"($AddBAck,$server,$runnb,$runnb,$volnb,$volnb)"    
+  rootcommand=sorting_eliade.C+"($AddBAck,$server,$runnb,$runnb,$volnb,$volnb,$nevents)"    
   root -l -b -q $rootcommand
   volnb=$(($volnb + 1))  
   echo "I finished run$runnb_$volnb.root"
 done 
 
- 
- 
- 
+
 #  
 #  
 # case  $DIST in
