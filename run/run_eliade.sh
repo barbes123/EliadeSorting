@@ -4,33 +4,64 @@ runnb=$1
 #LASTrun=$3
 volume1=${2:-0}
 volume2=${3:-$volume1}
-AddBAck=${4:-0}
-server=${5:-5}
-nevents=${6:-0}
+nevents=${4:-0}
+AddBAck=${5:-0}
+server=${6:-3}
+
 #VAR=${1:-DEFAULTVALUE}    
 echo "Put Parameters: AddBack (0 - if none); server_nbr (0 - if none); run_nbr; volume_from; volume_to;"
 
-lut_path="$HOME/onlineEliade/LookUpTables/"
+lut_path="$HOME/onlineEliade/LookUpTables/s3/"
 lut_link="$HOME/EliadeSorting/"
 
 
-#lut_file="LUT_ELIADE_ACS.dat"
-lut_file="LUT_ELIADE_S5_3clovers.dat"
+lut_file="LUT_ELIADE_ACS.dat"
+lut_ta=""
+lut_conf="coinc_gates_test_new.dat"
+#lut_file="LUT_ELIADE_S5_3clovers.dat"
 #lut_file="LUT_ELIADE_S5_3pulsers.dat"
 #lut_file="LUT_ELIADE_S5_cut.dat"
 
-lut_conf="coinc_gates_test_new.dat"
 
-echo "$lut_path$lut_file" "$lut_link""LUT_ELIADE.dat"
+#echo "$lut_path$lut_file" "$lut_link""LUT_ELIADE.dat"
 
-unlink "$lut_link""LUT_ELIADE.dat"
-ln -s "$lut_path$lut_file" "$lut_link""LUT_ELIADE.dat"
+#unlink "$lut_link""LUT_ELIADE.dat"
+#ln -s "$lut_path$lut_file" "$lut_link""LUT_ELIADE.dat"
+
+###########################LUT_ELIADE###s#####################
+if [ -z "$lut_file" ]
+then
+      echo "LUT_ELIADE.dat is missing"
+else
+      unlink "$lut_link""LUT_ELIADE.dat"
+      ln -s "$lut_path$lut_file" "$lut_link""LUT_ELIADE.dat"
+fi
+
+###########################LUT_TA############################
+if [ -z "$lut_ta" ]
+then
+      echo "LUT_TA.dat is missing"
+else
+      unlink "$lut_link""LUT_TA.dat"
+      ln -s "$lut_path$lut_ta" "$lut_link""LUT_TA.dat"
+fi
+
+###########################LUT_CONF##########################
+if [ -z "$lut_conf" ]
+then
+      echo "LUT_CONF.dat is missing"
+else
+      unlink "$lut_link""LUT_CONF.dat"
+      ln -s "$lut_path$lut_conf" "$lut_link""LUT_CONF.dat"
+fi
+#############################################################
 
 echo "--------------------------------------------------------"
 echo "Setting of LUT(s)"
 echo "--------------------------------------------------------"	
-echo -ne "LUT  file:: "; tput setaf 2; echo " $lut_file";tput sgr0;
-echo -ne "CONF file:: "; tput setaf 2; echo " $lut_conf";tput sgr0;
+echo -ne "LUT_ELIADE file	: "; tput setaf 2; echo " $lut_file";tput sgr0;
+echo -ne "LUT_CONF file	: "; tput setaf 2; echo " $lut_conf";tput sgr0;
+echo -ne "LUT_TA file	: "; tput setaf 2; echo " $lut_ta";tput sgr0;
 echo "--------------------------------------------------------"
 
 volnb=$volume1
