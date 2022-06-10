@@ -323,12 +323,14 @@ public :
    virtual void PrintDelilaEvent(DelilaEvent &ev_);
    
    virtual void FillOutputTree();
+   virtual void FillSingleSpectra();
    virtual void TimeAlignementTrigger();
    
    
    virtual void EventBuilderSimple();
    virtual void EventBuilderPreTrigger();
    virtual bool TriggerDecision();
+   virtual void SetUpNewTriggerSimple();
    virtual void SetUpNewTrigger();
    virtual void CheckPreQu();
    virtual void MovePreQu2Qu();
@@ -420,7 +422,9 @@ void DelilaSelectorEliade::Init(TTree *tree)
   std::cout<<" HPGe     " << has_detector["HPGe"] <<"  \n";
   std::cout<<" HPGeSeg  " << has_detector["SEG"] <<"  \n";
   std::cout<<" LaBr     " << has_detector["LaBr"] <<"  \n";
-  std::cout<<" ACS      " << has_detector["ACS"] <<"  \n";
+  std::cout<<" CsI      " << has_detector["CsI"] <<"  \n";
+  std::cout<<" BGOs     " << has_detector["BGOs"] <<"  \n";
+  std::cout<<" BGOf     " << has_detector["BGOf"] <<"  \n";
   std::cout<<" Elissa   " << has_detector["Elissa"] <<" \n";
   std::cout<<" === Time settings ps === \n";
   std::map<UInt_t, Float_t> ::iterator itcc_ = coinc_gates.begin();

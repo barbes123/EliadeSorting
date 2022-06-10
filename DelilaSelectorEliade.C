@@ -41,7 +41,8 @@ bool blCS                   = true;
 bool blOutTree              = false;
 bool blFold                 = false;
 bool blTimeAlignement       = true;
-bool blFillAmaxEnergyDom    = true;
+bool blFillAmaxEnergyDom    = false;
+bool blFillSingleSpectra    = true;
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 bool blIsTrigger            = false; //the SimpleTrigger is open
 bool blIsWindow             = false; //the preTrigger is open
@@ -379,12 +380,12 @@ void DelilaSelectorEliade::Begin(TTree * tree)
   detector_name[1]="HPGe";     has_detector[detector_name[1]] = false;
   detector_name[2]="SEG";      has_detector[detector_name[2]] = false;
   detector_name[3]="LaBr";     has_detector[detector_name[3]] = false;
-  detector_name[4]="ACS";      has_detector[detector_name[4]] = false;
+  detector_name[4]="CsI";      has_detector[detector_name[4]] = false;
   detector_name[5]="BGOs";     has_detector[detector_name[5]] = false; //side
   detector_name[6]="BGOf";     has_detector[detector_name[6]] = false;//front
   detector_name[7]="Elissa";   has_detector[detector_name[7]] = false;
   detector_name[8]="neutron";  has_detector[detector_name[8]] = false;
-  detector_name[9]="pulser";   has_detector[detector_name[9]] = false;  
+  detector_name[9]="pulser";   has_detector[detector_name[9]] = false;
 
   Read_Confs();
 
@@ -449,9 +450,6 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    TString VolID = ((TObjString*) toks->At(1))->GetString();
    TString ServerID = ((TObjString*) toks->At(3))->GetString();
    
-   
-
-  
    nevents = 0;
 //  nevents_reset=0;
   reset_counter = 0;
@@ -903,7 +901,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    mTimeCalibBGO_cs_dom->SetTitle("BGO - HPGe/LaBr time diff");
    fOutput->Add(mTimeCalibBGO_cs_dom);
    */
-   mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5,  1e5, -1e6, 9e6);
+   mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5, 1e4,-1e6, 9e6);
    mTimeCalibDomain0->GetXaxis()->SetTitle("coinc ID");
    mTimeCalibDomain0->GetYaxis()->SetTitle("ps");
    mTimeCalibDomain0->SetTitle(Form("TimeDiff domain%i vs domain",channel_trg));
@@ -1103,32 +1101,85 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
 //      DelilaEvent_.Time-=LUT_TA[domain];
 //      DelilaEvent_.Time=DelilaEvent_.Time - LUT_TA[domain];
      DelilaEvent_.Time=DelilaEvent_.Time - LUT_TA[domain];
-    
-     if (DelilaEvent_.det_def == 9){//pulser
-        CheckPulserAllignement(90);
-        return kTRUE;
-     }else if (DelilaEvent_.det_def == 98){
-        return kTRUE;
-     }else if ((DelilaEvent_.det_def == 99) && blIsWindow){
-        return kTRUE;
-     }else if (DelilaEvent_.det_def == 8){
-          TreatNeutronSingle();
-     }else if ((DelilaEvent_.det_def == 7) && has_detector["Elissa"]){
-         TreatElissaSingle();
-     }else if (((DelilaEvent_.det_def==4)||(DelilaEvent_.det_def==5)||(DelilaEvent_.det_def==6))&&has_detector["BGO"]){
-         TreatBGOSingle();
-     }else if ((DelilaEvent_.det_def == 3) && has_detector["LaBr"]) {
-        TreatLaBrSingle();
-     }else if ((DelilaEvent_.det_def == 1) && has_detector["HPGe"] ){
-        TreatHpGeSingle();
-     }else if ((DelilaEvent_.det_def == 2) && has_detector["SEG"] ){
-        TreatHPGeSegmentSingle();
+     
+     
+     switch (DelilaEvent_.det_def){
+          case 1:  { 
+             if (has_detector["HPGe"]) {TreatHpGeSingle();}
+                 else return kTRUE;
+             break;
+         };case 2:  { 
+             if (has_detector["SEG"]) {TreatHPGeSegmentSingle();}
+                 else return kTRUE;
+             break;
+         };case 3:  { 
+             if (has_detector["LaBr"]) {TreatLaBrSingle();}
+                else return kTRUE;
+             break;
+         };case 4:  { 
+             if (has_detector["CsI"]) {TreatBGOSingle();}
+                else return kTRUE;
+             break;
+         };case 5:  { 
+             if (has_detector["BGOs"]) {TreatBGOSingle();}
+                else return kTRUE;
+             break;
+         };case 6:  { 
+             if (has_detector["BGOf"]) {TreatBGOSingle();}
+                else return kTRUE;
+             break;
+         };case 7:  { 
+             if (has_detector["Elissa"]) {TreatElissaSingle();}
+                else return kTRUE;
+             break;
+         };case 8:  { 
+             if (has_detector["neutron"]) {TreatNeutronSingle();}
+                else return kTRUE;
+             break;
+         };case 9:  { 
+             if (has_detector["pulser"]) CheckPulserAllignement(90);
+             return kTRUE;
+             break;
+         };case 98:  { 
+             return kTRUE;
+             break;
+         };
+          case 99:  { 
+             if (blIsWindow)  return kTRUE;
+             break;
+         };
+         case 11:  { //second core
+             return kTRUE;
+             break;
+         };
+         
      };
+    
+//      if (DelilaEvent_.det_def == 9){//pulser
+//         CheckPulserAllignement(90);
+//         return kTRUE;
+//      }else if (DelilaEvent_.det_def == 98){
+//         return kTRUE;
+//      }else if ((DelilaEvent_.det_def == 99) && blIsWindow){
+//         return kTRUE;
+//      }else if (DelilaEvent_.det_def == 8){
+//           TreatNeutronSingle();
+//      }else if ((DelilaEvent_.det_def == 7) && has_detector["Elissa"]){
+//          TreatElissaSingle();
+//      }else if ((DelilaEvent_.det_def==4)&&has_detector["CsI"]){
+//          TreatBGOSingle();
+//      }else if ((DelilaEvent_.det_def == 3) && has_detector["LaBr"]) {
+//         TreatLaBrSingle();
+//      }else if ((DelilaEvent_.det_def == 1) && has_detector["HPGe"] ){
+//         TreatHpGeSingle();
+//      }else if ((DelilaEvent_.det_def == 2) && has_detector["SEG"] ){
+//         TreatHPGeSegmentSingle();
+//      };
     
   if (debug){std::cout<<"I did TreatDelilaEvent_() \n";}
   
-    EventBuilderPreTrigger();
-//      EventBuilderSimple();
+      EventBuilderPreTrigger();
+//        EventBuilderSimple();
   
 
   if ((entry) % int(nb_entries / 100) == 0 || (entry) % 100000 == 0) {
@@ -1460,7 +1511,7 @@ void DelilaSelectorEliade::cs()
 
         switch (det)
         {
-            case 5: {
+            case 4: case 5: case 6:{
                 last_bgo_time[cs_dom] = (*it_ev__).Time; 
                 break;
             };
@@ -1499,7 +1550,7 @@ void DelilaSelectorEliade::cs()
         
         switch (det)
         {
-            case 5: {
+            case 4: case 5: case 6: {
                 last_bgo_time[cs_dom] = (*it_ev__).Time; 
                 break;
             };
@@ -1526,12 +1577,12 @@ void DelilaSelectorEliade::cs()
         
     };
     
-    it_ev__ = delilaQu.begin();
-    
-    for (; it_ev__ != delilaQu.end(); ++it_ev__){
-         if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 3)) hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
-         if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 1)) hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
-    };
+//     it_ev__ = delilaQu.begin();
+//     
+//     for (; it_ev__ != delilaQu.end(); ++it_ev__){
+//          if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 3)) hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
+//          if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 1)) hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
+//     };
     
 };
 
@@ -1577,23 +1628,15 @@ void DelilaSelectorEliade::PrintDelilaEvent(DelilaEvent &ev_)
 //     "  ============= \n";
 }
 
-bool DelilaSelectorEliade::TriggerDecision()
-{
-   if (det_def_trg == -1) return false;
-   if (channel_trg == -1) return false; 
-//    std::cout<<" channel_trg "<< channel_trg <<" domain "<<DelilaEvent_.domain <<  " \n";
-   if (det_def_trg > 0) return (DelilaEvent_.det_def == det_def_trg/1);
-   
-   return (DelilaEvent_.domain == channel_trg/1);
-};
-
 void DelilaSelectorEliade::TimeAlignementTrigger()
 {
      std::deque<DelilaEvent>::iterator it_= delilaQu.begin();
      double time_diff_temp = 0;
 
      for (; it_!= delilaQu.end();++it_){
-           time_diff_temp = delilaQu.front().Time - TriggerTimeFlag;
+          // time_diff_temp = delilaQu.front().Time - TriggerTimeFlag;
+//           time_diff_temp = (*it_).Time - TriggerTimeFlag;
+          time_diff_temp = (*it_).Time - LastTriggerEvent.Time;
            mTimeCalibDomain0->Fill((*it_).domain, time_diff_temp);
      };
          
@@ -1686,6 +1729,16 @@ void DelilaSelectorEliade::TreatSolarLaBrCoinc()
     
 }
 
+bool DelilaSelectorEliade::TriggerDecision()
+{
+   if (det_def_trg == -1) return false;
+   if (channel_trg == -1) return false; 
+//    std::cout<<" channel_trg "<< channel_trg <<" domain "<<DelilaEvent_.domain <<  " \n";
+   if (det_def_trg > 0) return (DelilaEvent_.det_def == det_def_trg/1);
+   
+   return (DelilaEvent_.domain == channel_trg/1);
+};
+
 void DelilaSelectorEliade::CheckPreQu()
 {
     if (delilaPreQu.empty()) return;
@@ -1732,14 +1785,13 @@ void DelilaSelectorEliade::EventBuilderSimple()
 {
     
     if (!blIsTrigger) {
-    if (TriggerDecision()) SetUpNewTrigger();
+    if (TriggerDecision()) SetUpNewTriggerSimple();
 //        return kTRUE;
    }else {//if (blIsTrigger){
        
          double time_diff_trigger = DelilaEvent_.Time - LastTriggerEvent.Time;
-//        double time_diff_trigger = DelilaEvent_.Time - TriggerTimeFlag;
-        
-        if (time_diff_trigger > event_length){//close event
+
+         if (time_diff_trigger > event_length){//close event
             if (blTimeAlignement)   TimeAlignementTrigger();
             if (blCS)               cs();
             if (blGammaGamma)       TreatGammaGammaCoinc();
@@ -1752,7 +1804,7 @@ void DelilaSelectorEliade::EventBuilderSimple()
             
 //             std::cout<<" Event is done  # "<< trigger_cnt <<" \n";     
             
-            if (TriggerDecision()) SetUpNewTrigger();          
+            if (TriggerDecision()) SetUpNewTriggerSimple();          
             
         }else{
             hDelila_single[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev);
@@ -1767,51 +1819,62 @@ void DelilaSelectorEliade::EventBuilderSimple()
 void DelilaSelectorEliade::EventBuilderPreTrigger()
 {
     if (blIsWindow){//open
-       double time_diff_trigger = DelilaEvent_.Time - TriggerTimeFlag;
-//         std::cout<<" time_diff_trigger  "<<time_diff_trigger<<"\n";
+//        double time_diff_trigger = DelilaEvent_.Time - TriggerTimeFlag;
+       double time_diff_trigger = DelilaEvent_.Time - LastTriggerEvent.Time;
+
+//          std::cout<<" time_diff_trigger  "<<time_diff_trigger<<"\n";
 
        if (abs(time_diff_trigger) > event_length){//close event
            if (blTimeAlignement)    TimeAlignementTrigger();
            if (blCS)                cs();
-           if (blGammaGamma)        TreatGammaGammaCoinc();
            if (blFold)              TreatFold(3);
+           
+           if (blGammaGamma)        TreatGammaGammaCoinc();
+           
+           if (blFillSingleSpectra) FillSingleSpectra();
            if (blOutTree)           FillOutputTree();
+           
            
            hdelilaQu_size->Fill(delilaQu.size());          
            delilaQu.clear();
            delilaPreQu.clear();
-           delilaPreQu.push_back(DelilaEvent_);
+//            delilaPreQu.push_back(DelilaEvent_);
 
            blIsWindow = false;
             
-           if (TriggerDecision()) SetUpNewTrigger();          
-       }else{
-//            std::cout<<" line 1742 "<< DelilaEvent_.det_def << " \n";
-           hDelila_single[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev);
+           if (TriggerDecision()) {
+               SetUpNewTrigger();
+           }else {
+               delilaPreQu.push_back(DelilaEvent_);
+           };
+           
+        }else{
+//            hDelila_single[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev);
            DelilaEvent_.trg = trigger_cnt;
            delilaQu.push_back(DelilaEvent_);
        };
        
    }else{//closed
-       if (TriggerDecision()) {SetUpNewTrigger(); MovePreQu2Qu();}
-       else{ 
+       if (TriggerDecision()) {
+           SetUpNewTrigger(); 
+       }else{ 
 //            CheckPreQu();
            DelilaEvent_.trg = trigger_cnt;
            delilaPreQu.push_back(DelilaEvent_);
+        };
     };
-   };
 }
-
 
 void DelilaSelectorEliade::SetUpNewTrigger(){
 
-//     MovePreQu2Qu();
+    MovePreQu2Qu();
     
     hTriggerTrigger->Fill(DelilaEvent_.Time - LastTriggerEvent.Time);
     hTriggerDomain->Fill(DelilaEvent_.domain);
     
     LastTriggerEvent = DelilaEvent_;
-    if (blAddTriggerToQueue) delilaQu.push_back(DelilaEvent_);
+    
+    delilaQu.push_back(DelilaEvent_);
     
     TriggerTimeFlag = DelilaEvent_.Time - pre_event_length;
     
@@ -1823,12 +1886,30 @@ void DelilaSelectorEliade::SetUpNewTrigger(){
       TriggerTimeFlag = 0;
     };
     
-    blIsTrigger = true;
     blIsWindow = true;
+    trigger_cnt++;
+    return;
+}
+
+
+void DelilaSelectorEliade::SetUpNewTriggerSimple(){
+
+    hTriggerTrigger->Fill(DelilaEvent_.Time - LastTriggerEvent.Time);
+    hTriggerDomain->Fill(DelilaEvent_.domain);
+    
+    LastTriggerEvent = DelilaEvent_;
+    
+    TriggerTimeFlag = DelilaEvent_.Time;
+    
+    if (blAddTriggerToQueue) delilaQu.push_back(DelilaEvent_);
+    
+    blIsTrigger = true;
 
     trigger_cnt++;
     return;
 }
+
+
 
 void DelilaSelectorEliade::TreatACS()
 {
@@ -1885,7 +1966,7 @@ void DelilaSelectorEliade::TreatACS()
               {
                  // output_pQu.push(*it2_);                  
                   if (it2_->CS ==0){
-                      hDelilaCS[it2_->det_def]->Fill(it2_->Energy_kev);
+//                       hDelilaCS[it2_->det_def]->Fill(it2_->Energy_kev);//just removed 20220610
 //                       hDelilaCS_long[it2_->det_def]->Fill(it2_->EnergyCal);
 //                       mDelilaCS->Fill(it2_->cs_domain, it2_->EnergyCal);
 //                       gamma_gamma_cs(*it2_);
@@ -1933,6 +2014,17 @@ void DelilaSelectorEliade::TreatBGOSingle()
      hDelila0[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev);
      mDelila->Fill(DelilaEvent_.domain,DelilaEvent_.Energy_kev);
 }
+void DelilaSelectorEliade::FillSingleSpectra()
+{
+     std::deque<DelilaEvent>::iterator it_ev__= delilaQu.begin();
+   
+     for (; it_ev__!= delilaQu.end();++it_ev__){
+         hDelila_single[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
+         if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 3)) hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
+         if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 1)) hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
+     };
+}
+
 
 
 
