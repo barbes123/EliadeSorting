@@ -37,7 +37,6 @@ using namespace std;
 
 ////////////////////////////////Please, modify if needed////////////////////////////////////////////
 bool blGammaGamma           = true;
-bool blCS                   = true;
 bool blOutTree              = false;
 bool blFold                 = false;
 bool blTimeAlignement       = true;
@@ -48,12 +47,14 @@ bool blIsTrigger            = false; //the SimpleTrigger is open
 bool blIsWindow             = false; //the preTrigger is open
 bool blFirstTrigger         = false;
 bool blAddTriggerToQueue    = false;
-
+// bool blCS                   = false;
 bool debug            = false;
 bool blDebugElissa    = false;
 
 ULong64_t trigger_cnt = 0;
 ULong64_t trigger_events = 0;
+
+// int addBackMode = 0;
 
 // const int NumberOfClovers = 2;
 const int max_domain = 500;
@@ -319,7 +320,7 @@ void DelilaSelectorEliade::Read_Confs() {
       exit(0);
   };
 
-  std::cout << " done" << std::endl;
+  std::cout << " Read_Confs is done" << std::endl;
 }
 
 
@@ -389,7 +390,7 @@ void DelilaSelectorEliade::Begin(TTree * tree)
 
   Read_Confs();
 
-  std::map<UInt_t, Float_t>::iterator it_c_gates_ =  coinc_gates.begin();
+  std::map<int, Float_t>::iterator it_c_gates_ =  coinc_gates.begin();
   for(;it_c_gates_!=coinc_gates.end();++it_c_gates_){
        
       switch (it_c_gates_->first){
@@ -448,11 +449,12 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    toks = option.Tokenize(",");
    TString RunID = ((TObjString*) toks->At(0))->GetString();
    TString VolID = ((TObjString*) toks->At(1))->GetString();
+   addBackMode = atoi(((TObjString*) toks->At(2))->GetString());
    TString ServerID = ((TObjString*) toks->At(3))->GetString();
    
    nevents = 0;
 //  nevents_reset=0;
-  reset_counter = 0;
+   reset_counter = 0;
 
    hTimeSort = new TH1F("hTimeSort", "time_diff: current-last", 1e3, -1e5,1e5);
    hTimeSort->GetXaxis()->SetTitle("ps");
@@ -489,7 +491,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    mDelila_raw->GetYaxis()->SetTitle("ADC channels");   
    fOutput->Add(mDelila_raw);
    
-   mDelila = new TH2F("mDelila", "mDelila", max_domain, 0, max_domain, 16384, -0.5, 16383.5);
+   mDelila = new TH2F("mDelila", "mDelila", max_domain, -0.5, max_domain-0.5, 16384, -0.5, 16383.5);
    mDelila->GetXaxis()->SetTitle("domain");
    mDelila->GetYaxis()->SetTitle("keV");
    fOutput->Add(mDelila);
@@ -754,7 +756,20 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         hLaBrElissa->GetXaxis()->SetTitle("keV");
         fOutput->Add(hLaBrElissa);
         
-      } else {
+        continue;
+        
+      };
+      
+      
+       if ((itna1->first == 1) && has_detector["HPGe"] && (addBackMode > 0)){
+//           
+         for (int k=1; k<=addBackMode; k++){
+           hAddBack[k] = new TH1F(Form("AddBackMode_%i",k), Form("AddBackMode_%i",k), 4096, -0.5, 16383.5);
+           hAddBack[k]->GetYaxis()->SetTitle("counts");
+           hAddBack[k]->GetXaxis()->SetTitle("keV");
+               fOutput->Add(hAddBack[k]);
+           };
+         };
       
         hDelila0[itna1->first] = new TH1F(Form("%s",itna1->second.c_str()), Form("%s before EventB",itna1->second.c_str()), 4096, -0.5, 16383.5);
         hDelila0[itna1->first]->GetYaxis()->SetTitle("counts");
@@ -769,6 +784,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         hDelilaCS[itna1->first] = new TH1F(Form("%s_CS",itna1->second.c_str()), Form("%s_CS",itna1->second.c_str()), 4096, -0.5, 16383.5);
         hDelilaCS[itna1->first]->GetYaxis()->SetTitle("counts");
         hDelilaCS[itna1->first]->GetXaxis()->SetTitle("keV");
+        hDelilaCS[itna1->first]->SetLineColor(2);
         fOutput->Add(hDelilaCS[itna1->first]);
         
         hDelilaDC[itna1->first] = new TH1F(Form("%s_DC",itna1->second.c_str()), Form("%s_DC",itna1->second.c_str()), 4096, -0.5, 16383.5);
@@ -780,7 +796,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         hDelilaCS_DC[itna1->first]->GetYaxis()->SetTitle("counts");
         hDelilaCS_DC[itna1->first]->GetXaxis()->SetTitle("keV");
         fOutput->Add(hDelilaCS_DC[itna1->first]);
-      };
+     
   };
   
   
@@ -901,7 +917,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    mTimeCalibBGO_cs_dom->SetTitle("BGO - HPGe/LaBr time diff");
    fOutput->Add(mTimeCalibBGO_cs_dom);
    */
-   mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5, 1e4,-1e6, 9e6);
+   mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5, 1e3,-1e6, 9e6);// for HPGe it should be 1e7 and 1e4 or 1e3 bins
    mTimeCalibDomain0->GetXaxis()->SetTitle("coinc ID");
    mTimeCalibDomain0->GetYaxis()->SetTitle("ps");
    mTimeCalibDomain0->SetTitle(Form("TimeDiff domain%i vs domain",channel_trg));
@@ -1155,27 +1171,6 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
          
      };
     
-//      if (DelilaEvent_.det_def == 9){//pulser
-//         CheckPulserAllignement(90);
-//         return kTRUE;
-//      }else if (DelilaEvent_.det_def == 98){
-//         return kTRUE;
-//      }else if ((DelilaEvent_.det_def == 99) && blIsWindow){
-//         return kTRUE;
-//      }else if (DelilaEvent_.det_def == 8){
-//           TreatNeutronSingle();
-//      }else if ((DelilaEvent_.det_def == 7) && has_detector["Elissa"]){
-//          TreatElissaSingle();
-//      }else if ((DelilaEvent_.det_def==4)&&has_detector["CsI"]){
-//          TreatBGOSingle();
-//      }else if ((DelilaEvent_.det_def == 3) && has_detector["LaBr"]) {
-//         TreatLaBrSingle();
-//      }else if ((DelilaEvent_.det_def == 1) && has_detector["HPGe"] ){
-//         TreatHpGeSingle();
-//      }else if ((DelilaEvent_.det_def == 2) && has_detector["SEG"] ){
-//         TreatHPGeSegmentSingle();
-//      };
-    
   if (debug){std::cout<<"I did TreatDelilaEvent_() \n";}
   
       EventBuilderPreTrigger();
@@ -1330,7 +1325,7 @@ void DelilaSelectorEliade::TreatGammaGammaCoinc()
 ;
 //              if (coinc_id == 77) continue;
              //Check that daq_ch is defined in LUT
-            std::map<UInt_t, Float_t> ::iterator it_c_gates_ = coinc_gates.find(coinc_id);
+            std::map<int, Float_t> ::iterator it_c_gates_ = coinc_gates.find(coinc_id);
             if(it_c_gates_ == coinc_gates.end()) continue;
             
             it_dom1_ = it1_;
@@ -1372,7 +1367,6 @@ void DelilaSelectorEliade::TreatGammaGammaCoinc()
    
 };
 
-
 void DelilaSelectorEliade::TreatDelilaEvent()
 {
     
@@ -1390,7 +1384,6 @@ void DelilaSelectorEliade::TreatDelilaEvent()
 //     mDelilaDC_long->Fill(domain,DelilaEvent_.EnergyDC);
     
 //     mThetaPhi->Fill(DelilaEvent_.theta, DelilaEvent_.phi);
-    
     
 
     return;
@@ -1519,10 +1512,11 @@ void DelilaSelectorEliade::cs()
                if (last_bgo_time[cs_dom] != -1)
                {
                 time_diff_bgo =  (*it_ev__).Time - last_bgo_time[cs_dom];// GetCoincTimeCorrection(it_ev__->domain,
-//                  time_diff_bgo =  (*it_ev__).Time - last_bgo_time[cs_dom] - LUT_ELIADE[it_ev__->channel].bgo_time_offset ;// GetCoincTimeCorrection(it_ev__->domain,
+//                  time_diff_bgo =  (*it_ev__).Time - last_bgo_time[csselected_run_12228_0_eliadeS3.root_dom] - LUT_ELIADE[it_ev__->channel].bgo_time_offset ;// GetCoincTimeCorrection(it_ev__->domain,
                  mTimeDiffCS ->Fill(cs_dom, time_diff_bgo);
 //                  std::cout<<" coinc_gates "<<det<<" "<< coinc_gates[det*10+5] <<" "<<time_diff_bgo << " \n";
-                 if (abs(time_diff_bgo) < coinc_gates[det*10+5]) //10000)
+                  if (abs(time_diff_bgo) < coinc_gates[det*10+5]) //10000)
+//                   if (abs(time_diff_bgo) < 50000)
                  {
                     (*it_ev__).CS = 1; // std::cout<<" here cs \n";
                  }else{
@@ -1563,7 +1557,8 @@ void DelilaSelectorEliade::cs()
 //                  time_diff_bgo =  (*it_ev__).Time - last_bgo_time[cs_dom]  - LUT_ELIADE[it_ev__->channel].bgo_time_offset;
                  mTimeDiffCS ->Fill(cs_dom, time_diff_bgo); 
 //                  std::cout<<"time_diff_bgo back "<<time_diff_bgo<<" id "<<det*10+5 <<" "<<coinc_gates[det*10+5]<<"\n";
-                 if (abs(time_diff_bgo) < coinc_gates[det*10+5]) //10000)
+                  if (abs(time_diff_bgo) < coinc_gates[det*10+5]) //10000)
+//                   if (abs(time_diff_bgo) < 50000)
                  {
                       (*it_ev__).CS = 1; //  std::cout<<" here cs \n";
                  }else{

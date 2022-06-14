@@ -168,11 +168,12 @@ public :
   
   TH1F* hLaBrElissa;
   
-  
   std::map<int, TH1F*> hDelila_long;
   std::map<int, TH1F*> hDelilaCS_long;
   std::map<int, TH1F*> hDelilaDC_long;
   std::map<int, TH1F*> hDelilaCS_DC_long;
+  
+  std::map<int, TH1F*> hAddBack;
 
   std::map<UInt_t, std::string> detector_name;
 
@@ -227,7 +228,7 @@ public :
   std::map<int, TH1F*> hMult;
 
   std::map<UInt_t, std::string> gg_coinc_id;
-  std::map<UInt_t, Float_t> coinc_gates;//in ps
+  std::map<int, Float_t> coinc_gates;//in ps
 
   
   std::map<int, std::string> domain_list;
@@ -273,7 +274,9 @@ public :
   int channel_trg;
   double TriggerTimeFlag;
   double lastDelilaTime;
-
+  
+  bool blCS;
+  int addBackMode;
     
   std::clock_t start;
   double duration;
@@ -346,6 +349,8 @@ public :
    
    virtual void TreatGammaGammaCoinc();
    virtual void TreatSolarLaBrCoinc();
+   
+   virtual void AddBack();
    
    virtual std::vector<float> trapezoidal(short wave[],int length, int L, int G);//L = 20; G = 0
    
@@ -426,13 +431,28 @@ void DelilaSelectorEliade::Init(TTree *tree)
   std::cout<<" BGOs     " << has_detector["BGOs"] <<"  \n";
   std::cout<<" BGOf     " << has_detector["BGOf"] <<"  \n";
   std::cout<<" Elissa   " << has_detector["Elissa"] <<" \n";
+  
+  std::cout<<" === Settings === \n";
+  blCS = false;
+  if (coinc_gates.find(15) != coinc_gates.end()){blCS = true;};
+  if (coinc_gates.find(35) != coinc_gates.end()){blCS = true;};
+  if (blCS && (has_detector["BGOs"] || has_detector["BGOf"] || has_detector["CsI"] ) ) {std:cout<<" Compton Supression is enabled \n";}
+  else {cout<<" Compton Supression is disabled \n"; blCS = false;};
+  
+  std::cout<<" AddBack option is "<< addBackMode <<" \n";
+  
+  
   std::cout<<" === Time settings ps === \n";
-  std::map<UInt_t, Float_t> ::iterator itcc_ = coinc_gates.begin();
+  std::map<int, Float_t> ::iterator itcc_ = coinc_gates.begin();
   for (; itcc_ != coinc_gates.end(); ++itcc_) {
-     std::cout<<" coin_id " << itcc_->first <<"  coinc_gate "<< itcc_->second <<" ps \n";
+     std::cout<<" coin_id " << itcc_->first <<" "<< itcc_->second <<" ps \n";
   }
   std::cout<<" event_length     " << event_length      <<" ps \n";
   std::cout<<" pre_event_length " << pre_event_length  <<" ps \n";
+  
+
+  
+  
   std::cout<<" ===                            === \n";
 }
 
