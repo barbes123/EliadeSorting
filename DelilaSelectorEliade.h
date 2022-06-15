@@ -350,7 +350,7 @@ public :
    virtual void TreatGammaGammaCoinc();
    virtual void TreatSolarLaBrCoinc();
    
-   virtual void AddBack();
+//    virtual void AddBack();
    
    virtual std::vector<float> trapezoidal(short wave[],int length, int L, int G);//L = 20; G = 0
    
