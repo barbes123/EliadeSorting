@@ -127,7 +127,7 @@ public :
   std::map<int, double_t >              LUT_TA_TRG;
 
   DelilaEvent DelilaEvent_;  
-  DelilaEvent DelilaEventTreated ;
+//   DelilaEvent DelilaEventTreated ;
   DelilaEvent lastDelilaEvent;  
   DelilaEvent lastEliadeZeroEvent;
   DelilaEvent LastTriggerEvent;
@@ -276,7 +276,23 @@ public :
   double lastDelilaTime;
   
   bool blCS;
+  bool blGammaGamma;
+  bool blAddBack;
+
   int addBackMode;
+  std::vector<int>     ListOfCores;
+  std::map<int, TH1F*> hCoreFold;
+  std::map<int, TH2F*> mCoreSegments;//spectra: core0-seg1..8
+  std::map<int, TH2F*> mGGCoreSegments;//core-seg1..8
+  std::map<int, TH2F*> mFoldSpec;
+  std::map<int, TH2F*> mTimeDiffCoreSegments;
+  
+  std::map<int, TH2F*> mCoreACS;//spectra: core0-bgo1...10
+  std::map<int, TH2F*> mTimeDiffCoreACS;
+  std::map<int, TH1F*> hACSFold;
+  std::map<int, TH2F*> mAcsFold;
+
+
     
   std::clock_t start;
   double duration;
@@ -350,7 +366,8 @@ public :
    virtual void TreatGammaGammaCoinc();
    virtual void TreatSolarLaBrCoinc();
    
-//    virtual void AddBack();
+   virtual void ViewAddBack();
+   virtual void ViewACS();
    
    virtual std::vector<float> trapezoidal(short wave[],int length, int L, int G);//L = 20; G = 0
    
@@ -433,14 +450,24 @@ void DelilaSelectorEliade::Init(TTree *tree)
   std::cout<<" Elissa   " << has_detector["Elissa"] <<" \n";
   
   std::cout<<" === Settings === \n";
+  
+  std::cout<<" AddBack option is "<< addBackMode <<" \n";
+  
   blCS = false;
   if (coinc_gates.find(15) != coinc_gates.end()){blCS = true;};
   if (coinc_gates.find(35) != coinc_gates.end()){blCS = true;};
   if (blCS && (has_detector["BGOs"] || has_detector["BGOf"] || has_detector["CsI"] ) ) {std:cout<<" Compton Supression is enabled \n";}
   else {cout<<" Compton Supression is disabled \n"; blCS = false;};
   
-  std::cout<<" AddBack option is "<< addBackMode <<" \n";
   
+  
+  blGammaGamma = false;
+  if (coinc_gates.find(11) != coinc_gates.end() && has_detector["HPGe"]){blGammaGamma = true;};
+  if (coinc_gates.find(13) != coinc_gates.end() && has_detector["HPGe"] && has_detector["LaBr"]){blGammaGamma = true;};
+  if (coinc_gates.find(33) != coinc_gates.end() && has_detector["LaBr"]){blGammaGamma = true;};
+  
+  if (blGammaGamma) {cout<<" GammaGamma is enabled \n";}
+  else {cout<<" GammaGamma is disabled \n";};
   
   std::cout<<" === Time settings ps === \n";
   std::map<int, Float_t> ::iterator itcc_ = coinc_gates.begin();
@@ -450,10 +477,27 @@ void DelilaSelectorEliade::Init(TTree *tree)
   std::cout<<" event_length     " << event_length      <<" ps \n";
   std::cout<<" pre_event_length " << pre_event_length  <<" ps \n";
   
-
+  
+  std::cout<<" ===                   === \n";
+  
+//   blAddBack  = false;
+//   if (addBackMode > 0){
+//     blAddBack  = true;
+//     std::cout<<"Making List of Cores from LUT_ELIADE.dat \n";
+//     std::map<int, TDelilaDetector > ::iterator it__ = LUT_ELIADE.begin();
+//     for (; it__ != LUT_ELIADE.end(); ++it__) {
+//         if (LUT_ELIADE[it__->first].detType == 1){
+//              int core_id = LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10;
+//              std::cout<<core_id<<" ";
+//              ListOfCores.push_back(core_id);
+// //           std::cout<<LUT_ELIADE[it__->first].dom<<" "<<LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10 <<std::endl;
+//         };
+//    };
+//    std::cout<<" \n";
+// 
+//  };
   
   
-  std::cout<<" ===                            === \n";
 }
 
 Bool_t DelilaSelectorEliade::Notify()
