@@ -18,6 +18,7 @@
     float           EnergyDC;
 //     UShort_t        domain;
     int             domain;
+    int             core_id;
     UShort_t        cs_domain;
     int             channel;//ch daq
     UShort_t        CS;//0 - no; 1 - yes

@@ -206,7 +206,7 @@ public :
   TH2F* mDelilaCS_DC_long;//keV
 
   TH2F* mGammaGammaDC;
-  TH2F* mGammaGammaCS_DC;
+//   TH2F* mGammaGammaCS_DC;
   
   TH2F* mEnergyTimeDiff_trigger;
   TH2F* mDomainTimeDiff_trigger;
@@ -214,15 +214,11 @@ public :
   
   std::map<int, TH2F*> mGG;
   std::map<int, TH2F*> mGG_theta;
-  std::map<int, TH2F*> mGG_CS;
   std::map<int, TH2F*> mGG_DC;
-  std::map<int, TH2F*> mGG_CS_DC;
   std::map<int, TH2F*> mGG_time_diff;
   
   std::map<int, TH2F*> mGG_long;
-  std::map<int, TH2F*> mGG_CS_long;
   std::map<int, TH2F*> mGG_DC_long;
-  std::map<int, TH2F*> mGG_CS_DC_long;
   
 //   std::map<int, TH2F*> mTimeDiffselected_run_2022_0.root;
   std::map<int, TH1F*> hMult;
@@ -243,7 +239,7 @@ public :
   TH2F* mGammaGamma;
   TH2F* mTimeDiff_gg;
   TH1F* hMult_gg;
-  TH2F* mGammaGammaCS;
+//   TH2F* mGammaGammaCS;
   TH2F* mTimeDiff_gg_CS;
   TH1F* hMult_gg_CS;
   
@@ -278,6 +274,7 @@ public :
   bool blCS;
   bool blGammaGamma;
   bool blAddBack;
+  double beta;
 
   int addBackMode;
   std::vector<int>     ListOfCores;
@@ -452,6 +449,7 @@ void DelilaSelectorEliade::Init(TTree *tree)
   std::cout<<" === Settings === \n";
   
   std::cout<<" AddBack option is "<< addBackMode <<" \n";
+  std::cout<<" Beta is           "<< beta <<" \n";
   
   blCS = false;
   if (coinc_gates.find(15) != coinc_gates.end()){blCS = true;};

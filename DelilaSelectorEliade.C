@@ -62,7 +62,7 @@ const int max_domain = 500;
 const int nbr_of_ch = 500;
 // ULong64_t lastTimeStampTrigger = 0;
 
-double beta = 0;
+// double beta = 0;
 
 std::stringstream OutputFile;
 
@@ -235,6 +235,7 @@ void DelilaSelectorEliade::Read_Confs() {
   det_def_trg = -1;
   channel_trg = -1;
   TriggerTimeFlag = 0;
+  beta = 0;
 
   if (!lookuptable.good()) {
     std::ostringstream os;
@@ -575,21 +576,21 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    mGammaGamma->GetXaxis()->SetTitle("keV");
    mGammaGamma->GetYaxis()->SetTitle("keV");
    fOutput->Add(mGammaGamma);
-   
-   mGammaGammaCS = new TH2F("mGammaGammaCS", "mGammaGammaCS", 4096, -0.5, 16383.5, 4096, -0.5, 16383.5);
-   mGammaGammaCS->GetXaxis()->SetTitle("keV");
-   mGammaGammaCS->GetYaxis()->SetTitle("keV");
-   fOutput->Add(mGammaGammaCS);
+
+//    mGammaGammaCS = new TH2F("mGammaGammaCS", "mGammaGammaCS", 4096, -0.5, 16383.5, 4096, -0.5, 16383.5);
+//    mGammaGammaCS->GetXaxis()->SetTitle("keV");
+//    mGammaGammaCS->GetYaxis()->SetTitle("keV");
+//    fOutput->Add(mGammaGammaCS);
    
    mGammaGammaDC = new TH2F("mGammaGammaDC", "mGammaGammaDC", 4096, -0.5, 16383.5, 4096, -0.5, 16383.5);
    mGammaGammaDC->GetXaxis()->SetTitle("keV");
    mGammaGammaDC->GetYaxis()->SetTitle("keV");
    fOutput->Add(mGammaGammaDC);
    
-   mGammaGammaCS_DC = new TH2F("mGammaGammaCS_DC", "mGammaGammaCS_DC", 4096, -0.5, 16383.5, 4096, -0.5, 16383.5);
-   mGammaGammaCS_DC->GetXaxis()->SetTitle("keV");
-   mGammaGammaCS_DC->GetYaxis()->SetTitle("keV");
-   fOutput->Add(mGammaGammaCS_DC);
+//    mGammaGammaCS_DC = new TH2F("mGammaGammaCS_DC", "mGammaGammaCS_DC", 4096, -0.5, 16383.5, 4096, -0.5, 16383.5);
+//    mGammaGammaCS_DC->GetXaxis()->SetTitle("keV");
+//    mGammaGammaCS_DC->GetYaxis()->SetTitle("keV");
+//    fOutput->Add(mGammaGammaCS_DC);
    
    
    if (has_detector["HPGe"] && has_detector["SEG"] && blAddBack){
@@ -740,42 +741,45 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             mGG[itna->first]->GetYaxis()->SetTitle("keV");
             fOutput->Add(mGG[itna->first]);
             
-            mGG_CS[itna->first] = new TH2F(Form("%s_CS",itna->second.c_str()), Form("%s_CS",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 16383.5);
-            mGG_CS[itna->first]->GetXaxis()->SetTitle("keV");
-            mGG_CS[itna->first]->GetYaxis()->SetTitle("keV");
-            fOutput->Add(mGG_CS[itna->first]);
+//             mGG_CS[itna->first] = new TH2F(Form("%s_CS",itna->second.c_str()), Form("%s_CS",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 16383.5);
+//             mGG_CS[itna->first]->GetXaxis()->SetTitle("keV");
+//             mGG_CS[itna->first]->GetYaxis()->SetTitle("keV");
+//             fOutput->Add(mGG_CS[itna->first]);
                 
             mGG_DC[itna->first] = new TH2F(Form("%s_DC",itna->second.c_str()), Form("%s_DC",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 16383.5);
             mGG_DC[itna->first]->GetXaxis()->SetTitle("keV");
             mGG_DC[itna->first]->GetYaxis()->SetTitle("keV");
             fOutput->Add(mGG_DC[itna->first]);
    
-            mGG_CS_DC[itna->first] = new TH2F(Form("%s_CS_DC",itna->second.c_str()), Form("%s_CS_DC",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 16383.5);
-            mGG_CS_DC[itna->first]->GetXaxis()->SetTitle("keV");
-            mGG_CS_DC[itna->first]->GetYaxis()->SetTitle("keV");
-            fOutput->Add(mGG_CS_DC[itna->first]);
-            
+//             mGG_CS_DC[itna->first] = new TH2F(Form("%s_CS_DC",itna->second.c_str()), Form("%s_CS_DC",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 16383.5);
+//             mGG_CS_DC[itna->first]->GetXaxis()->SetTitle("keV");
+//             mGG_CS_DC[itna->first]->GetYaxis()->SetTitle("keV");
+//             fOutput->Add(mGG_CS_DC[itna->first]);
+//             
             //////////////////////////////
-            mGG_long[itna->first] = new TH2F(Form("%s_long",itna->second.c_str()), Form("%s_long",itna->second.c_str()), 4096, -0.5,  65535.5, 4096, -0.5,  65535.5);
-            mGG_long[itna->first]->GetXaxis()->SetTitle("keV");
-            mGG_long[itna->first]->GetYaxis()->SetTitle("keV");
-            fOutput->Add(mGG_long[itna->first]);
-  
-            mGG_CS_long[itna->first] = new TH2F(Form("%s_CS_long",itna->second.c_str()), Form("%s_CS_long",itna->second.c_str()), 4096, -0.5,  65535.5, 4096, -0.5,  65535.5);
-            mGG_CS_long[itna->first]->GetXaxis()->SetTitle("keV");
-            mGG_CS_long[itna->first]->GetYaxis()->SetTitle("keV");
-            fOutput->Add(mGG_CS_long[itna->first]);
-                
-            mGG_DC_long[itna->first] = new TH2F(Form("%s_DC_long",itna->second.c_str()), Form("%s_DC_long",itna->second.c_str()), 4096, -0.5,  65535.5, 4096, -0.5,  65535.5);
-            mGG_DC_long[itna->first]->GetXaxis()->SetTitle("keV");
-            mGG_DC_long[itna->first]->GetYaxis()->SetTitle("keV");
-            fOutput->Add(mGG_DC_long[itna->first]);
-   
-            mGG_CS_DC_long[itna->first] = new TH2F(Form("%s_CS_DC_long",itna->second.c_str()), Form("%s_CS_DC_long",itna->second.c_str()), 4096, -0.5,  65535.5, 4096, -0.5,  65535.5);
-            mGG_CS_DC_long[itna->first]->GetXaxis()->SetTitle("keV");
-            mGG_CS_DC_long[itna->first]->GetYaxis()->SetTitle("keV");
-            fOutput->Add(mGG_CS_DC_long[itna->first]);
             
+            if (blLong){
+            
+                mGG_long[itna->first] = new TH2F(Form("%s_long",itna->second.c_str()), Form("%s_long",itna->second.c_str()), 4096, -0.5,  65535.5, 4096, -0.5,  65535.5);
+                mGG_long[itna->first]->GetXaxis()->SetTitle("keV");
+                mGG_long[itna->first]->GetYaxis()->SetTitle("keV");
+                fOutput->Add(mGG_long[itna->first]);
+    
+//                 mGG_CS_long[itna->first] = new TH2F(Form("%s_CS_long",itna->second.c_str()), Form("%s_CS_long",itna->second.c_str()), 4096, -0.5,  65535.5, 4096, -0.5,  65535.5);
+//                 mGG_CS_long[itna->first]->GetXaxis()->SetTitle("keV");
+//                 mGG_CS_long[itna->first]->GetYaxis()->SetTitle("keV");
+//                 fOutput->Add(mGG_CS_long[itna->first]);
+                    
+                mGG_DC_long[itna->first] = new TH2F(Form("%s_DC_long",itna->second.c_str()), Form("%s_DC_long",itna->second.c_str()), 4096, -0.5,  65535.5, 4096, -0.5,  65535.5);
+                mGG_DC_long[itna->first]->GetXaxis()->SetTitle("keV");
+                mGG_DC_long[itna->first]->GetYaxis()->SetTitle("keV");
+                fOutput->Add(mGG_DC_long[itna->first]);
+    
+          /*      mGG_CS_DC_long[itna->first] = new TH2F(Form("%s_CS_DC_long",itna->second.c_str()), Form("%s_CS_DC_long",itna->second.c_str()), 4096, -0.5,  65535.5, 4096, -0.5,  65535.5);
+                mGG_CS_DC_long[itna->first]->GetXaxis()->SetTitle("keV");
+                mGG_CS_DC_long[itna->first]->GetYaxis()->SetTitle("keV");
+                fOutput->Add(mGG_CS_DC_long[itna->first])*/;
+            };
             ///////////////////////////////
             
             hMult[itna->first] = new TH1F(Form("%s_hMult",itna->second.c_str()), Form("%s_hMult",itna->second.c_str()), 20,0,20);
@@ -787,14 +791,16 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
   
             if (itna->first == 13){
                 mGG[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
-                mGG_CS[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_CS[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
+//                 mGG_CS[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_CS[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
                 mGG_DC[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_DC[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
-                mGG_CS_DC[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_CS_DC[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
+//                 mGG_CS_DC[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_CS_DC[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
 
-                mGG_long[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_long[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
-                mGG_CS_long[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_CS_long[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
-                mGG_DC_long[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_DC_long[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
-                mGG_CS_DC_long[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_CS_DC_long[itna->first]->GetYaxis()->SetTitle("HPGe, keV");    
+                if (blLong){
+                    mGG_long[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_long[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
+    //                 mGG_CS_long[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_CS_long[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
+                    mGG_DC_long[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_DC_long[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
+    //                 mGG_CS_DC_long[itna->first]->GetXaxis()->SetTitle("LaBr, keV"); mGG_CS_DC_long[itna->first]->GetYaxis()->SetTitle("HPGe, keV");
+                };
             };
             
 
@@ -806,7 +812,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                 mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 4e4, -2e6, 2e6);
             };
                 
-            mGG_time_diff[itna->first]->GetXaxis()->SetTitle("domain"); mGG_DC[itna->first]->GetYaxis()->SetTitle("ps");
+            mGG_time_diff[itna->first]->GetXaxis()->SetTitle("coreID"); mGG_DC[itna->first]->GetYaxis()->SetTitle("ps");
             fOutput->Add(mGG_time_diff[itna->first]);
             
             
@@ -1408,11 +1414,13 @@ void DelilaSelectorEliade::TreatGammaGammaCoinc()
    
      for (; it1_!= delilaQu.end();++it1_){
           if ((it1_->det_def != 1 )&&(it1_->det_def != 3 )&&(it1_->det_def != 7 )) continue;
+          if (it1_->CS != 0) continue;
           it2_= delilaQu.begin();
 //          int ttt=0;       
          for (; it2_!= delilaQu.end();++it2_){
              if (it1_ == it2_) continue;              
              if ((it2_->det_def != 1 )&&(it2_->det_def != 3 )&&(it2_->det_def != 7 )) continue;
+             if (it2_->CS != 0) continue;
              int coinc_id = GetCoinc_det_def(it1_->det_def, it2_->det_def);
 ;
 //              if (coinc_id == 77) continue;
@@ -1434,7 +1442,13 @@ void DelilaSelectorEliade::TreatGammaGammaCoinc()
             };
             double_t time_diff_gg = it_dom2_->Time - it_dom1_->Time;
             
-            mGG_time_diff[coinc_id]->Fill(it_dom2_->domain,time_diff_gg);
+            if (coinc_id == 11) {
+                int core_id1 =  (*it_dom1_).domain/100 * 10 +(*it_dom1_).domain/10%10;
+                mGG_time_diff[coinc_id]->Fill(core_id1,time_diff_gg);
+            }else {
+                mGG_time_diff[coinc_id]->Fill(it_dom1_->domain,time_diff_gg);
+            };
+            
             hCoincID->Fill(coinc_id);
                double_t delta_theta = it1_->theta - it2_->theta;
             if (abs(time_diff_gg) < coinc_gates[coinc_id]){
@@ -1469,17 +1483,27 @@ void DelilaSelectorEliade::TreatDelilaEvent()
     UShort_t daq_ch = DelilaEvent_.channel;
     UShort_t domain = DelilaEvent_.domain;
     
-//     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
-    double costheta = TMath::Cos(LUT_ELIADE[daq_ch].theta);
-    DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
-    
-//     hDelila[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev);
     mDelila->Fill(domain,DelilaEvent_.Energy_kev);
-//     mDelila_long->Fill(domain,DelilaEvent_.Energy_kev);
-    mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
-//     mDelilaDC_long->Fill(domain,DelilaEvent_.EnergyDC);
     
+    
+    if (beta != 0){
+        double costheta = TMath::Cos(LUT_ELIADE[daq_ch].theta);
+        DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
+        mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
+    }
+    
+//     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
+//     hDelila[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev);
 //     mThetaPhi->Fill(DelilaEvent_.theta, DelilaEvent_.phi);
+
+
+    
+    if (blLong){
+       mDelila_long->Fill(domain,DelilaEvent_.Energy_kev);
+       mDelilaDC_long->Fill(domain,DelilaEvent_.EnergyDC);
+    };
+    
+
     
 
     return;
@@ -1930,8 +1954,8 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
 
        if (abs(time_diff_trigger) > event_length){//close event
            if (blTimeAlignement)    TimeAlignementTrigger();
-           if (blCS)                cs();
-//            if (blCS)                ViewACS();
+//            if (blCS)                cs();
+           if (blCS)                ViewACS();
            if (blFold)              TreatFold(3);
            if (blAddBack)           ViewAddBack();
            
@@ -2181,38 +2205,39 @@ void DelilaSelectorEliade::ViewAddBack()
 
 void DelilaSelectorEliade::ViewACS()
 {
-     std::deque<DelilaEvent>::iterator it1_= delilaQu.begin();
-     std::deque<DelilaEvent>::iterator it2_= delilaQu.begin();
-     for (; it1_!= delilaQu.end();++it1_){
+     std::deque<DelilaEvent>::iterator it_core_= delilaQu.begin();
+     std::deque<DelilaEvent>::iterator it_acs_= delilaQu.begin();
+     for (; it_core_!= delilaQu.end();++it_core_){
          
-         if ((*it1_).det_def != 1) continue;      
-         int core_id =  (*it1_).domain/100 * 10 +(*it1_).domain/10%10;
-         it2_= delilaQu.begin();
+         if ((*it_core_).det_def != 1) continue;      
+         int core_id =  (*it_core_).domain/100 * 10 +(*it_core_).domain/10%10;
+         it_acs_= delilaQu.begin();
          
          std::deque<DelilaEvent> AcsQu;
          AcsQu.clear();
          
          
-         for (; it2_ != delilaQu.end();++it2_){
-           if (it1_ == it2_) continue; 
-           if (((*it2_).det_def != 4) && ((*it2_).det_def != 5) && ((*it2_).det_def != 6)) continue;         
+         for (; it_acs_ != delilaQu.end();++it_acs_){
+           if (it_core_ == it_acs_) continue; 
+           if (((*it_acs_).det_def != 4) && ((*it_acs_).det_def != 5) && ((*it_acs_).det_def != 6)) continue;         
            
-           int acs_id = (*it2_).domain%10;
+           int acs_id = (*it_acs_).domain%10;
 //            std::cout<<core_id<<" "<<acs_id<<" \n";           
            
-           double time_diff_core_acs = (*it1_).Time - (*it2_).Time;
+           double time_diff_core_acs = (*it_core_).Time - (*it_acs_).Time;
            
            
            mTimeDiffCoreACS[core_id]->Fill(acs_id,time_diff_core_acs);
            
            if (time_diff_core_acs < coinc_gates[15]) {
-               mCoreACS[core_id]->Fill(acs_id,(*it2_).Energy_kev);
+               mCoreACS[core_id]->Fill(acs_id,(*it_acs_).Energy_kev);
                hACSFold[core_id]->SetBinContent(acs_id, hACSFold[core_id]->GetBinContent(acs_id)+1);
-               AcsQu.push_back(*it1_);
+               AcsQu.push_back(*it_acs_);
+               (*it_core_).CS = (*it_acs_).det_def;
            };
          };
          
-            std::deque<DelilaEvent>::iterator it_acs_= AcsQu.begin();
+            it_acs_= AcsQu.begin();
             int nnfold = AcsQu.size();
             for (; it_acs_!= AcsQu.end();++it_acs_){
                 mAcsFold[core_id]->Fill(nnfold, (*it_acs_).Energy_kev);  
