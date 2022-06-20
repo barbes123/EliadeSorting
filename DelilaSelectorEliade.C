@@ -612,6 +612,18 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 //    mGammaGammaCS_DC->GetYaxis()->SetTitle("keV");
 //    fOutput->Add(mGammaGammaCS_DC);
    
+   if (has_detector["HPGe"] && has_detector["SEG"]) {
+        mEliade = new TH2F("mEliade", "mEliade", max_domain, -0.5, max_domain-0.5, 4096, -0.5, 4095.5);
+        mEliade->GetXaxis()->SetTitle("domain");
+        mEliade->GetYaxis()->SetTitle("keV");
+        fOutput->Add(mEliade);
+        
+        mEliade_raw = new TH2F("mEliade_raw", "mEliade_raw", max_domain, -0.5, max_domain-0.5, 4096, -0.5, 4095.5);
+        mEliade_raw->GetXaxis()->SetTitle("domain");
+        mEliade_raw->GetYaxis()->SetTitle("keV");
+        fOutput->Add(mEliade_raw);
+    };
+   
    
    if (has_detector["HPGe"] && has_detector["SEG"] && blAddBack){
        
@@ -1814,7 +1826,7 @@ void DelilaSelectorEliade::TreatLaBrSingle()
     return;
 }
 
-void DelilaSelectorEliade::TreatHpGeSingle()
+void DelilaSelectorEliade::TreatHpGeSingle()//clover
 {
     UShort_t daq_ch = DelilaEvent_.channel;
     UShort_t domain = DelilaEvent_.domain;
@@ -1827,6 +1839,9 @@ void DelilaSelectorEliade::TreatHpGeSingle()
     mDelila->Fill(domain,DelilaEvent_.Energy_kev);
     mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
     hDelila0[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev); 
+    
+    mEliade_raw->Fill(domain,DelilaEvent_.fEnergy);
+    mEliade->Fill(domain,DelilaEvent_.Energy_kev);
      
 }
 
@@ -1843,7 +1858,9 @@ void DelilaSelectorEliade::TreatHPGeSegmentSingle()
     mDelila->Fill(domain,DelilaEvent_.Energy_kev);
     mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
     hDelila0[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev); 
-     
+    
+    mEliade_raw->Fill(domain,DelilaEvent_.fEnergy);
+    mEliade->Fill(domain,DelilaEvent_.Energy_kev);
 }
 
 void DelilaSelectorEliade::TreatNeutronSingle()

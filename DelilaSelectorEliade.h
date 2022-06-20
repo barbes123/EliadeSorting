@@ -193,6 +193,8 @@ public :
 
   
   TH2F* mDelila;
+  TH2F* mEliade;
+  TH2F* mEliade_raw;
   TH2F* mElissa;
   TH2F* mDelila_raw;
   TH2F* mDelilaCS;
