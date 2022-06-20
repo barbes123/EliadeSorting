@@ -281,7 +281,8 @@ public :
   std::map<int, TH1F*> hCoreFold;
   std::map<int, TH2F*> mCoreSegments;//spectra: core0-seg1..8
   std::map<int, TH2F*> mGGCoreSegments;//core-seg1..8
-  std::map<int, TH2F*> mFoldSpec;
+  std::map<int, TH2F*> mFoldSpec;//Crystal;
+//   std::map<int, TH2F*> mFoldSpecClover;
   std::map<int, TH2F*> mTimeDiffCoreSegments;
   
   std::map<int, TH2F*> mCoreACS;//spectra: core0-bgo1...10
@@ -363,7 +364,8 @@ public :
    virtual void TreatGammaGammaCoinc();
    virtual void TreatSolarLaBrCoinc();
    
-   virtual void ViewAddBack();
+   virtual void ViewAddBackCrystal();
+   virtual void ViewAddBackDetector();
    virtual void ViewACS();
    
    virtual std::vector<float> trapezoidal(short wave[],int length, int L, int G);//L = 20; G = 0
