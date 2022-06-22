@@ -474,6 +474,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    for (; it__ != LUT_ELIADE.end(); ++it__) {
       if (LUT_ELIADE[it__->first].detType == 1){
            int core_id = LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10;
+           if (std::find(ListOfCores.begin(), ListOfCores.end(),core_id)!=ListOfCores.end()) continue;
            std::cout<<core_id<<" ";
            ListOfCores.push_back(core_id);
 //         std::cout<<LUT_ELIADE[it__->first].dom<<" "<<LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10 <<std::endl;
@@ -850,7 +851,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                 mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 4e4, -2e6, 2e6);
             };
                 
-            mGG_time_diff[itna->first]->GetXaxis()->SetTitle("coreID"); mGG_DC[itna->first]->GetYaxis()->SetTitle("ps");
+            mGG_time_diff[itna->first]->GetXaxis()->SetTitle("coreID"); mGG_time_diff[itna->first]->GetYaxis()->SetTitle("ps");
             fOutput->Add(mGG_time_diff[itna->first]);
             
             
@@ -1186,7 +1187,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     int daq_ch = (fMod)*100+fChannel;
     DelilaEvent_.det_def = LUT_ELIADE[daq_ch].detType;
     DelilaEvent_.channel = daq_ch;
- 	hChannelHit->Fill(daq_ch);
+    hChannelHit->Fill(daq_ch);
 
     //Check that daq_ch is defined in LUT
       bool check_daq_ch = false;
@@ -1198,9 +1199,8 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
                continue;
              };
      };
-     if (!check_daq_ch) return kTRUE;
-
-     if (debug){std::cout<<"I am doing new entry, ch:"<< daq_ch << "\n";}
+    if (!check_daq_ch) return kTRUE;
+    if (debug){std::cout<<"I am doing new entry, ch:"<< daq_ch << "\n";}
 
     if (LUT_ELIADE.empty()){std::cout<<"LUT is empty \n"; return kTRUE;};//did not work well
     if (LUT_ELIADE.find(daq_ch) == LUT_ELIADE.end()){return kTRUE;};//did not work well
@@ -1217,7 +1217,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     
     
     
-    if ((DelilaEvent_.fEnergy < LUT_ELIADE[daq_ch].threshold)&&(DelilaEvent_.det_def < 9)) return kTRUE;
+    if (DelilaEvent_.fEnergy < LUT_ELIADE[daq_ch].threshold) return kTRUE;
     
     DelilaEvent_.cs_domain = LUT_ELIADE[daq_ch].cs_dom;
     DelilaEvent_.theta= LUT_ELIADE[daq_ch].theta;
