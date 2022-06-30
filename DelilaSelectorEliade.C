@@ -390,6 +390,7 @@ void DelilaSelectorEliade::Begin(TTree * tree)
   detector_name[8]="neutron";  has_detector[detector_name[8]] = false;
   detector_name[9]="pulser";   has_detector[detector_name[9]] = false;
   detector_name[10]="core1";   has_detector[detector_name[10]] = true;
+//   detector_name[18]="neutronTN"; has_detector[detector_name[18]] = false;
 
 
   Read_Confs();
@@ -460,7 +461,6 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
            int det_id = LUT_ELIADE[it__->first].dom/100;
            
            if (std::find(ListOfCores.begin(), ListOfCores.end(),det_id)!=ListOfCores.end()) continue;
-           
 //            if (ListOfCores.find(det_id) == ListOfCores.end()) {;};// continue;
            std::cout<<det_id<<" ";
            ListOfCores.push_back(det_id);
@@ -474,9 +474,9 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    for (; it__ != LUT_ELIADE.end(); ++it__) {
       if (LUT_ELIADE[it__->first].detType == 1){
            int core_id = LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10;
-           if (std::find(ListOfCores.begin(), ListOfCores.end(),core_id)!=ListOfCores.end()) continue;
            std::cout<<core_id<<" ";
            ListOfCores.push_back(core_id);
+         
 //         std::cout<<LUT_ELIADE[it__->first].dom<<" "<<LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10 <<std::endl;
       };
   };
@@ -686,6 +686,11 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             mCoreACS[*it2_coreid_]->GetYaxis()->SetTitle("keV");
             fOutput->Add(mCoreACS[*it2_coreid_]);
             
+            mCoreSpecACS[*it2_coreid_] = new TH2F(Form("mCoreSpecACS_%i", *it2_coreid_), Form("mCoreSpecACS_%i", *it2_coreid_), 16, -0.5, 15.5, 4096, -0.5, 16383.5);
+            mCoreSpecACS[*it2_coreid_]->GetXaxis()->SetTitle("acs id");
+            mCoreSpecACS[*it2_coreid_]->GetYaxis()->SetTitle("keV");
+            fOutput->Add(mCoreSpecACS[*it2_coreid_]);
+            
             mTimeDiffCoreACS[*it2_coreid_] = new TH2F(Form("mTimeDiffCoreACS_%i", *it2_coreid_), Form("mTimeDiffCoreACS_%i", *it2_coreid_), 10, -0.5, 9.5, 4e2, -2e6, 2e6);
             mTimeDiffCoreACS[*it2_coreid_]->GetXaxis()->SetTitle("segment");
             mTimeDiffCoreACS[*it2_coreid_]->GetYaxis()->SetTitle("10 ns / bin");
@@ -699,7 +704,15 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 //             std::cout<<" core ID "<<*it2_coreid_<<" ACS hists Initialized \n";  
        };
        
-       
+            mSingleCoreCS = new TH2F("mSingleCoreCS", "mSingleCoreCS", 20, -0.5, 19.5, 4096, -0.5, 16383.5);
+            mSingleCoreCS->GetXaxis()->SetTitle("CORE ID");
+            mSingleCoreCS->GetYaxis()->SetTitle("keV");
+            fOutput->Add(mSingleCoreCS);
+            
+            mSingleCore = new TH2F("mSingleCore", "mSingleCore", 20, -0.5, 19.5, 4096, -0.5, 16383.5);
+            mSingleCore->GetXaxis()->SetTitle("CORE ID");
+            mSingleCore->GetYaxis()->SetTitle("keV");
+            fOutput->Add(mSingleCore);
      };
    
    
@@ -1187,7 +1200,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     int daq_ch = (fMod)*100+fChannel;
     DelilaEvent_.det_def = LUT_ELIADE[daq_ch].detType;
     DelilaEvent_.channel = daq_ch;
-    hChannelHit->Fill(daq_ch);
+ 	hChannelHit->Fill(daq_ch);
 
     //Check that daq_ch is defined in LUT
       bool check_daq_ch = false;
@@ -1199,8 +1212,9 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
                continue;
              };
      };
-    if (!check_daq_ch) return kTRUE;
-    if (debug){std::cout<<"I am doing new entry, ch:"<< daq_ch << "\n";}
+     if (!check_daq_ch) return kTRUE;
+
+     if (debug){std::cout<<"I am doing new entry, ch:"<< daq_ch << "\n";}
 
     if (LUT_ELIADE.empty()){std::cout<<"LUT is empty \n"; return kTRUE;};//did not work well
     if (LUT_ELIADE.find(daq_ch) == LUT_ELIADE.end()){return kTRUE;};//did not work well
@@ -1212,12 +1226,11 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     int domain = DelilaEvent_.domain;
 
 //     if (debug){std::cout<<"I am doing entry here, ch:"<< daq_ch << "\n";}
+    //     if (domain != channel_trg) DelilaEvent_.fEnergy = fEnergyLong;//why i was doing this??
+    DelilaEvent_.fEnergy = fEnergyLong;
     
-    if (domain != channel_trg) DelilaEvent_.fEnergy = fEnergyLong;
     
-    
-    
-    if (DelilaEvent_.fEnergy < LUT_ELIADE[daq_ch].threshold) return kTRUE;
+    if ((DelilaEvent_.fEnergy < LUT_ELIADE[daq_ch].threshold)&&(DelilaEvent_.det_def < 9)) return kTRUE;
     
     DelilaEvent_.cs_domain = LUT_ELIADE[daq_ch].cs_dom;
     DelilaEvent_.theta= LUT_ELIADE[daq_ch].theta;
@@ -1281,7 +1294,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
                 else return kTRUE;
              break;
          };case 8:  { 
-             if (has_detector["neutron"]) {TreatNeutronSingle();}
+             if (has_detector["neutron"]) {/*TreatNeutronSingle()*/;}
                 else return kTRUE;
              break;
          };case 9:  { 
@@ -1603,6 +1616,7 @@ void DelilaSelectorEliade::Terminate()
                foutFile->cd(Form("%s:/Energy_time_diff", OutputFile.str().c_str()));      
            }else if ((name.Contains("mCoreACS")         || 
                       name.Contains("mTimeDiffCoreACS") ||
+                      name.Contains("mCoreSpecACS") ||
                       name.Contains("mAcsFold")         || 
                       name.Contains("hACSFold"))  && blCS){
                foutFile->cd(Form("%s:/CS", OutputFile.str().c_str()));      
@@ -1870,6 +1884,11 @@ void DelilaSelectorEliade::TreatNeutronSingle()
 //     std::cout<<DelilaEvent_.det_def<<" "<<" Long "<<DelilaEvent_.fEnergy<<" short "<< DelilaEvent_.fEnergyShort <<" n/g "<<(DelilaEvent_.fEnergy - DelilaEvent_.fEnergyShort)*1.0/DelilaEvent_.fEnergy<<"\n";
     mNeutron->Fill(DelilaEvent_.fEnergy*1.0, ((DelilaEvent_.fEnergy*1.0 - DelilaEvent_.fEnergyShort*1.0)/DelilaEvent_.fEnergy*1.0));
     hDelila0[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev); 
+}
+
+void DelilaSelectorEliade::TreatNeutron3HeSingle()
+{
+    
 }
 
 void DelilaSelectorEliade::TreatElissaSingle()
@@ -2193,9 +2212,27 @@ void DelilaSelectorEliade::FillSingleSpectra()
      std::deque<DelilaEvent>::iterator it_ev__= delilaQu.begin();
    
      for (; it_ev__!= delilaQu.end();++it_ev__){
+         
          hDelila_single[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
+         
+         if (!blCS) continue;
+         
+         if ((*it_ev__).det_def == 1) {
+              
+             int core_id = (*it_ev__).domain/100 * 10 +(*it_ev__).domain/10%10;
+             mSingleCore->Fill(core_id, (*it_ev__).Energy_kev);
+             
+             if ((*it_ev__).CS == 0) {
+                 hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
+                 mSingleCoreCS->Fill(core_id, (*it_ev__).Energy_kev);
+              }else {
+                 int acs_id = (*it_ev__).CS%10;
+                 mCoreSpecACS[core_id]->Fill(acs_id,(*it_ev__).Energy_kev);
+              };
+         };
+         
          if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 3)) hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
-         if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 1)) hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
+//          if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 1)) {};
      };
 }
 
@@ -2323,7 +2360,7 @@ void DelilaSelectorEliade::ViewACS()
            mTimeDiffCoreACS[core_id]->Fill(acs_id,time_diff_core_acs);
            
            if (time_diff_core_acs < coinc_gates[15]) {
-               mCoreACS[core_id]->Fill(acs_id,(*it_acs_).Energy_kev);
+               mCoreACS[core_id]->Fill(acs_id,(*it_acs_).Energy_kev);               
                hACSFold[core_id]->SetBinContent(acs_id, hACSFold[core_id]->GetBinContent(acs_id)+1);
                AcsQu.push_back(*it_acs_);
                (*it_core_).CS = (*it_acs_).det_def;

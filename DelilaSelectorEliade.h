@@ -287,7 +287,10 @@ public :
 //   std::map<int, TH2F*> mFoldSpecClover;
   std::map<int, TH2F*> mTimeDiffCoreSegments;
   
-  std::map<int, TH2F*> mCoreACS;//spectra: core0-bgo1...10
+  std::map<int, TH2F*> mCoreACS;//spectra acs: core0-bgo1...10
+  std::map<int, TH2F*> mCoreSpecACS;//spectra core: core0-bgo1...10
+  TH2F* mSingleCore;
+  TH2F* mSingleCoreCS;
   std::map<int, TH2F*> mTimeDiffCoreACS;
   std::map<int, TH1F*> hACSFold;
   std::map<int, TH2F*> mAcsFold;
@@ -359,6 +362,8 @@ public :
    virtual void TreatHpGeSingle();
    virtual void TreatHPGeSegmentSingle();
    virtual void TreatNeutronSingle();
+   virtual void TreatNeutron3HeSingle();
+
    virtual void TreatElissaSingle();
    virtual void TreatBGOSingle();
    virtual void TreatACS();
@@ -441,19 +446,40 @@ void DelilaSelectorEliade::Init(TTree *tree)
   };
   
   
+  
+  
+  
   std::cout<<" === Present detectors === \n";
-  std::cout<<" HPGe     " << has_detector["HPGe"] <<"  \n";
-  std::cout<<" HPGeSeg  " << has_detector["SEG"] <<"  \n";
-  std::cout<<" LaBr     " << has_detector["LaBr"] <<"  \n";
-  std::cout<<" CsI      " << has_detector["CsI"] <<"  \n";
-  std::cout<<" BGOs     " << has_detector["BGOs"] <<"  \n";
-  std::cout<<" BGOf     " << has_detector["BGOf"] <<"  \n";
-  std::cout<<" Elissa   " << has_detector["Elissa"] <<" \n";
+  
+   std::map<std::string, bool> ::iterator it_has_=has_detector.begin();
+   for (; it_has_!= has_detector.end();++it_has_){
+       if (has_detector[it_has_->first]) std::cout<< it_has_->first<< "  enabled  \n";
+  };
+
+  
+  
+//    std::cout<<" HPGe     " << has_detector["HPGe"] <<"  \n";
+//    std::cout<<" HPGeSeg  " << has_detector["SEG"] <<"  \n";
+//    std::cout<<" LaBr     " << has_detector["LaBr"] <<"  \n";
+//    std::cout<<" CsI      " << has_detector["CsI"] <<"  \n";
+//    std::cout<<" BGOs     " << has_detector["BGOs"] <<"  \n";
+//    std::cout<<" BGOf     " << has_detector["BGOf"] <<"  \n";
+//    std::cout<<" Elissa   " << has_detector["Elissa"] <<" \n";
+//    std::cout<<" neutron   " << has_detector["neutron"] <<" \n";
+//    std::cout<<" neutronTN   " << has_detector["neutronTN"] <<" \n";
   
   std::cout<<" === Settings === \n";
   
   std::cout<<" AddBack option is "<< addBackMode <<" \n";
   std::cout<<" Beta is           "<< beta <<" \n";
+  
+  
+    
+  std::cout<<" Trigger: ";
+  if (det_def_trg == -1){std::cout<<" No trigger \n";}
+  else if (det_def_trg == 0){std::cout<<" Domain: "<<detector_name[channel_trg]<< "\n";}
+  else if (det_def_trg > 0){std::cout<<" Any of "<<" "<<detector_name[det_def_trg]<< " detectors ("<< det_def_trg<<") \n";}
+  else {std::cout<<" trigger is not set correctly \n";};
   
   blCS = false;
   if (coinc_gates.find(15) != coinc_gates.end()){blCS = true;};
