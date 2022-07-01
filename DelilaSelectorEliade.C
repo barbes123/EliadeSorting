@@ -474,6 +474,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    for (; it__ != LUT_ELIADE.end(); ++it__) {
       if (LUT_ELIADE[it__->first].detType == 1){
            int core_id = LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10;
+           if (std::find(ListOfCores.begin(), ListOfCores.end(),core_id)!=ListOfCores.end()) continue;
            std::cout<<core_id<<" ";
            ListOfCores.push_back(core_id);
          
