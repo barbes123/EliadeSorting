@@ -452,6 +452,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    reset_counter = 0;
    
    blAddBack = (addBackMode > 0);
+   if (det_def_trg > 0) blTimeAlignement = false;
    
    std::cout<<"Making List of Detectors and Cores from LUT_ELIADE.dat \n";
    std::map<int, TDelilaDetector > ::iterator it__ = LUT_ELIADE.begin();
@@ -1074,6 +1075,18 @@ if (has_detector["neutron"]) {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", 
    mTimeCalibDomain0->SetTitle(Form("TimeDiff domain%i vs domain",channel_trg));
    fOutput->Add(mTimeCalibDomain0);
    
+   if (has_detector["neutron"]){
+       mNN_TimeDiff = new TH2F("mNN_TimeDiff", "mNN_TimeDiff", max_domain, -0.5, max_domain-0.5,  1e2, 0, 256e6);
+       mNN_TimeDiff->GetXaxis()->SetTitle("coinc ID");
+       mNN_TimeDiff->GetYaxis()->SetTitle("ps");
+       fOutput->Add(mNN_TimeDiff);
+       
+       hNN_Mult = new TH1F("hNN_Mult", "hNN_Mult", 20,-0.5,19.5);
+       hNN_Mult->GetXaxis()->SetTitle("Multiplicity");
+       hNN_Mult->GetYaxis()->SetTitle("Counts");
+       fOutput->Add(hNN_Mult);
+   }
+   
    
    mTimeDiffCS = new TH2F("mTimeDiffCS", "mTimeDiffCS", 100, 0, 100, 4e3, -2e6, 2e6);
    mTimeDiffCS->GetXaxis()->SetTitle("domain");
@@ -1299,7 +1312,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
                 else return kTRUE;
              break;
          };case 8:  { 
-             if (has_detector["neutron"]) {/*TreatNeutronSingle()*/;}
+             if (has_detector["neutron"]) {TreatNeutronSingle3He();/*TreatNeutronSingle()*/;}
                 else return kTRUE;
              break;
          };case 9:  { 
@@ -1595,11 +1608,12 @@ void DelilaSelectorEliade::Terminate()
 
       TObject *obj; 
       
-      if (blGammaGamma) foutFile->mkdir("GammaGamma","GammaGamma");
-      if (blLong)       foutFile->mkdir("long","long");
-      if (blFold)       foutFile->mkdir("Energy_time_diff","Energy_time_diff");
-      if (blAddBack)    foutFile->mkdir("AddBack","AddBack");
-      if (blCS)         foutFile->mkdir("CS","CS");
+      if (blGammaGamma)             foutFile->mkdir("GammaGamma","GammaGamma");
+      if (blLong)                   foutFile->mkdir("long","long");
+      if (blFold)                   foutFile->mkdir("Energy_time_diff","Energy_time_diff");
+      if (blAddBack)                foutFile->mkdir("AddBack","AddBack");
+      if (blCS)                     foutFile->mkdir("CS","CS");
+      if (has_detector["neutron"])  foutFile->mkdir("Neutron","Neutron");
       
       if (has_detector["Elissa"]) foutFile->mkdir("AmaxEnergy","AmaxEnergy");
       
@@ -1615,6 +1629,8 @@ void DelilaSelectorEliade::Terminate()
                name.Contains("mGGCoreSegments")  ||
                name.Contains("mTimeDiffCoreSegments")) && blAddBack){
                 foutFile->cd(Form("%s:/AddBack", OutputFile.str().c_str()));
+           }else if (name.Contains("NN_")&&has_detector["neutron"]){
+                foutFile->cd(Form("%s:/Neutron", OutputFile.str().c_str()));
            }else if(name.Contains("mDelila_long") && blLong){
                 foutFile->cd(Form("%s:/", OutputFile.str().c_str()));
            }else if(name.Contains("mEnergy_time_diff") && blFold){
@@ -1891,9 +1907,29 @@ void DelilaSelectorEliade::TreatNeutronSingle()
     hDelila0[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev); 
 }
 
-void DelilaSelectorEliade::TreatNeutron3HeSingle()
+void DelilaSelectorEliade::TreatNeutronSingle3He()
 {
     
+}
+
+void DelilaSelectorEliade::TreatNeutronNeutron()
+{
+   if (delilaQu.empty())return;
+   
+   std::deque<DelilaEvent>::iterator it_n_= delilaQu.begin();
+   
+   double time_start =  (*it_n_).Time;
+   int nn_mult = 1;
+ 
+   for (; it_n_!= delilaQu.end();++it_n_){
+       if (it_n_ == delilaQu.begin()) continue;
+       if ((*it_n_).det_def != 8) continue;
+       
+       mNN_TimeDiff->Fill((*it_n_).domain, (*it_n_).Time - time_start);
+       nn_mult++;
+   };
+   
+   hNN_Mult->Fill(nn_mult);
 }
 
 void DelilaSelectorEliade::TreatElissaSingle()
@@ -2022,15 +2058,17 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
        if (abs(time_diff_trigger) > event_length){//close event
            if (blTimeAlignement)    TimeAlignementTrigger();
 //            if (blCS)                cs();
-           if (blCS)                ViewACS();
-           if (blFold)              TreatFold(3);
-           if (blAddBack)           ViewAddBackDetector();
+           if (blCS)                    ViewACS();
+           if (blFold)                  TreatFold(3);
+           if (blAddBack)               ViewAddBackDetector();
 //            if (blAddBack)           ViewAddBackCrystal();
            
-           if (blGammaGamma)        TreatGammaGammaCoinc();
+           if (blGammaGamma)            TreatGammaGammaCoinc();
            
-           if (blFillSingleSpectra) FillSingleSpectra();
-           if (blOutTree)           FillOutputTree();
+           if (has_detector["neutron"]) TreatNeutronNeutron();
+           
+           if (blFillSingleSpectra)     FillSingleSpectra();
+           if (blOutTree)               FillOutputTree();
            
            
            hdelilaQu_size->Fill(delilaQu.size());          

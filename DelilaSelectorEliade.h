@@ -263,6 +263,8 @@ public :
   
   TH2F* mNeutron;
   TH2F* mShortLong;
+  TH2F* mNN_TimeDiff;
+  TH1F* hNN_Mult;
 //   TH2F* mTimeCalibDomain0;
   
   TH1F *hAmax;
@@ -362,7 +364,8 @@ public :
    virtual void TreatHpGeSingle();
    virtual void TreatHPGeSegmentSingle();
    virtual void TreatNeutronSingle();
-   virtual void TreatNeutron3HeSingle();
+   virtual void TreatNeutronNeutron();
+   virtual void TreatNeutronSingle3He();
 
    virtual void TreatElissaSingle();
    virtual void TreatBGOSingle();
