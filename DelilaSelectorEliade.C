@@ -615,14 +615,14 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 //    fOutput->Add(mGammaGammaCS_DC);
    
    if (has_detector["HPGe"] && has_detector["SEG"]) {
-        mEliade = new TH2F("mEliade", "mEliade", max_domain, -0.5, max_domain-0.5, 4096, -0.5, 4095.5);
+        mEliade = new TH2F("mEliade", "mEliade", max_domain, -0.5, max_domain-0.5, 4096, -0.5, 8191.5);
         mEliade->GetXaxis()->SetTitle("domain");
         mEliade->GetYaxis()->SetTitle("keV");
         fOutput->Add(mEliade);
         
-        mEliade_raw = new TH2F("mEliade_raw", "mEliade_raw", max_domain, -0.5, max_domain-0.5, 4096, -0.5, 4095.5);
+        mEliade_raw = new TH2F("mEliade_raw", "mEliade_raw", max_domain, -0.5, max_domain-0.5, 4096, -0.5, 8191.5);
         mEliade_raw->GetXaxis()->SetTitle("domain");
-        mEliade_raw->GetYaxis()->SetTitle("keV");
+        mEliade_raw->GetYaxis()->SetTitle("a.u.");
         fOutput->Add(mEliade_raw);
     };
    
@@ -1064,7 +1064,11 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    mTimeCalibBGO_cs_dom->SetTitle("BGO - HPGe/LaBr time diff");
    fOutput->Add(mTimeCalibBGO_cs_dom);
    */
-   mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5, 1e3,-1e6, 9e6);// for HPGe it should be 1e7 and 1e4 or 1e3 bins
+//    mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5, 1e3,-1e6, 9e6);// for HPGe it should be 1e7 and 1e4 or 1e3 bins
+
+if (has_detector["neutron"]) {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5,  1e2, 0, 256e6);}
+    else {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5, 1e3,-1e6, 9e6);};
+
    mTimeCalibDomain0->GetXaxis()->SetTitle("coinc ID");
    mTimeCalibDomain0->GetYaxis()->SetTitle("ps");
    mTimeCalibDomain0->SetTitle(Form("TimeDiff domain%i vs domain",channel_trg));
