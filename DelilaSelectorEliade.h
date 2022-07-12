@@ -124,7 +124,7 @@ public :
 //   std::map<unsigned int, TDelilaDetector > LUT_ELIADE;
   std::map<int, TDelilaDetector >       LUT_ELIADE;    
   std::map<int, int >                   LUT_TA;
-  std::map<int, double_t >              LUT_TA_TRG;
+  std::map<int, double_t >              LUT_TA_COINC;
 
   DelilaEvent DelilaEvent_;  
 //   DelilaEvent DelilaEventTreated ;
@@ -286,16 +286,22 @@ public :
   std::map<int, TH2F*> mCoreSegments;//spectra: core0-seg1..8
   std::map<int, TH2F*> mGGCoreSegments;//core-seg1..8
   std::map<int, TH2F*> mFoldSpec;//Crystal;
+  std::map<int, TH2F*> mFoldSpecCS;//Crystal;
 //   std::map<int, TH2F*> mFoldSpecClover;
   std::map<int, TH2F*> mTimeDiffCoreSegments;
+  std::map<int, TH2F*> mTimeDiffCoreSegmentsCS;
   
   std::map<int, TH2F*> mCoreACS;//spectra acs: core0-bgo1...10
+  std::map<int, TH2F*> mSegACS;//spectra acs: seg0-bgo1...10
   std::map<int, TH2F*> mCoreSpecACS;//spectra core: core0-bgo1...10
+  std::map<int, TH2F*> mSegSpecACS;//spectra seg: seg0-bgo1...10
   TH2F* mSingleCore;
   TH2F* mSingleCoreCS;
   std::map<int, TH2F*> mTimeDiffCoreACS;
+  std::map<int, TH2F*> mTimeDiffSegACS;
   std::map<int, TH1F*> hACSFold;
   std::map<int, TH2F*> mAcsFold;
+  std::map<int, TH2F*> mAcsFoldSeg;
 
 
     
@@ -329,11 +335,11 @@ public :
 
    virtual void  Read_ELIADE_LookUpTable();
    virtual void  Read_TimeAlignment_LookUpTable();
-   virtual void  Read_TimeAlignment_Trigger();
+   virtual void  Read_CoincCoinc_TimeAlignment_LookUpTable();
    virtual void  Read_Confs();
    virtual void  Print_ELIADE_LookUpTable();
    virtual void  Print_TimeAlignment_LookUpTable();
-   virtual void  Print_TimeAlignment_Trigger_LookUpTable();
+   virtual void  Print_CoincCoinc_TimeAlignment_LookUpTable();
 
    virtual float CalibDet(float,int);
    virtual int GetCoincTimeCorrection(int dom1, int dom2);
@@ -349,6 +355,7 @@ public :
    virtual void FillOutputTree();
    virtual void FillSingleSpectra();
    virtual void TimeAlignementTrigger();
+   virtual void TimeAlignementCoincCoinc();//based on pairs det-det coinc
    
    
    virtual void EventBuilderSimple();
@@ -376,7 +383,9 @@ public :
    
    virtual void ViewAddBackCrystal();
    virtual void ViewAddBackDetector();
-   virtual void ViewACS();
+   virtual void ViewAddBackDetectorCS();
+   virtual void ViewACS();//for cores
+   virtual void ViewACS_segments(); //for segments
    
    virtual std::vector<float> trapezoidal(short wave[],int length, int L, int G);//L = 20; G = 0
    
@@ -473,8 +482,8 @@ void DelilaSelectorEliade::Init(TTree *tree)
   
   std::cout<<" === Settings === \n";
   
-  std::cout<<" AddBack option is "<< addBackMode <<" \n";
-  std::cout<<" Beta is           "<< beta <<" \n";
+  std::cout<<" AddBack option: "<< addBackMode <<" \n";
+  std::cout<<" Beta: "<< beta <<" \n";
   
   
     
@@ -487,8 +496,8 @@ void DelilaSelectorEliade::Init(TTree *tree)
   blCS = false;
   if (coinc_gates.find(15) != coinc_gates.end()){blCS = true;};
   if (coinc_gates.find(35) != coinc_gates.end()){blCS = true;};
-  if (blCS && (has_detector["BGOs"] || has_detector["BGOf"] || has_detector["CsI"] ) ) {std:cout<<" Compton Supression is enabled \n";}
-  else {cout<<" Compton Supression is disabled \n"; blCS = false;};
+  if (blCS && (has_detector["BGOs"] || has_detector["BGOf"] || has_detector["CsI"] ) ) {std:cout<<" Compton Supression: enabled \n";}
+  else {cout<<" Compton Supression: disabled \n"; blCS = false;};
   
   
   
@@ -497,8 +506,8 @@ void DelilaSelectorEliade::Init(TTree *tree)
   if (coinc_gates.find(13) != coinc_gates.end() && has_detector["HPGe"] && has_detector["LaBr"]){blGammaGamma = true;};
   if (coinc_gates.find(33) != coinc_gates.end() && has_detector["LaBr"]){blGammaGamma = true;};
   
-  if (blGammaGamma) {cout<<" GammaGamma is enabled \n";}
-  else {cout<<" GammaGamma is disabled \n";};
+  if (blGammaGamma) {cout<<" GammaGamma: enabled \n";}
+  else {cout<<" GammaGamma: disabled \n";};
   
   std::cout<<" === Time settings ps === \n";
   std::map<int, Float_t> ::iterator itcc_ = coinc_gates.begin();
