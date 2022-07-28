@@ -286,6 +286,7 @@ public :
   std::map<int, TH2F*> mCoreSegments;//spectra: core0-seg1..8
   std::map<int, TH2F*> mGGCoreSegments;//core-seg1..8
   std::map<int, TH2F*> mFoldSpec;//Crystal;
+  std::map<int, TH2F*> mFoldSpecSum;//summing all energies inside the gate for add back
   std::map<int, TH2F*> mFoldSpecCS;//Crystal;
 //   std::map<int, TH2F*> mFoldSpecClover;
   std::map<int, TH2F*> mTimeDiffCoreSegments;

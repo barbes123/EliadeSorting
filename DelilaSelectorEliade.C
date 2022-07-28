@@ -662,6 +662,12 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         mFoldSpec[*it1_coreid_]->GetYaxis()->SetTitle("keV");
         fOutput->Add(mFoldSpec[*it1_coreid_]);
         
+        mFoldSpecSum[*it1_coreid_] = new TH2F(Form("mFoldSpecSum_%i", *it1_coreid_), Form("mFoldSpecSum_%i", *it1_coreid_),   50, -0.5, 49.5, 4096, -0.5, 16383.5);
+        mFoldSpecSum[*it1_coreid_]->GetXaxis()->SetTitle("fold");
+        mFoldSpecSum[*it1_coreid_]->GetYaxis()->SetTitle("keV");
+        fOutput->Add(mFoldSpecSum[*it1_coreid_]);
+        
+        
         if (blCS){
             mTimeDiffCoreSegmentsCS[*it1_coreid_] = new TH2F(Form("mTimeDiffCoreSegmentsCS_%i", *it1_coreid_), Form("mTimeDiffCoreSegmentsCS_%i", *it1_coreid_), 50, -0.5, 49.5, 4e2, -2e6, 2e6);
             mTimeDiffCoreSegmentsCS[*it1_coreid_]->GetXaxis()->SetTitle("segment");
@@ -1121,7 +1127,7 @@ if (has_detector["neutron"]) {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", 
    fOutput->Add(mTimeCalibDomain0);
    
    if (has_detector["neutron"]){
-       mNN_TimeDiff = new TH2F("mNN_TimeDiff", "mNN_TimeDiff", max_domain, -0.5, max_domain-0.5,  1e2, 0, 256e6);
+       mNN_TimeDiff = new TH2F("mNN_TimeDiff", "mNN_TimeDiff", max_domain, -0.5, max_domain-0.5,  3e2, 0, 300e6);
        mNN_TimeDiff->GetXaxis()->SetTitle("coinc ID");
        mNN_TimeDiff->GetYaxis()->SetTitle("ps");
        fOutput->Add(mNN_TimeDiff);
@@ -2108,9 +2114,9 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
            if (blCS)                    ViewACS();
            if (blCS)                    ViewACS_segments();
            if (blFold)                  TreatFold(3);
-           if (blAddBack)               ViewAddBackDetector();
+//            if (blAddBack)               ViewAddBackDetector();
 //            if (blAddBack)               ViewAddBackDetectorCS();
-//            if (blAddBack)           ViewAddBackCrystal();
+            if (blAddBack)           ViewAddBackCrystal();
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
            
@@ -2361,7 +2367,7 @@ void DelilaSelectorEliade::ViewAddBackCrystal()
                mCoreSegments[core_id1]->Fill(seg_id,(*it2_).Energy_kev);
                mGGCoreSegments[core_id1]->Fill((*it1_).Energy_kev,(*it2_).Energy_kev);
                hCoreFold[core_id1]->SetBinContent(seg_id, hCoreFold[core_id1]->GetBinContent(seg_id)+1);
-               SegQu.push_back(*it1_);
+               SegQu.push_back(*it2_);
            };
          };
         
@@ -2409,16 +2415,19 @@ void DelilaSelectorEliade::ViewAddBackDetector()
                mCoreSegments[det_id1]->Fill(seg_id,(*it2_).Energy_kev);
                mGGCoreSegments[det_id1]->Fill((*it1_).Energy_kev,(*it2_).Energy_kev);
                hCoreFold[det_id1]->SetBinContent(seg_id, hCoreFold[det_id1]->GetBinContent(seg_id)+1);
-               SegQu.push_back(*it1_);
+               SegQu.push_back(*it2_);
            };
          };
         
         std::deque<DelilaEvent>::iterator it3_= SegQu.begin();
         int nnfold = SegQu.size();
+        double foldsum = 0;
         for (; it3_!= SegQu.end();++it3_){
           mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
+          foldsum+= (*it3_).Energy_kev;
         };
         SegQu.clear();
+        mFoldSpecSum[det_id1]->Fill(nnfold, foldsum); 
      };
 }
 
