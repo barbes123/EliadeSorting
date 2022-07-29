@@ -723,6 +723,11 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             mAcsFold[*it2_coreid_]->GetYaxis()->SetTitle("keV");
             fOutput->Add(mAcsFold[*it2_coreid_]);
             
+            mTimeDiffCoreCore[*it2_coreid_] = new TH2F(Form("mTimeDiffCoreCore_%i", *it2_coreid_), Form("mTimeDiffCoreCore_%i", *it2_coreid_), 32, -0.5, 31.5, 4e2, -2e6, 2e6);
+            mTimeDiffCoreCore[*it2_coreid_]->GetXaxis()->SetTitle("core");
+            mTimeDiffCoreCore[*it2_coreid_]->GetYaxis()->SetTitle("10 ns / bin");
+            fOutput->Add(mTimeDiffCoreCore[*it2_coreid_]);
+            
 //             std::cout<<" core ID "<<*it2_coreid_<<" ACS hists Initialized \n";  
        };
        
@@ -1918,6 +1923,11 @@ void DelilaSelectorEliade::TreatHpGeSingle()//clover
     UShort_t daq_ch = DelilaEvent_.channel;
     UShort_t domain = DelilaEvent_.domain;
     
+    
+    DelilaEvent_.cloverID =  domain/100;
+    DelilaEvent_.coreID   =  domain/100 * 10 + domain/10%10;
+    
+    
     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
 
     double costheta = TMath::Cos(LUT_ELIADE[daq_ch].theta);
@@ -1936,6 +1946,9 @@ void DelilaSelectorEliade::TreatHPGeSegmentSingle()
 {
     UShort_t daq_ch = DelilaEvent_.channel;
     UShort_t domain = DelilaEvent_.domain;
+    
+    DelilaEvent_.cloverID =  domain/100;
+    DelilaEvent_.segmentID   =  domain/100;
     
     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
 
@@ -2116,7 +2129,8 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
            if (blFold)                  TreatFold(3);
 //            if (blAddBack)               ViewAddBackDetector();
 //            if (blAddBack)               ViewAddBackDetectorCS();
-            if (blAddBack)           ViewAddBackCrystal();
+//             if (blAddBack)           ViewAddBackCrystal();
+           if (blAddBack)               ViewAddBackCoreCore();
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
            
@@ -2347,7 +2361,7 @@ void DelilaSelectorEliade::ViewAddBackCrystal()
          
          std::deque<DelilaEvent> SegQu;
          SegQu.clear();
-         
+         it2_= delilaQu.begin();
          for (; it2_!= delilaQu.end();++it2_){
              
            if (it1_ == it2_) continue; 
@@ -2373,10 +2387,14 @@ void DelilaSelectorEliade::ViewAddBackCrystal()
         
         std::deque<DelilaEvent>::iterator it3_= SegQu.begin();
         int nnfold = SegQu.size();
+//         double foldsum = 0;
         for (; it3_!= SegQu.end();++it3_){
           mFoldSpec[core_id1]->Fill(nnfold, (*it3_).Energy_kev);  
+//           foldsum+= (*it3_).Energy_kev;
         };
         SegQu.clear();
+//         mFoldSpecSum[core_id1]->Fill(nnfold, foldsum); 
+
          
      };
     
@@ -2448,7 +2466,7 @@ void DelilaSelectorEliade::ViewAddBackDetectorCS()
          
          std::deque<DelilaEvent> SegQuCS;
          SegQuCS.clear();
-         
+         it2_= delilaQu.begin();
          for (; it2_!= delilaQu.end();++it2_){
              
            if (it1_ == it2_)            continue; 
@@ -2600,6 +2618,117 @@ void DelilaSelectorEliade::TimeAlignementCoincCoinc()
     };
 };
 
+
+void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
+{
+     std::deque<DelilaEvent>::iterator it1_= delilaQu.begin();
+     std::deque<DelilaEvent>::iterator it2_= delilaQu.begin();
+     for (; it1_!= delilaQu.end();++it1_){
+         
+         if ((*it1_).det_def != 1) continue;
+         int det_id1  =  (*it1_).cloverID;
+         int core_id1 =  (*it1_).coreID;
+         
+         it2_= delilaQu.begin();
+         
+         std::deque<DelilaEvent> CoreQu;
+         CoreQu.clear();
+         CoreQu.push_back(*it1_);
+         
+         it2_= delilaQu.begin();
+         for (; it2_!= delilaQu.end();++it2_){
+             
+           if (it1_ == it2_) continue; 
+           if ((*it2_).det_def != 1) continue;
+           int det_id2 =  (*it2_).cloverID;
+           int core_id2 = (*it2_).coreID;
+           if (det_id1 != det_id2) continue;
+//             std::cout<<core_id1<<" "<<core_id2<<" "<<" \n";           
+           
+           double time_diff_core_core = (*it1_).Time - (*it2_).Time;
+           
+           int id1 = core_id1;
+           int id2 = core_id2;
+           mTimeDiffCoreCore[id1]->Fill(id2,time_diff_core_core);
+           
+           if (time_diff_core_core < coinc_gates[12]) {
+//                mCoreSegments[det_id1]->Fill(seg_id,(*it2_).Energy_kev);
+//                mGGCoreSegments[det_id1]->Fill((*it1_).Energy_kev,(*it2_).Energy_kev);
+//                hCoreFold[det_id1]->SetBinContent(seg_id, hCoreFold[det_id1]->GetBinContent(seg_id)+1);
+               CoreQu.push_back(*it2_);
+           };
+         };
+        
+        std::deque<DelilaEvent>::iterator it3_= CoreQu.begin();
+        int nnfold = CoreQu.size();
+        double foldsum = 0;
+        
+        switch (nnfold){
+            case 1:{
+             mFoldSpec[det_id1]->Fill(nnfold, CoreQu[0].Energy_kev);
+             mFoldSpecSum[det_id1]->Fill(nnfold, CoreQu[0].Energy_kev);
+             break ;  
+            };
+            case 2:{
+//              std::cout<<"nnfold "<<" "<<nnfold<<" "<<" \n";           
+             if (CoreQu[0].coreID + CoreQu[1].coreID == 20 || CoreQu[0].coreID + CoreQu[1].coreID == 40)   
+             {
+              mFoldSpec[det_id1]->Fill(nnfold, CoreQu[0].Energy_kev);
+              mFoldSpecSum[det_id1]->Fill(nnfold, CoreQu[0].Energy_kev);   
+              mFoldSpec[det_id1]->Fill(nnfold, CoreQu[1].Energy_kev);
+              mFoldSpecSum[det_id1]->Fill(nnfold, CoreQu[1].Energy_kev);
+             } else{
+                 it3_= CoreQu.begin();
+                 foldsum = 0;
+                 for (; it3_!= CoreQu.end();++it3_){
+                 mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
+                 foldsum+= (*it3_).Energy_kev;
+                };
+                mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
+             };
+             break ;  
+            }
+            default :{
+                 it3_= CoreQu.begin();
+                 foldsum = 0;
+                 for (; it3_!= CoreQu.end();++it3_){
+                  mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
+                  foldsum+= (*it3_).Energy_kev;
+                };
+                mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
+            };
+        };
+        
+//         for (; it3_!= CoreQu.end();++it3_){
+//                  mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
+//                  foldsum+= (*it3_).Energy_kev;
+//              };
+//              CoreQu.clear();
+//              mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
+        
+// //         if ((nnfold == 2)&&((core_id1+core_id2)==20)||(core_id1+core_id2)==20)))
+//         if (nnfold == 1){
+//             mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
+//             mFoldSpecSum[det_id1]->Fill(nnfold, (*it3_).Energy_kev);
+//         }else if (nnfold == 2)
+//           {
+//               int corecoreid = CoreQu[0].domain/100 * 10 +CoreQu[0].domain/10%10 + CoreQu[1].domain/100 * 10 +CoreQu[1].domain/10%10;
+//               if (corecoreid == 20 || corecoreid  == 40)
+//               for (; it3_!= CoreQu.end();++it3_){
+//                 mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
+//                 mFoldSpecSum[det_id1]->Fill(nnfold, (*it3_).Energy_kev); 
+//             };
+//         }else
+//         {    
+//             for (; it3_!= CoreQu.end();++it3_){
+//                 mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
+//                 foldsum+= (*it3_).Energy_kev;
+//             };
+//             CoreQu.clear();
+//             mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
+//         };
+     };
+}
 
 // void DelilaSelectorEliade::TimeAlignementCoincCoinc()
 // {//To produce matrix for to Check Time Alignment

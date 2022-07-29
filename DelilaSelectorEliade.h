@@ -283,12 +283,14 @@ public :
   int addBackMode;
   std::vector<int>     ListOfCores;
   std::map<int, TH1F*> hCoreFold;
+//   std::map<int, TH2F*> mCoreCore;//add back core core
   std::map<int, TH2F*> mCoreSegments;//spectra: core0-seg1..8
   std::map<int, TH2F*> mGGCoreSegments;//core-seg1..8
   std::map<int, TH2F*> mFoldSpec;//Crystal;
   std::map<int, TH2F*> mFoldSpecSum;//summing all energies inside the gate for add back
   std::map<int, TH2F*> mFoldSpecCS;//Crystal;
 //   std::map<int, TH2F*> mFoldSpecClover;
+  std::map<int, TH2F*> mTimeDiffCoreCore;
   std::map<int, TH2F*> mTimeDiffCoreSegments;
   std::map<int, TH2F*> mTimeDiffCoreSegmentsCS;
   
@@ -382,6 +384,7 @@ public :
    virtual void TreatGammaGammaCoinc();
    virtual void TreatSolarLaBrCoinc();
    
+   virtual void ViewAddBackCoreCore();
    virtual void ViewAddBackCrystal();
    virtual void ViewAddBackDetector();
    virtual void ViewAddBackDetectorCS();
