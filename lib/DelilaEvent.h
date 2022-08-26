@@ -28,11 +28,12 @@
     Float_t	        phi;
     ULong64_t       trg;
     float           Amax; //add by saka//only for ELIASSA
+    int             ring;
 //     UShort_t        bunch;
 //     double          TimeBunch;
     UShort_t        fold;    
     UShort_t        coincID;
-    UShort_t        coreID;//only for ELIADE    
+    UShort_t        coreID;//coreID for ELIADE 
     UShort_t        segmentID;//only for ELIADE
     UShort_t        cloverID;//only for ELIADE
     DelilaEvent(): domain(-1),channel(-1),fEnergy(-1),CS(0),cs_domain(0),Time(0),trg(0),Amax(0),coincID(0),coreID(0),segmentID(0){};

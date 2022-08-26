@@ -88,7 +88,7 @@ public :
     Int_t	 dom;
     int	 ch;//ch daq
 //     Int_t	 serial;
-    TString	 serial;
+    string	 serial;
     Float_t  theta;
     Float_t	 phi;  
     UShort_t detType;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
@@ -264,7 +264,13 @@ public :
   TH2F* mNeutron;
   TH2F* mShortLong;
   TH2F* mNN_TimeDiff;
+  TH2F* mNN_TimeDiff_counter;//time_diff withint the same detector
   TH1F* hNN_Mult;
+  TH1F* hNN_fired;//fired more than once
+  TH1F* h_neutron_ring;
+  std::map<int, double> last_neutron_det;
+  std::map<int, int> CounterIsFired;
+
 //   TH2F* mTimeCalibDomain0;
   
   TH1F *hAmax;

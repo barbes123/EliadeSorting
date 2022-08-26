@@ -46,7 +46,7 @@ bool blLong                 = false;
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 bool blIsTrigger            = false; //the SimpleTrigger is open
 bool blIsWindow             = false; //the preTrigger is open
-bool blFirstTrigger         = false;
+bool blFirstTrigger         = false;    
 bool blAddTriggerToQueue    = false;
 // bool blCS                   = false;
 bool debug            = false;
@@ -389,7 +389,7 @@ void DelilaSelectorEliade::Begin(TTree * tree)
   detector_name[7]="Elissa";   has_detector[detector_name[7]] = false;
   detector_name[8]="neutron";  has_detector[detector_name[8]] = false;
   detector_name[9]="pulser";   has_detector[detector_name[9]] = false;
-  detector_name[10]="core1";   has_detector[detector_name[10]] = true;
+  detector_name[10]="core1";   has_detector[detector_name[10]] = false;
 //   detector_name[18]="neutronTN"; has_detector[detector_name[18]] = false;
 
 
@@ -1133,14 +1133,34 @@ if (has_detector["neutron"]) {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", 
    
    if (has_detector["neutron"]){
        mNN_TimeDiff = new TH2F("mNN_TimeDiff", "mNN_TimeDiff", max_domain, -0.5, max_domain-0.5,  3e2, 0, 300e6);
-       mNN_TimeDiff->GetXaxis()->SetTitle("coinc ID");
+       mNN_TimeDiff->GetXaxis()->SetTitle("domain");
        mNN_TimeDiff->GetYaxis()->SetTitle("ps");
        fOutput->Add(mNN_TimeDiff);
+       
+       mNN_TimeDiff_counter = new TH2F("mNN_TimeDiff_counter", "mNN_TimeDiff_counter", max_domain, -0.5, max_domain-0.5,  3e2, 0, 300e6);
+       mNN_TimeDiff_counter->GetXaxis()->SetTitle("domain");
+       mNN_TimeDiff_counter->GetYaxis()->SetTitle("ps");
+       fOutput->Add(mNN_TimeDiff_counter);
        
        hNN_Mult = new TH1F("hNN_Mult", "hNN_Mult", 20,-0.5,19.5);
        hNN_Mult->GetXaxis()->SetTitle("Multiplicity");
        hNN_Mult->GetYaxis()->SetTitle("Counts");
        fOutput->Add(hNN_Mult);
+       
+       hNN_fired = new TH1F("hNN_fired", "hNN_fired", 40,-0.5,39.5);
+       hNN_fired->GetXaxis()->SetTitle("Domain");
+       hNN_fired->GetYaxis()->SetTitle("Counts");
+       fOutput->Add(hNN_fired);
+       
+       h_neutron_ring = new TH1F("h_neutron_ring", "h_neutron_ring", 5,-0.5,4.5);
+       h_neutron_ring->GetXaxis()->SetTitle("ring");
+       h_neutron_ring->GetYaxis()->SetTitle("Counts");
+       fOutput->Add(h_neutron_ring);
+       
+       for (int i=0;i<=50;i++) {
+           last_neutron_det[i] = 0;
+           CounterIsFired[i] = 0;
+       };
    }
    
    
@@ -1683,7 +1703,8 @@ void DelilaSelectorEliade::Terminate()
                name.Contains("hCoreFold")        ||
                name.Contains("mFoldSpec")        ||
                name.Contains("mGGCoreSegments")  ||
-               name.Contains("mTimeDiffCoreSegments")) && blAddBack){
+               name.Contains("mTimeDiffCoreSegments") ||
+               name.Contains("mTimeDiffCoreCore")) && blAddBack){
                 foutFile->cd(Form("%s:/AddBack", OutputFile.str().c_str()));
            }else if (name.Contains("NN_")&&has_detector["neutron"]){
                 foutFile->cd(Form("%s:/Neutron", OutputFile.str().c_str()));
@@ -1974,7 +1995,15 @@ void DelilaSelectorEliade::TreatNeutronSingle()
 
 void DelilaSelectorEliade::TreatNeutronSingle3He()
 {
-    
+    std::string sz_ring = LUT_ELIADE[DelilaEvent_.channel].serial;
+    sz_ring = sz_ring.substr(0,1);
+    std::map<std::string, int> nnring;
+    nnring["A"] = 0; nnring["B"] = 1;  nnring["C"] = 2;
+//     std::cout<<nnring[sz_ring] <<"\n";
+    h_neutron_ring->Fill(nnring[sz_ring]);
+    mNN_TimeDiff_counter->Fill(DelilaEvent_.domain, DelilaEvent_.Time - last_neutron_det[DelilaEvent_.domain]);
+    last_neutron_det[DelilaEvent_.domain] = DelilaEvent_.Time; 
+    DelilaEvent_.ring = nnring[sz_ring];
 }
 
 void DelilaSelectorEliade::TreatNeutronNeutron()
@@ -1982,17 +2011,42 @@ void DelilaSelectorEliade::TreatNeutronNeutron()
    if (delilaQu.empty())return;
    
    std::deque<DelilaEvent>::iterator it_n_= delilaQu.begin();
-   
+
    double time_start =  (*it_n_).Time;
    int nn_mult = 1;
- 
+   
+   std::map<int, int> ::iterator it_fired_ = CounterIsFired.begin();
+   for (;it_fired_!=CounterIsFired.end();++it_fired_)(*it_fired_).second = 0;
+   
    for (; it_n_!= delilaQu.end();++it_n_){
-       if (it_n_ == delilaQu.begin()) continue;
-       if ((*it_n_).det_def != 8) continue;
+       
+       if (it_n_ == delilaQu.begin())           continue;
+       if ((*it_n_).det_def != 8)               continue;
+       if ((CounterIsFired[(*it_n_).domain] > 0) /*&& ((*it_n_).ring == 0)*/)    {
+//        if ((CounterIsFired[(*it_n_).domain] > 0) /*&& ((*it_n_).ring == 0)*/)   {
+//            std::cout<<(*it_n_).domain<<" "<<(*it_n_).ring<< "\n"; 
+           CounterIsFired[(*it_n_).domain]++;
+           hNN_fired->Fill((*it_n_).domain);
+           continue; 
+    };
        
        mNN_TimeDiff->Fill((*it_n_).domain, (*it_n_).Time - time_start);
        nn_mult++;
+       CounterIsFired[(*it_n_).domain]++;
    };
+   
+//    std::map<int, int> ::iterator it_fired_ = CounterIsFired.begin();
+//    
+//    for (;it_fired_!=CounterIsFired.end();++it_fired_){
+//        if ((*it_fired_).second < 2) continue;
+// //        hNN_fired->SetBinContent((*it_fired_).first, hNN_fired->GetBinContent((*it_fired_).first) + (*it_fired_).second);
+//         for (int k=0;k<=(*it_fired_).second;k++){
+//             hNN_fired->Fill((*it_fired_).first);
+//             std::cout<<"<<< "<<(*it_fired_).first<<" "<<(*it_fired_).second<<"\n";
+//             (*it_fired_).second = 0;
+//         }
+//    };
+
    
    hNN_Mult->Fill(nn_mult);
 }
@@ -2054,6 +2108,7 @@ void DelilaSelectorEliade::CheckPreQu()
 void DelilaSelectorEliade::MovePreQu2Qu()
 {
     if (delilaPreQu.empty()) return;
+    if (pre_event_length == 0) return;
     if (!delilaQu.empty()) {
         std::cout<<"CheckPreQu delilaQu is not empty \n";
         delilaQu.clear();
@@ -2127,10 +2182,10 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
            if (blCS)                    ViewACS();
            if (blCS)                    ViewACS_segments();
            if (blFold)                  TreatFold(3);
-//            if (blAddBack)               ViewAddBackDetector();
+           if (blAddBack)               ViewAddBackDetector();
 //            if (blAddBack)               ViewAddBackDetectorCS();
 //             if (blAddBack)           ViewAddBackCrystal();
-           if (blAddBack)               ViewAddBackCoreCore();
+//            if (blAddBack)               ViewAddBackCoreCore();
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
            
@@ -2626,6 +2681,7 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
      for (; it1_!= delilaQu.end();++it1_){
          
          if ((*it1_).det_def != 1) continue;
+         if ((*it1_).CS != 0) continue;
          int det_id1  =  (*it1_).cloverID;
          int core_id1 =  (*it1_).coreID;
          
@@ -2636,10 +2692,10 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
          CoreQu.push_back(*it1_);
          
          it2_= delilaQu.begin();
-         for (; it2_!= delilaQu.end();++it2_){
-             
+         for (; it2_!= delilaQu.end();++it2_){           
            if (it1_ == it2_) continue; 
            if ((*it2_).det_def != 1) continue;
+           if ((*it2_).CS != 0) continue;  
            int det_id2 =  (*it2_).cloverID;
            int core_id2 = (*it2_).coreID;
            if (det_id1 != det_id2) continue;
