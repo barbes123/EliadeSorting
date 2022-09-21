@@ -33,7 +33,8 @@
 #include <unordered_set>
 #include <iomanip>      // sTreatDelilaEvent_td::setwsorted
 using namespace std;
-
+#include "nlohmann/json.hpp"
+#include <list>
 
 ////////////////////////////////Please, modify if needed////////////////////////////////////////////
 // bool blGammaGamma           = true;
@@ -68,7 +69,7 @@ std::stringstream OutputFile;
 
 
 void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
-  std::cout << "I am Reading ELIADE LookUpTable ... ";
+  std::cout << "I am trying to read ELIADE LookUpTable ... ";
 //  std::stringstream CUTFile;
 //  CUTFile << CUTG_Directory.Data() << "cut_EeEw_galileo.root";
 //  TFile *file_EeEw = TFile::Open(CUTFile.str().c_str());
@@ -85,9 +86,8 @@ void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
 
   if (!lookuptable.good()) {
     std::ostringstream os;
-    os << "Could not open " << LUTFile.str().c_str()
-       << " and I need it ;(\n";
-    Abort(os.str().c_str());
+    os << "Could not open " << LUTFile.str().c_str() << " now i will try JSON-LUT;(\n";
+//     Abort(os.str().c_str());
   } else {
     while (lookuptable.good()) {
       std::string oneline;
@@ -426,7 +426,12 @@ void DelilaSelectorEliade::Begin(TTree * tree)
        };
     };
     
-   Read_ELIADE_LookUpTable();
+//    Read_ELIADE_LookUpTable();
+   Read_ELIADE_JSONLookUpTable();
+   Print_ELIADE_LookUpTable();
+   
+//    return kTRUE;
+   
    Read_TimeAlignment_LookUpTable();
 //    Read_CoincCoinc_TimeAlignment_LookUpTable();//for fine coinc-coinc time allignement 
 //    Print_CoincCoinc_TimeAlignment_LookUpTable();
@@ -2796,6 +2801,105 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
 //         };
      };
 }
+
+void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
+{
+    std::cout<<"I am reading JSON-LUT \n";
+    char* pLUT_Path;
+    pLUT_Path = getenv ("ELIADE_LUT");
+    if (pLUT_Path!=NULL)
+    printf ("The JSON - LookUpTable path is: %s \n",pLUT_Path);
+
+    std::stringstream fileName;
+//     fileName <<"/home/testov/EliadeSorting/LUT_ELIADE_CL29_new.json";
+    fileName <<pLUT_Path<<"/LUT_ELIADE_CL29_new.json";
+    std::ifstream fin = std::ifstream(fileName.str().c_str());
+    
+    if (!fin.good()) {
+        std::ostringstream os;
+        os << "Could not open " << fileName.str().c_str() << " and I need it ;(\n";
+        Abort(os.str().c_str());
+    };
+    
+    nlohmann::json data = nlohmann::json::parse(fin);
+
+    std::cout << data.size() << " entries in the array" << std::endl;
+  
+
+    for(unsigned long int i = 0; i < data.size(); i++) {
+      TDelilaDetector curDet;
+      curDet.ch             =  data[i]["channel"];
+      curDet.dom            =  data[i]["domain"];
+      curDet.detType        =  data[i]["detType"];
+      curDet.serial         =  data[i]["serial"];
+      curDet.TimeOffset     =  data[i]["TimeOffset"];
+      curDet.theta          =  data[i]["theta"];
+      curDet.phi            =  data[i]["phi"];
+      curDet.threshold      =  data[i]["threshold"];
+      curDet.cs_dom         =  data[i]["cs_dom"];
+      curDet.cs_dom         =  data[i]["enable"];
+      
+      curDet.pol_order      = 0;
+      
+    bool blPrintJson = false;
+      if (blPrintJson){
+      
+          std::cout << "channel: " <<  curDet.ch  << "\n"
+ 	      << "domain: " << curDet.dom << "\n"
+ 	      << "detType: " << curDet.detType << "\n"
+ 	      << "serial: " << curDet.serial << "\n"
+ 	      << "TimeOffset: " << data[i]["TimeOffset"] << "\n"
+ 	      << "theta: " << data[i]["theta"] << "\n"
+          << "phi: " << data[i]["phi"] << "\n"
+          << "threshold: " << data[i]["threshold"] << "\n"
+          << "cs_dom: " << data[i]["cs_dom"] << "\n"
+          << "enable: " << data[i]["enable"] << "\n"
+          << "pol_order: " << data[i]["pol_order"]// << "\n"
+	      << std::endl;
+          
+      auto poly = data[i]["pol_list"];
+      unsigned long int poly_order = poly.size();
+      
+      for (unsigned long int j = 0;j<poly_order; j++){
+          curDet.calibE.push_back(poly[j]);
+          std::cout<<poly[j]<<" ";
+      };
+      std::cout<<"\n----- \n";
+      }
+      else{
+            
+        auto poly = data[i]["pol_list"];
+        unsigned long int poly_order = poly.size();
+        
+        for (unsigned long int j = 0;j<poly_order; j++){
+            curDet.calibE.push_back(poly[j]);
+        };
+          
+      }
+   	LUT_ELIADE[curDet.ch] = curDet;
+
+      
+//     std::cout << "channel: " << data[i]["channel"] << "\n"
+//  	      << "domain: " << data[i]["domain"] << "\n"
+//  	      << "detType: " << data[i]["detType"]<< "\n"
+//  	      << "serial: " << data[i]["expName"] << "\n"
+//  	      << "TimeOffset: " << data[i]["TimeOffset"] << "\n"
+//  	      << "theta: " << data[i]["theta"] << "\n"
+//           << "phi: " << data[i]["phi"] << "\n"
+//           << "threshold: " << data[i]["threshold"] << "\n"
+//           << "cs_dom: " << data[i]["cs_dom"] << "\n"
+//           << "empty: " << data[i]["empty"] << "\n"
+//           << "pol_order: " << data[i]["pol_order"] << "\n"
+//           << "pol_list: " << data[i]["pol_list"] << "\n"
+// 	      << std::endl;
+          
+          
+  }
+  
+  fin.close();
+ 
+}
+
 
 // void DelilaSelectorEliade::TimeAlignementCoincCoinc()
 // {//To produce matrix for to Check Time Alignment
