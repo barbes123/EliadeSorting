@@ -62,6 +62,10 @@
 #include <queue>
 #include <vector>
 
+#include "TDatime.h"
+#include "nlohmann/json.hpp"
+#include <cfloat>
+
 #include "DelilaEvent.h"
 #include "HPGeTreeEvent.h"
 #include "HPGeSegTreeEvent.h"
@@ -97,8 +101,9 @@ public :
     Int_t 	 threshold; 
     Int_t	 pol_order;
     Int_t    cs_dom;
+    int      enable;
     std::vector<float> calibE;
-    TDelilaDetector(): dom(-1),phi(-1),theta(-1),TimeOffset(0),calibE(0),threshold(-1),ch(-1),pol_order(-1){};
+    TDelilaDetector(): dom(-1),phi(-1),theta(-1),TimeOffset(0),calibE(0),threshold(-1),ch(-1),pol_order(-1),enable(1){};
  };
  
 //   DelilaEvent     delila_tree_event;
@@ -343,6 +348,7 @@ public :
    virtual Long64_t GetEntries() { return fChain ? fChain->GetEntries() : 0;}
 
    virtual void  Read_ELIADE_LookUpTable();
+   virtual void  Read_ELIADE_JSONLookUpTable();
    virtual void  Read_TimeAlignment_LookUpTable();
    virtual void  Read_CoincCoinc_TimeAlignment_LookUpTable();
    virtual void  Read_Confs();
