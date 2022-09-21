@@ -384,6 +384,7 @@ public :
    virtual void TreatNeutronSingle3He();
 
    virtual void TreatElissaSingle();
+   virtual void TreatElissaSinglePSA();
    virtual void TreatBGOSingle();
    virtual void TreatACS();
    

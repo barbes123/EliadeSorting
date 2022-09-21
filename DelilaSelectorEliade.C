@@ -2051,7 +2051,7 @@ void DelilaSelectorEliade::TreatNeutronNeutron()
    hNN_Mult->Fill(nn_mult);
 }
 
-void DelilaSelectorEliade::TreatElissaSingle()
+void DelilaSelectorEliade::TreatElissaSinglePSA()
 {
     vector<float> data_fil=DelilaSelectorEliade::trapezoidal(fSignal, 1000, 20, 0);//to be checked if signals do not present
     float trap_max=*max_element(data_fil.begin(),data_fil.end());
@@ -2071,6 +2071,17 @@ void DelilaSelectorEliade::TreatElissaSingle()
     if (blFillAmaxEnergyDom) mAmaxEnergyDom[DelilaEvent_.domain]->Fill(DelilaEvent_.Energy_kev,DelilaEvent_.Amax);
     
     if (blDebugElissa) cout << trap_max << " " << trap_min <<" Amax "<<DelilaEvent_.Amax<< endl;   
+    
+}
+
+void DelilaSelectorEliade::TreatElissaSingle()
+{
+    DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, DelilaEvent_.channel);
+
+    
+//     hAmax->Fill(DelilaEvent_.Amax/DelilaEvent_.Energy_kev);
+    hDelila0[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev); 
+    mElissa->Fill(DelilaEvent_.domain, DelilaEvent_.Energy_kev);
     
 }
 
