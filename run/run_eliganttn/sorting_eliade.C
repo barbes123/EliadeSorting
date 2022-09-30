@@ -23,14 +23,14 @@ void sorting_eliade(UInt_t AddBAck = 0, int serverID=5, UInt_t first_run=195,  U
         szRun = Form("%i",run); szVol = Form("%i",vol);
 
         std::stringstream ifile;
-        ifile<<Form("/eliadedisks/eligant/root_files/run%s_%s_work%i.root", szRun.c_str(),szVol.c_str(),serverID);
+        ifile<<Form("/eliadedisks/eligant3MV/root_files/run%s_%s_adqws.root", szRun.c_str(),szVol.c_str());
         
          if(gSystem->AccessPathName(ifile.str().c_str())){
 	        std::cout << "File "<<ifile.str().c_str()<<" does not exist, skipping" << std::endl;
 	        continue;
     	} else {
 	        std::cout << "File "<<ifile.str().c_str()<<"  exists! " << std::endl;
-                ch->Add(Form("/eliadedisks/eligant/root_files/run%s_%s_work%i.root", szRun.c_str(),szVol.c_str(),serverID));
+                ch->Add(Form("/eliadedisks/eligant3MV/root_files/run%s_%s_adqws.root", szRun.c_str(),szVol.c_str()));
 	        std::ostringstream options;
         	options<<run<<","<<vol<<","<<AddBAck<<","<< serverID<<","<<"100";
 //     	ch->Process("/data/live/IT/dsoft/workorting/workorting.C+",options.str().c_str());

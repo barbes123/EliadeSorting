@@ -15,7 +15,7 @@ lut_path="$HOME/onlineEligant/LookUpTables/"
 lut_link="$HOME/EliadeSorting/"
 
 
-lut_file="LUT_ELIGANT_run8.dat"
+lut_file="LUT_ELIGANT_3MV.dat"
 #lut_ta=""
 lut_ta=""
 #lut_ta="TimeCalib_run_12228.dat"
@@ -30,6 +30,7 @@ lut_conf="coinc_gates_eligant.dat"
 #unlink "$lut_link""LUT_ELIADE.dat"
 #ln -s "$lut_path$lut_file" "$lut_link""LUT_ELIADE.dat"
 unlink "$lut_link""LUT_ELIADE.dat"
+unlink "$lut_link""LUT_ELIADE.json"
 unlink "$lut_link""LUT_TA.dat"
 unlink "$lut_link""LUT_CONF.dat"
       
