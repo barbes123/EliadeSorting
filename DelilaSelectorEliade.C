@@ -426,8 +426,8 @@ void DelilaSelectorEliade::Begin(TTree * tree)
        };
     };
     
-//    Read_ELIADE_LookUpTable();
-   Read_ELIADE_JSONLookUpTable();
+   Read_ELIADE_LookUpTable();
+//    Read_ELIADE_JSONLookUpTable();
    Print_ELIADE_LookUpTable();
    
 //    return kTRUE;
