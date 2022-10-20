@@ -113,12 +113,13 @@ void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
 	is >> pol_order;
 	curDet.pol_order = pol_order;
     if (debug) std::cout << "Cal order " << pol_order << "  ";
-	std::vector<float> DetCal_sub0;
+// 	std::vector<float> DetCal_sub0;
 	for (int k = 0; k < pol_order; k++) {
 	  float par = -FLT_MAX;
 	  is >> par;
 	  if (par > -FLT_MAX) {
-	    if (debug) std::cout << par << "  ";
+	    if (debug) 
+            std::cout << par << "  ";
 	    curDet.calibE.push_back(par);
 	  }
 	}
