@@ -118,7 +118,7 @@ void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
 	  float par = -FLT_MAX;
 	  is >> par;
 	  if (par > -FLT_MAX) {
-	    if (debug) 
+// 	    if (debug) 
             std::cout << par << "  ";
 	    curDet.calibE.push_back(par);
 	  }
