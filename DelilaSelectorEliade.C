@@ -59,8 +59,8 @@ ULong64_t trigger_events = 0;
 // int addBackMode = 0;
 
 // const int NumberOfClovers = 2;
-const int max_domain = 500;
-const int nbr_of_ch = 500;
+const int max_domain = 1000;
+const int nbr_of_ch = 3000;
 // ULong64_t lastTimeStampTrigger = 0;
 
 // double beta = 0;
