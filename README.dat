@@ -1,0 +1,28 @@
+#EliadeSelector repository
+https://github.com/barbes123/DelilaSorting.git
+
+#LUTs respositories for ELIFANT/ELIGANT-TN/ELIADE
+https://github.com/barbes123/onlineAnalysis.git 
+https://github.com/barbes123/onlineEligant.git
+https://github.com/barbes123/onlineEliade.git
+
+
+# initial EliadeSorting
+- Install nlohmann to alow json support: sudo apt install nlohmann-json3-dev 
+
+1.1 	Put DelilaSorting in $HOME/EliadeSorting
+1.2 	Now threre three independent routings: 
+2   mkdir ../exp1/root_files 		[for raw root  files]
+    mkdir ../exp1/selector_files 	[for analysis]
+3   cp ~/DelilaSorting/run/[routing]/*.* ../exp1/selector_files
+    cp ~/DelilaSorting/.rootlogon.C ../exp1/selector_files    
+4. edit ../exp1/selector_files/Delila_selector.C to set data_dir the full path to the data files
+5. Compile the libraries (only for DelilaSortingElifant). If it complains  
+   cd ~/DelilaSorting/lib
+   ./setup.sh 
+6. add environmental variable: export LUT_ELIADE="$HOME/EliadeSorting"
+7. To start the analysis run: ./run_sorting.sh Addback RUN_NBR V_NBR_FIRST V_NBR_LAST
+	Addback = 0 no addback
+	Addback = 1 addback
+
+Enjoy! 
