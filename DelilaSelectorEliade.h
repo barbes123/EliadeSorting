@@ -118,6 +118,7 @@ public :
   std::vector<HPGeSegTreeEvent> *HPGeSegEvent;
   
   std::deque<DelilaEvent>      delilaQu;
+  std::deque<DelilaEvent>      delilaQuAddedBack; //filled by AddBack
   std::deque<DelilaEvent>      delilaPreQu;
   
   std::map<int,std::deque<DelilaEvent>> waitingQu_gamma; //for CeBr
@@ -200,6 +201,7 @@ public :
   TH2F* mDelila;
   TH2F* mEliade;
   TH2F* mEliade_raw;
+//   TH2F* mEliadeCores;
   TH2F* mElissa;
   TH2F* mDelila_raw;
   TH2F* mDelilaCS;
@@ -220,10 +222,12 @@ public :
   TH2F* mDomainTimeDiff_bunch;
   
   std::map<int, TH2F*> mGG;
+  std::map<int, TH2F*> mGG_AddBack;
   std::map<int, TH2F*> mGG_theta;
   std::map<int, TH2F*> mGG_DC;
   std::map<int, TH2F*> mGG_time_diff;
-  
+  std::map<int, TH2F*> mGG_AB_time_diff;
+
   std::map<int, TH2F*> mGG_long;
   std::map<int, TH2F*> mGG_DC_long;
   
@@ -370,6 +374,7 @@ public :
    virtual void FillOutputTree();
    virtual void FillSingleSpectra();
    virtual void TimeAlignementTrigger();
+   virtual void TimeAlignementInsideEvent();//
    virtual void TimeAlignementCoincCoinc();//based on pairs det-det coinc
    
    
@@ -522,6 +527,7 @@ void DelilaSelectorEliade::Init(TTree *tree)
   if (coinc_gates.find(11) != coinc_gates.end() && has_detector["HPGe"]){blGammaGamma = true;};
   if (coinc_gates.find(13) != coinc_gates.end() && has_detector["HPGe"] && has_detector["LaBr"]){blGammaGamma = true;};
   if (coinc_gates.find(33) != coinc_gates.end() && has_detector["LaBr"]){blGammaGamma = true;};
+  if (coinc_gates.find(37) != coinc_gates.end() && has_detector["Elissa"] && has_detector["LaBr"]){blGammaGamma = true;};
   
   if (blGammaGamma) {cout<<" GammaGamma: enabled \n";}
   else {cout<<" GammaGamma: disabled \n";};
