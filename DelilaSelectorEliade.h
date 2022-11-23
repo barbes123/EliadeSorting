@@ -191,6 +191,8 @@ public :
   TH1F* hEventsPerTrigger;
   TH2F* mFoldEnergy;
   
+//   TH1F* hBeamCurrent;
+  
   TH1F* hCoincID;
   TH1F* hTriggerDomain;
   
@@ -287,6 +289,7 @@ public :
 
   int det_def_trg;
   int channel_trg;
+  std::vector<int> trigger_domains;
   double TriggerTimeFlag;
   double lastDelilaTime;
   
@@ -393,6 +396,7 @@ public :
    virtual void TreatNeutronSingle();
    virtual void TreatNeutronNeutron();
    virtual void TreatNeutronSingle3He();
+   virtual void TreatBeamCurrent();
 
    virtual void TreatElissaSingle();
    virtual void TreatElissaSinglePSA();

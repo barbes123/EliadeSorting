@@ -19,7 +19,8 @@
 //
 // To use this file, try the following session on your Tree T:
 //
-// root> T->Process("DelilaSelectorEliade.C")
+// root> T->Process("DelilaSelectorEliade.C")#include <list>hTriggerTrigger
+
 // root> T->Process("DelilaSelectorEliade.C","some options")
 // root> T->Process("DelilaSelectorEliade.C+")
 //
@@ -294,8 +295,23 @@ void DelilaSelectorEliade::Read_Confs() {
               break;
           }
           case 9999:{
+               int number_of_trigger_channels =  value/1;
                channel_trg = value/1;
+               int next_trigger_domain = -1;
+//                is >> next_trigger_domain;
+//                std::cout << next_trigger_domain <<" dommmm \n";
+                for (int k = 0; k < number_of_trigger_channels; k++) {
+                 if (is >> next_trigger_domain) trigger_domains.push_back(next_trigger_domain/1);
+                };
+               if (trigger_domains.empty()) trigger_domains.push_back(number_of_trigger_channels);
                std::cout<<"channel_trg  "<<channel_trg<<" \n";
+               std::cout<<"trigger_domains: ";
+               std::vector<int> ::iterator it_trg_dom_ = trigger_domains.begin();
+               for (;it_trg_dom_!=trigger_domains.end(); ++it_trg_dom_)
+               {
+                  std::cout<<*it_trg_dom_<<" "; 
+               }
+               std::cout<<"\n";
               break;
           }
           default:
@@ -498,8 +514,11 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 
    
 
-   hTimeSort = new TH1F("hTimeSort", "time_diff: current-last", 1e3, -1e5,1e5);
+   
+   hTimeSort = new TH1F("hTimeSort", "time_diff: current-last", 121e2, -1e6,120e6);
+//    hTimeSort = new TH1F("hTimeSort", "time_diff: current-last", 1e3, -1e5,1e5);
    hTimeSort->GetXaxis()->SetTitle("ps");
+//    if (has_detector["Neutron"]) hTimeSort->GetXaxis()->TAxis::Set(121e2, -1e6, 120e6);
    fOutput->Add(hTimeSort);
    
    hTimeZero = new TH1F("hTimeZero", "Events with zero time", 500, -0.5, 499.5);
@@ -1078,6 +1097,13 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    hBunchBunch->SetTitle("Time between two Bunch signals");
    fOutput->Add(hBunchBunch);
    
+   
+//    hBeamCurrent = new TH1F("hBeamCurrent", "hBeamCurrent", 300, 50000, 53000);
+//    hBeamCurrent->GetYaxis()->SetTitle("Counts");
+//    hBeamCurrent->GetXaxis()->SetTitle("Beam kind of energy");
+//    hBeamCurrent->SetTitle("Beam current");
+//    fOutput->Add(hBeamCurrent);
+   
    hCoincID= new TH1F("hCoincID", "hCoincID", 100,0,100);
    hCoincID->GetYaxis()->SetTitle("Counts");
    hCoincID->GetXaxis()->SetTitle("CoincID");
@@ -1152,6 +1178,9 @@ if (has_detector["neutron"]) {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", 
    fOutput->Add(mTimeCalibDomain0);
    
    if (has_detector["neutron"]){
+       
+//        hTimeSort->GetXaxis()->TAxis::Set(121e2, -1e6, 120e6);
+              
        mNN_TimeDiff = new TH2F("mNN_TimeDiff", "mNN_TimeDiff", max_domain, -0.5, max_domain-0.5,  3e2, 0, 300e6);
        mNN_TimeDiff->GetXaxis()->SetTitle("domain");
        mNN_TimeDiff->GetYaxis()->SetTitle("ps");
@@ -1421,7 +1450,12 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
              if (has_detector["core1"]) {TreatHpGeSingle();}
                  else return kTRUE;
              break;
-         }; case 98:  { 
+         }; 
+          case 90: { //beam current
+              
+              return kTRUE;
+          };         
+          case 98:  { 
              return kTRUE;
              break;
          };
@@ -2057,27 +2091,25 @@ void DelilaSelectorEliade::TreatNeutronNeutron()
    std::deque<DelilaEvent>::iterator it_n_= delilaQu.begin();
 
    double time_start =  (*it_n_).Time;
-   int nn_mult = 1;
+   int nn_mult = 0;
+   bool blOnlyOnce = false;//true - each counter is allowed to fire onle once in the gate
    
    std::map<int, int> ::iterator it_fired_ = CounterIsFired.begin();
    for (;it_fired_!=CounterIsFired.end();++it_fired_)(*it_fired_).second = 0;
    
    for (; it_n_!= delilaQu.end();++it_n_){
        
-       if (it_n_ == delilaQu.begin())           continue;
+//        if (it_n_ == delilaQu.begin())           continue;
        if ((*it_n_).det_def != 8)               continue;
-       if ((CounterIsFired[(*it_n_).domain] > 0) /*&& ((*it_n_).ring == 0)*/)    {
-//        if ((CounterIsFired[(*it_n_).domain] > 0) /*&& ((*it_n_).ring == 0)*/)   {
-//            std::cout<<(*it_n_).domain<<" "<<(*it_n_).ring<< "\n"; 
+       if ((CounterIsFired[(*it_n_).domain] > 0) && blOnlyOnce)    {
            CounterIsFired[(*it_n_).domain]++;
            hNN_fired->Fill((*it_n_).domain);
            continue; 
-    };
-       
+        };
        mNN_TimeDiff->Fill((*it_n_).domain, (*it_n_).Time - time_start);
        nn_mult++;
        CounterIsFired[(*it_n_).domain]++;
-   };
+  };
    
 //    std::map<int, int> ::iterator it_fired_ = CounterIsFired.begin();
 //    
@@ -2141,7 +2173,18 @@ bool DelilaSelectorEliade::TriggerDecision()
 //    std::cout<<" channel_trg "<< channel_trg <<" domain "<<DelilaEvent_.domain <<  " \n";
    if (det_def_trg > 0) return (DelilaEvent_.det_def == det_def_trg/1);
    
-   return (DelilaEvent_.domain == channel_trg/1);
+   std::vector<int>::iterator it_trg_ = trigger_domains.begin();
+   bool blTRG = false;
+   for (; it_trg_!=trigger_domains.end(); ++it_trg_){
+     if (DelilaEvent_.domain == *it_trg_){
+         blTRG = true;
+         break;
+     };
+   };
+   return blTRG;
+   
+   
+//    return (DelilaEvent_.domain == channel_trg/1);
 };
 
 void DelilaSelectorEliade::CheckPreQu()
@@ -2974,6 +3017,12 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
   fin.close();
  
 }
+
+void DelilaSelectorEliade::TreatBeamCurrent()
+{
+    return;
+}
+
 
 
 // void DelilaSelectorEliade::TimeAlignementCoincCoinc()
