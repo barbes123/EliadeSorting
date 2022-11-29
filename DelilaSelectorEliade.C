@@ -175,6 +175,49 @@ void DelilaSelectorEliade::Read_TimeAlignment_LookUpTable() {
   //  std::exit(1);
 }
 
+
+void DelilaSelectorEliade::Read_SeaTable() {
+  std::cout << "I am trying to read SEA Table ... ";
+
+ char* pLUT_Path;
+  pLUT_Path = getenv ("ELIADE_LUT");
+  if (pLUT_Path!=NULL)
+    printf ("The LookUpTable path is: %s \n",pLUT_Path);
+
+
+  std::stringstream LUTFile;
+  LUTFile << pLUT_Path <<"/"<<"LUT_SEA.dat";
+  std::ifstream lookuptable(LUTFile.str().c_str());
+
+  if (!lookuptable.good()) {
+    std::ostringstream os;
+    os << "Could not open " << LUTFile.str().c_str() << " neutron multiplicities will not be converted to efficiency;(\n";
+  } else {
+    while (lookuptable.good()) {
+      std::string oneline;
+      std::getline(lookuptable, oneline);
+      if (!lookuptable.good()) continue;
+      if (oneline[0] == '#') continue; // ignore lines stating with #
+      if (oneline.empty())   continue; // ignore empty lines
+      Float_t efficiency, nn12, nn13, nn23, nn24, nn34;
+      std::istringstream is(oneline);
+      if (debug) std::cout << is.str().c_str() << std::endl;
+      is >> efficiency >> nn12 >> nn13 >> nn23 >> nn24>> nn34;
+      
+      mapSeaTable[0].push_back(efficiency);
+      mapSeaTable[12].push_back(nn12);
+      mapSeaTable[13].push_back(nn13);
+      mapSeaTable[23].push_back(nn23);
+      mapSeaTable[24].push_back(nn24);
+      mapSeaTable[34].push_back(nn34);
+
+  }
+  lookuptable.close();
+  std::cout << " done" << std::endl;
+  //  std::exit(1);
+    }
+};
+
 void DelilaSelectorEliade::Read_CoincCoinc_TimeAlignment_LookUpTable() {
   std::cout << "I am Reading Read_CoincCoinc_TimeAlignment_LookUpTable ... ";
  
@@ -443,8 +486,10 @@ void DelilaSelectorEliade::Begin(TTree * tree)
     };
     
    Read_ELIADE_LookUpTable();
+   
+   
 //    Read_ELIADE_JSONLookUpTable();
-   Print_ELIADE_LookUpTable();
+//    Print_ELIADE_LookUpTable();
    
 //    return kTRUE;
    
@@ -465,10 +510,10 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    
    TString option = GetOption();
    toks = option.Tokenize(",");
-   TString RunID = ((TObjString*) toks->At(0))->GetString();
-   TString VolID = ((TObjString*) toks->At(1))->GetString();
+   RunID = ((TObjString*) toks->At(0))->GetString();
+   VolID = ((TObjString*) toks->At(1))->GetString();
    addBackMode = atoi(((TObjString*) toks->At(2))->GetString());
-   TString ServerID = ((TObjString*) toks->At(3))->GetString();
+   ServerID = ((TObjString*) toks->At(3))->GetString();
    
    nevents = 0;
 //  nevents_reset=0;
@@ -1800,6 +1845,9 @@ void DelilaSelectorEliade::Terminate()
             }
         };
         
+        
+        if (has_detector["neutron"]) GetNMultiplicity();
+        
 //        outputTree->Write();
        foutFile->Close();
        delilaQu.clear();
@@ -2092,7 +2140,7 @@ void DelilaSelectorEliade::TreatNeutronNeutron()
 
    double time_start =  (*it_n_).Time;
    int nn_mult = 0;
-   bool blOnlyOnce = false;//true - each counter is allowed to fire onle once in the gate
+   bool blOnlyOnce = true;//true - each counter is allowed to fire onle once in the gate
    
    std::map<int, int> ::iterator it_fired_ = CounterIsFired.begin();
    for (;it_fired_!=CounterIsFired.end();++it_fired_)(*it_fired_).second = 0;
@@ -2101,7 +2149,7 @@ void DelilaSelectorEliade::TreatNeutronNeutron()
        
 //        if (it_n_ == delilaQu.begin())           continue;
        if ((*it_n_).det_def != 8)               continue;
-       if ((CounterIsFired[(*it_n_).domain] > 0) && blOnlyOnce)    {
+       if ((CounterIsFired[(*it_n_).domain] > 0) && blOnlyOnce && ((*it_n_).ring == 0))    {
            CounterIsFired[(*it_n_).domain]++;
            hNN_fired->Fill((*it_n_).domain);
            continue; 
@@ -3021,6 +3069,95 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
 void DelilaSelectorEliade::TreatBeamCurrent()
 {
     return;
+}
+
+
+// void DelilaSelectorEliade::GetNMultiplicity(TH1 *hh, int nn_max = 15)
+void DelilaSelectorEliade::GetNMultiplicity()
+{
+
+  std::cout << "Welcome to the automatic GetMultiplicity macro \n"
+	    << "I will calculate Multiplicity ratios from the analyszed file\n"
+	    << "and will put it in the file"
+	    << std::endl;
+  fstream outputFile;
+//   TH1F *hh = hNN_Mult.Clone();
+  int nn_max = 15;
+//   outputFile.open("multiplicity.dat", ios_base::out);
+  
+  outputFile.open(Form("run_selected_%i_%i.dat", atoi(RunID), atoi(VolID)), ios_base::out);
+  float mult[nn_max];
+  
+  for (int i = 1; i<=nn_max; i++)mult[i]=-1;  
+  
+  for (int i = 1; i<=nn_max; i++){
+    mult[i-1] = hNN_Mult->GetBinContent(i);  
+    std::cout<< i-1 <<" "<<mult[i-1]<<"\n";
+    outputFile<< i-1 <<" "<<mult[i-1]<<"\n";    
+  };
+  
+  int nn_tot = 0;
+  for (int i = 1; i<=nn_max; i++) nn_tot+=i*mult[i];  
+  
+//   for (int i = 1; i<=nn_max; i++)   std::cout	<<i<<" ddd "<< mult[i] <<"\n";
+   std::map<int, std::vector<Float_t>> neutron_efficiency;
+   std::vector<int> vecNN_mult = { 12, 13, 23, 24, 34};
+   std::vector<int> :: iterator it_vecNN_ = vecNN_mult.begin();
+   
+   if (has_detector["neutron"]) Read_SeaTable();
+   
+   
+      
+   for (;it_vecNN_ != vecNN_mult.end();++it_vecNN_){
+//        int index = 0;
+        std::vector<Float_t> :: iterator it_ = mapSeaTable[(*it_vecNN_)].begin();
+        std::vector<Float_t> :: iterator it_found_ =  mapSeaTable[(*it_vecNN_)].end();
+        
+        Float_t exp_ratio = (mult[(*it_vecNN_)/10])/(mult[(*it_vecNN_%10)]);
+        Float_t last_diff = 100;
+        
+        for (; it_ !=  mapSeaTable[(*it_vecNN_)].end();++it_){
+            
+//            std::cout<<" last_diff "<< last_diff <<" abs((*it_) - exp_ratio " << abs((*it_) - exp_ratio) <<" \n"; //<< <<" "<<" "<< <<" "<<" "<< <<" "<<" "<< <<" "
+            
+           if ((  abs((*it_) - exp_ratio)) < last_diff ) {
+                it_found_ = it_;
+                last_diff = abs((*it_) - exp_ratio);
+                }
+            };
+           int index = std::distance(mapSeaTable[(*it_vecNN_)].begin(),it_found_); 
+            
+            
+           std::cout<< " NN = "<<(*it_vecNN_) <<" Found ratio "<<(*it_found_)<<" Exp Ratio "<< exp_ratio<<" index "<< " eff "<<  mapSeaTable[0][index] <<"\n";
+           outputFile << " NN = "<<(*it_vecNN_) <<" Found ratio "<<(*it_found_)<<" Exp Ratio "<< exp_ratio<<" index "<< " eff "<<  mapSeaTable[0][index] <<"\n";
+
+   }
+    std::cout<<"\n TOT   " << nn_tot <<"\n";
+    outputFile<<"\n TOT   " << nn_tot <<"\n";
+/*   std::cout	<<" N1/N2 " <<mult[1]/mult[2]
+     		<<"\n N1/N3 " <<mult[1]/mult[3]
+     		<<"\n N2/N3 " <<mult[2]/mult[3]
+     		<<"\n N2/N4 " <<mult[2]/mult[4]
+     		<<"\n N3/N4 " <<mult[3]/mult[4]
+     		    		
+     		<<"\n N2/N5 " <<mult[2]/mult[5]
+     		<<"\n N3/N5 " <<mult[3]/mult[5]
+     		<<"\n N4/N5 " <<mult[5]/mult[5]
+ 		<<"\n TOT   " << nn_tot <<"\n";
+//     */ 		
+// //     
+//    outputFile	<<" N1/N2 " <<mult[1]*1.0/mult[2]
+//      		<<"\n N1/N3 " <<mult[1]*1.0/mult[3]
+//      		<<"\n N2/N3 " <<mult[2]*1.0/mult[3]
+//      		<<"\n N2/N4 " <<mult[2]*1.0/mult[4]
+//      		<<"\n N3/N4 " <<mult[3]*1.0/mult[4]
+//      		    		
+//      		<<"\n N2/N5 " <<mult[2]*1.0/mult[5]
+//      		<<"\n N3/N5 " <<mult[3]*1.0/mult[5]
+//      		<<"\n N4/N5 " <<mult[4]*1.0/mult[5]
+//  		<<"\n TOT   " << nn_tot <<"\n";
+   
+  outputFile.close();
 }
 
 

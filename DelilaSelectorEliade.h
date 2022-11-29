@@ -281,6 +281,8 @@ public :
   TH1F* h_neutron_ring;
   std::map<int, double> last_neutron_det;
   std::map<int, int> CounterIsFired;
+  
+  std::map<int, std::vector<Float_t>> mapSeaTable;
 
 //   TH2F* mTimeCalibDomain0;
   
@@ -298,7 +300,13 @@ public :
   bool blAddBack;
   double beta;
 
+  //options of the selector
   int addBackMode;
+  TString RunID;
+  TString VolID;
+  TString ServerID;
+  
+  
   std::vector<int>     ListOfCores;
   std::map<int, TH1F*> hCoreFold;
 //   std::map<int, TH2F*> mCoreCore;//add back core core
@@ -355,6 +363,7 @@ public :
    virtual Long64_t GetEntries() { return fChain ? fChain->GetEntries() : 0;}
 
    virtual void  Read_ELIADE_LookUpTable();
+   virtual void  Read_SeaTable();
    virtual void  Read_ELIADE_JSONLookUpTable();
    virtual void  Read_TimeAlignment_LookUpTable();
    virtual void  Read_CoincCoinc_TimeAlignment_LookUpTable();
@@ -396,7 +405,7 @@ public :
    virtual void TreatNeutronSingle();
    virtual void TreatNeutronNeutron();
    virtual void TreatNeutronSingle3He();
-   virtual void TreatBeamCurrent();
+   virtual void TreatBeamCurrent();//not yet implemented 
 
    virtual void TreatElissaSingle();
    virtual void TreatElissaSinglePSA();
@@ -412,6 +421,10 @@ public :
    virtual void ViewAddBackDetectorCS();
    virtual void ViewACS();//for cores
    virtual void ViewACS_segments(); //for segments
+   
+//    virtual void GetNMultiplicity(TH1 *hh, int nn_max = 15);
+   virtual void GetNMultiplicity();
+
    
    virtual std::vector<float> trapezoidal(short wave[],int length, int L, int G);//L = 20; G = 0
    
