@@ -338,6 +338,7 @@ void DelilaSelectorEliade::Read_Confs() {
               break;
           }
           case 9999:{
+//                if (det_def_trg > 1) break;
                int number_of_trigger_channels =  value/1;
                channel_trg = value/1;
                int next_trigger_domain = -1;
@@ -392,7 +393,7 @@ void DelilaSelectorEliade::Print_ELIADE_LookUpTable()
     std::map<int, TDelilaDetector > ::iterator it__ = LUT_ELIADE.begin();
     for (; it__ != LUT_ELIADE.end(); ++it__) {
      // is >> curDet.ch >> curDet.dom >> theta >> phi >> curDet.TimeOffset >> curDet.threshold;
-	std::cout<<" Ch "<<LUT_ELIADE[it__->first].ch<<" Dom "<< LUT_ELIADE[it__->first].dom<<" "<< LUT_ELIADE[it__->first].theta<<" "<< LUT_ELIADE[it__->first].phi <<" offset "<< LUT_ELIADE[it__->first].TimeOffset<<" Thr "<< LUT_ELIADE[it__->first].threshold<<" serial "<<LUT_ELIADE[it__->first].serial<<" theta "<<LUT_ELIADE[it__->first].theta<<" phi "<<LUT_ELIADE[it__->first].phi <<" cs_dom: "<<LUT_ELIADE[it__->first].cs_dom<<" pol_order: " <<LUT_ELIADE[it__->first].pol_order <<std::endl;
+	std::cout<<" Ch "<<LUT_ELIADE[it__->first].ch<<" Dom "<< LUT_ELIADE[it__->first].dom<<" detType "<< LUT_ELIADE[it__->first].detType<<" " << LUT_ELIADE[it__->first].theta<<" "<< LUT_ELIADE[it__->first].phi <<" offset "<< LUT_ELIADE[it__->first].TimeOffset<<" Thr "<< LUT_ELIADE[it__->first].threshold<<" serial "<<LUT_ELIADE[it__->first].serial<<" theta "<<LUT_ELIADE[it__->first].theta<<" phi "<<LUT_ELIADE[it__->first].phi <<" cs_dom: "<<LUT_ELIADE[it__->first].cs_dom<<" pol_order: " <<LUT_ELIADE[it__->first].pol_order <<std::endl;
     }
 };
 
@@ -489,9 +490,8 @@ void DelilaSelectorEliade::Begin(TTree * tree)
    
    
 //    Read_ELIADE_JSONLookUpTable();
-//    Print_ELIADE_LookUpTable();
+   Print_ELIADE_LookUpTable();
    
-//    return kTRUE;
    
    Read_TimeAlignment_LookUpTable();
 //    Read_CoincCoinc_TimeAlignment_LookUpTable();//for fine coinc-coinc time allignement 
@@ -573,6 +573,9 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
     
    hChannelHit = new TH1F("hChannelHit", "hChannelHit",3216,0,3216);
    fOutput->Add(hChannelHit);
+   
+   hChannelHitNotDefined = new TH1F("hChannelHitNotDefined", "hChannelHitNotDefined",3216,0,3216);
+   fOutput->Add(hChannelHitNotDefined);
    
    hSegmentHit = new TH1F("hSegmentHit", "hSegmentHit",20,0,20);
    fOutput->Add(hSegmentHit);
@@ -1386,30 +1389,45 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
 
     GetEntry(entry);
     nb_entries = GetEntries();
+    if (debug){std::cout<<"I just have got new entry "<< entry<<" fMod="<<fMod<<" fChannel="<<fChannel<<" at l.1390"<<"\n";}
 
     int daq_ch = (fMod)*100+fChannel;
-    DelilaEvent_.det_def = LUT_ELIADE[daq_ch].detType;
-    DelilaEvent_.channel = daq_ch;
- 	hChannelHit->Fill(daq_ch);
-
+    
+    if (LUT_ELIADE.empty()){std::cout<<"LUT is empty \n"; return kTRUE;};//did not work well
+    
     //Check that daq_ch is defined in LUT
       bool check_daq_ch = false;
       std::map<int, TDelilaDetector >::iterator it_daq_ch_ = LUT_ELIADE.begin();
       for (; it_daq_ch_!= LUT_ELIADE.end();++it_daq_ch_){
+//           std::cout <<LUT_ELIADE[it_daq_ch_->first].ch<<" fffffff \n";
              if (LUT_ELIADE[it_daq_ch_->first].ch == daq_ch){
                check_daq_ch = true;
-//                std::cout<<"i am here daq_ch  "<< daq_ch<<" it_daq_ch_->first "<<LUT_ELIADE[it_daq_ch_->first].ch<<"\n";
-               continue;
+               break;
              };
      };
-     if (!check_daq_ch) return kTRUE;
-
-     if (debug){std::cout<<"I am doing new entry, ch:"<< daq_ch << "\n";}
-
-    if (LUT_ELIADE.empty()){std::cout<<"LUT is empty \n"; return kTRUE;};//did not work well
-    if (LUT_ELIADE.find(daq_ch) == LUT_ELIADE.end()){return kTRUE;};//did not work well
+     if (!check_daq_ch) {
+         hChannelHitNotDefined->Fill(daq_ch);         
+         if (daq_ch > 3216) std::cout<<"daq_ch "<<daq_ch<<" is not defined in LUT_ELIADE.dat, skipping the entry \n" ;
+         return kTRUE;
+     };
     
-    if (debug){std::cout<<"I am doing new entry l.1043, ch:"<< daq_ch << "\n";}
+//     if (LUT_ELIADE.find(daq_ch) == LUT_ELIADE.end()){std::cout<<"daq_ch "<<daq_ch<<" is not defined in LUT_ELIADE.dat, skipping the entry \n" ;return kTRUE;};//did not work well
+    
+    DelilaEvent_.det_def = LUT_ELIADE[daq_ch].detType;
+
+    //check if the detector was defined in the LUT_CONF
+    if (!has_detector[detector_name[DelilaEvent_.det_def]] && DelilaEvent_.det_def != 10){
+      std::cout<<" daq_ch "<<daq_ch<<" Detector type "<<DelilaEvent_.det_def<<" is not defined in LUT_CONF.dat, skipping the entry \n" ;
+      return kTRUE;
+    };
+    
+    DelilaEvent_.channel = daq_ch;
+ 	hChannelHit->Fill(daq_ch);
+
+    
+    if (debug){std::cout<<"I am doing new entry "<<entry <<" ch:"<< daq_ch << " at l. 1412 \n";};
+
+ 
 
     
     DelilaEvent_.domain = LUT_ELIADE[daq_ch].dom;   
@@ -1431,7 +1449,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     hDetTypeHit->Fill(DelilaEvent_.det_def);   
     mDelila_raw->Fill(domain,DelilaEvent_.fEnergy);
     
-    if (debug){std::cout<<"I am doing new entry l.1072, ch:"<< daq_ch << "\n";}
+    if (debug){std::cout<<"I am doing new entry l.1435, ch:"<< daq_ch <<" det_def "<<DelilaEvent_.det_def << "\n";}
 
      //Check if the tree is time sorted
       DelilaEvent_.Time = fTimeStampFS;
@@ -2218,7 +2236,7 @@ bool DelilaSelectorEliade::TriggerDecision()
 {
    if (det_def_trg == -1) return false;
    if (channel_trg == -1) return false; 
-//    std::cout<<" channel_trg "<< channel_trg <<" domain "<<DelilaEvent_.domain <<  " \n";
+   if (debug) std::cout<<" channel_trg "<< channel_trg <<" domain "<<DelilaEvent_.domain <<" det_def "<< DelilaEvent_.det_def<< " \n";
    if (det_def_trg > 0) return (DelilaEvent_.det_def == det_def_trg/1);
    
    std::vector<int>::iterator it_trg_ = trigger_domains.begin();
@@ -2363,6 +2381,7 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
        
    }else{//closed
        if (TriggerDecision()) {
+           if (debug)std::cout<<" EventBuilderPreTrigger new trigger condition is fulfilled \n";
            SetUpNewTrigger(); 
        }else{ 
 //            CheckPreQu();
@@ -2395,6 +2414,7 @@ void DelilaSelectorEliade::SetUpNewTrigger(){
     
     blIsWindow = true;
     trigger_cnt++;
+    if (debug)std::cout<<" New trigger is setup \n";
     return;
 }
 

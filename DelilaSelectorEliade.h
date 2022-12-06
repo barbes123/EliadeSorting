@@ -95,7 +95,8 @@ public :
     string	 serial;
     Float_t  theta;
     Float_t	 phi;  
-    UShort_t detType;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
+//     UShort_t detType;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
+    int detType;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
     Int_t	 TimeOffset;
     double_t bgo_time_offset;
     Int_t 	 threshold; 
@@ -164,6 +165,7 @@ public :
   TH1F* hDomainHit;
   TH1F* hSegmentHit;
   TH1F* hDetTypeHit;
+  TH1F* hChannelHitNotDefined; // channels which are not defined in lut
 
   std::map<int, TH1F*> hDelila0; //before event_builder
   std::map<int, TH1F*> hDelila_single; //after event builder
@@ -189,6 +191,8 @@ public :
   TH1F* hBunchFold;
   TH1F* hTimeInBunch;
   TH1F* hEventsPerTrigger;
+  
+  
   TH2F* mFoldEnergy;
   
 //   TH1F* hBeamCurrent;
