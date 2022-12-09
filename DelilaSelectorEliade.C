@@ -1249,10 +1249,10 @@ if (has_detector["neutron"]) {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", 
        hNN_fired->GetYaxis()->SetTitle("Counts");
        fOutput->Add(hNN_fired);
        
-       h_neutron_ring = new TH1F("h_neutron_ring", "h_neutron_ring", 5,-0.5,4.5);
-       h_neutron_ring->GetXaxis()->SetTitle("ring");
-       h_neutron_ring->GetYaxis()->SetTitle("Counts");
-       fOutput->Add(h_neutron_ring);
+       hNN_ring = new TH1F("hNN_ring", "hNN_ring", 5,-0.5,4.5);
+       hNN_ring->GetXaxis()->SetTitle("ring");
+       hNN_ring->GetYaxis()->SetTitle("Counts");
+       fOutput->Add(hNN_ring);
        
        for (int i=0;i<=50;i++) {
            last_neutron_det[i] = 0;
@@ -1300,8 +1300,6 @@ if (has_detector["neutron"]) {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", 
    mShortLong->GetYaxis()->SetTitle("ShortCharge, a.u.");
    mShortLong->SetTitle("Long vs short");
    fOutput->Add(mShortLong);
-   
-   
        
   if (blFold){
     std::map<int, TDelilaDetector > ::iterator it_lut_ = LUT_ELIADE.begin();
@@ -2144,7 +2142,7 @@ void DelilaSelectorEliade::TreatNeutronSingle3He()
     std::map<std::string, int> nnring;
     nnring["A"] = 0; nnring["B"] = 1;  nnring["C"] = 2;
 //     std::cout<<nnring[sz_ring] <<"\n";
-    h_neutron_ring->Fill(nnring[sz_ring]);
+    hNN_ring->Fill(nnring[sz_ring]);
     mNN_TimeDiff_counter->Fill(DelilaEvent_.domain, DelilaEvent_.Time - last_neutron_det[DelilaEvent_.domain]);
     last_neutron_det[DelilaEvent_.domain] = DelilaEvent_.Time; 
     DelilaEvent_.ring = nnring[sz_ring];

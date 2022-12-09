@@ -279,10 +279,11 @@ public :
   TH2F* mNeutron;
   TH2F* mShortLong;
   TH2F* mNN_TimeDiff;
+//   TH2F* mNN_rings;
   TH2F* mNN_TimeDiff_counter;//time_diff withint the same detector
   TH1F* hNN_Mult;
   TH1F* hNN_fired;//fired more than once
-  TH1F* h_neutron_ring;
+  TH1F* hNN_ring;
   std::map<int, double> last_neutron_det;
   std::map<int, int> CounterIsFired;
   
@@ -532,8 +533,17 @@ void DelilaSelectorEliade::Init(TTree *tree)
     
   std::cout<<" Trigger: ";
   if (det_def_trg == -1){std::cout<<" No trigger \n";}
-  else if (det_def_trg == 0){std::cout<<" Domain: "<<detector_name[channel_trg]<< "\n";}
-  else if (det_def_trg > 0){std::cout<<" Any of "<<" "<<detector_name[det_def_trg]<< " detectors ("<< det_def_trg<<") \n";}
+//   else if (det_def_trg == 0){std::cout<<" Domain: "<<detector_name[channel_trg]<< "\n";}//I am not sure one should comment, i will see how it goes
+  else if (det_def_trg == 0 && !trigger_domains.empty()){
+            std::cout<<" Domain(s): ";
+            std::vector<int> ::iterator it_trg_dom_ = trigger_domains.begin();
+            for (;it_trg_dom_!=trigger_domains.end(); ++it_trg_dom_)
+              {
+                std::cout<<*it_trg_dom_<<" "; 
+             }
+             std::cout<<"\n";
+      }
+  else if (det_def_trg > 0){std::cout<<" any of "<<" "<<detector_name[det_def_trg]<< " detectors ("<< det_def_trg<<") \n";}
   else {std::cout<<" trigger is not set correctly \n";};
   
   blCS = false;
