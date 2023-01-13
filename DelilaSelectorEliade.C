@@ -490,7 +490,7 @@ void DelilaSelectorEliade::Begin(TTree * tree)
    
    
 //    Read_ELIADE_JSONLookUpTable();
-   Print_ELIADE_LookUpTable();
+//    Print_ELIADE_LookUpTable();
    
    
    Read_TimeAlignment_LookUpTable();
@@ -690,7 +690,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 //    mGammaGammaCS_DC->GetYaxis()->SetTitle("keV");
 //    fOutput->Add(mGammaGammaCS_DC);
    
-   if (has_detector["HPGe"] || has_detector["SEG"]) {
+   if (has_detector["HPGe"] || has_detector["SEG"] ) {
         mEliade = new TH2F("mEliade", "mEliade", max_domain, -0.5, max_domain-0.5, 4096, -0.5, 8191.5);
         mEliade->GetXaxis()->SetTitle("domain");
         mEliade->GetYaxis()->SetTitle("keV");
@@ -1533,7 +1533,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     
   if (debug){std::cout<<"I did TreatDelilaEvent_() \n";}
   
-      EventBuilderPreTrigger();
+  if (det_def_trg != -1) EventBuilderPreTrigger();
 //        EventBuilderSimple();
   
 
