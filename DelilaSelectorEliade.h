@@ -302,6 +302,7 @@ public :
   
   bool blCS;
   bool blGammaGamma;
+  bool blTimeAlignement;
   bool blAddBack;
   double beta;
 
@@ -562,6 +563,8 @@ void DelilaSelectorEliade::Init(TTree *tree)
   
   if (blGammaGamma) {cout<<" GammaGamma: enabled \n";}
   else {cout<<" GammaGamma: disabled \n";};
+  
+  if (blTimeAlignement) {cout<<" Time Alignement matrix: enabled \n";}
   
   std::cout<<" === Time settings ps === \n";
   std::map<int, Float_t> ::iterator itcc_ = coinc_gates.begin();

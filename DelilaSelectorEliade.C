@@ -41,7 +41,7 @@ using namespace std;
 // bool blGammaGamma           = true;
 bool blOutTree              = false;
 bool blFold                 = false;
-bool blTimeAlignement       = true;
+// bool blTimeAlignement       = true;
 bool blFillAmaxEnergyDom    = false;
 bool blFillSingleSpectra    = true;
 bool blLong                 = false;
@@ -300,6 +300,11 @@ void DelilaSelectorEliade::Read_Confs() {
       is >> coinc_name>> coinc_id >> value;
 
       switch (coinc_id){
+          case 0:
+          {
+              blTimeAlignement = (value == 1);
+              break;
+          }          
           case 1000: {
               event_length = value;
               std::cout<<"event_length "<<event_length<<" ps \n";
@@ -322,14 +327,40 @@ void DelilaSelectorEliade::Read_Confs() {
                std::cout<<"Beta is "<<beta<<" % \n";
               break;
           };
+//           case 9997:{
+//                std::cout<<" Enabled detectors \n";
+//                int det_list = value/1;
+//                while(det_list!= 0){
+//                    has_detector[detector_name[det_list%10]] = true;
+//                    std::cout<<" id " << det_list%10 <<" det " << detector_name[det_list%10] << " is "<<has_detector[detector_name[det_list%10]]<<"\n";
+//                    det_list = det_list/10;
+//             };
+//               break;
+//           }
           case 9997:{
-               std::cout<<" Enabled detectors \n";
-               int det_list = value/1;
-               while(det_list!= 0){
-                   has_detector[detector_name[det_list%10]] = true;
-                   std::cout<<" id " << det_list%10 <<" det " << detector_name[det_list%10] << " is "<<has_detector[detector_name[det_list%10]]<<"\n";
-                   det_list = det_list/10;
-            };
+              int det = value/1;
+              bool bl_last_detector = true;
+              while (bl_last_detector){
+                  if (detector_name.count(det) !=0 )
+                  {
+                    has_detector[detector_name[det]] = true;
+                    std::cout<<" id " << det <<" det " << detector_name[det] << " is "<<has_detector[detector_name[det]]<<"\n";
+                    if (!(is >> det)) bl_last_detector = false;  
+                  }
+                  else{
+                    std::cout<<"Detector key "<< det<<" "<<detector_name[det] <<" does not exsist, check LUT_CONF.conf \n";
+                    exit(1);   
+                  }
+                  
+              };
+//                int number_of_detectors = value/1;
+//                std::cout<<" Enabled "<<number_of_detectors <<" detectors \n";
+//                int next_detector = -1;
+//                 for (int k = 0; k < number_of_detectors; k++) {
+//                  if (is >> next_detector) has_detector[detector_name[next_detector]] = true;
+//                  std::cout<<" id " << next_detector <<" det " << detector_name[next_detector] << " is "<<has_detector[detector_name[next_detector]]<<"\n";
+// 
+//                 };
               break;
           }
           case 9998:{
@@ -368,6 +399,9 @@ void DelilaSelectorEliade::Read_Confs() {
           };
       };
   }
+  
+  if ((det_def_trg == -1)&&(!trigger_domains.empty())) det_def_trg = 0;//20230113
+      
   lookuptable.close();
   }
   
@@ -449,7 +483,7 @@ void DelilaSelectorEliade::Begin(TTree * tree)
   detector_name[7]="Elissa";   has_detector[detector_name[7]] = false;
   detector_name[8]="neutron";  has_detector[detector_name[8]] = false;
   detector_name[9]="pulser";   has_detector[detector_name[9]] = false;
-  detector_name[10]="core1";   has_detector[detector_name[10]] = false;
+  detector_name[10]="core10";   has_detector[detector_name[10]] = false;
 //   detector_name[18]="neutronTN"; has_detector[detector_name[18]] = false;
 
 
@@ -520,7 +554,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    reset_counter = 0;
    
    blAddBack = (addBackMode > 0);
-   if (det_def_trg > 0) blTimeAlignement = false;
+   if (det_def_trg > 0) blTimeAlignement = false;//in this case trigger is detector type
    
    std::cout<<"Making List of Detectors and Cores from LUT_ELIADE.dat \n";
    std::map<int, TDelilaDetector > ::iterator it__ = LUT_ELIADE.begin();
@@ -1044,7 +1078,6 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         
       };
       
-      
        if ((itna1->first == 1) && has_detector["HPGe"] && (addBackMode > 0)){
 //           
          for (int k=1; k<=addBackMode; k++){
@@ -1053,12 +1086,6 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
            hAddBack[k]->GetXaxis()->SetTitle("keV");
                fOutput->Add(hAddBack[k]);
            };
-           
-           
-           
-           
-           
-           
          };
       
         hDelila0[itna1->first] = new TH1F(Form("%s",itna1->second.c_str()), Form("%s before EventB",itna1->second.c_str()), 4096, -0.5, 16383.5);
@@ -1217,8 +1244,8 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 //    mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5, 1e3,-1e6, 9e6);// for HPGe it should be 1e7 and 1e4 or 1e3 bins
 
 if (has_detector["neutron"]) {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5,  1e2, 0, 256e6);}
-    //else {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5, 1e3,-1e6, 9e6);};//usually i use this
-    else {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5, 1e3,-1e7, 9e7);}; //for Dragos
+    else {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5, 1e3,-1e6, 9e6);};//usually i use this
+//     else {mTimeCalibDomain0 = new TH2F("mTimeCalibDomain0", "mTimeCalibDomain0", max_domain, -0.5, max_domain-0.5, 1e3,-1e7, 9e7);}; //for Dragos
 
    mTimeCalibDomain0->GetXaxis()->SetTitle("coinc ID");
    mTimeCalibDomain0->GetYaxis()->SetTitle("ps");
@@ -1508,7 +1535,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
                 return kTRUE;
              break;
          };case 10:  { 
-             if (has_detector["core1"]) {TreatHpGeSingle();}
+             if (has_detector["core10"]) {TreatHpGeSingle();}
                  else return kTRUE;
              break;
          }; 
@@ -1752,6 +1779,7 @@ void DelilaSelectorEliade::TreatDelilaEvent()
         double costheta = TMath::Cos(LUT_ELIADE[daq_ch].theta);
         DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
         mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
+        if (blLong) mDelilaDC_long->Fill(domain,DelilaEvent_.EnergyDC);
     }
     
 //     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
@@ -1762,7 +1790,6 @@ void DelilaSelectorEliade::TreatDelilaEvent()
     
     if (blLong){
        mDelila_long->Fill(domain,DelilaEvent_.Energy_kev);
-       mDelilaDC_long->Fill(domain,DelilaEvent_.EnergyDC);
     };
     
 
@@ -2094,13 +2121,15 @@ void DelilaSelectorEliade::TreatHpGeSingle()//clover
     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
 
     double costheta = TMath::Cos(LUT_ELIADE[daq_ch].theta);
-    if (beta >0) DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
+    if (beta >0) 
+    {
+        DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
+        mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
+    }
     
     mDelila->Fill(domain,DelilaEvent_.Energy_kev);
-    mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
     hDelila0[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev); 
-    
-    mEliade_raw->Fill(domain,DelilaEvent_.fEnergy);
+//     mEliade_raw->Fill(domain,DelilaEvent_.fEnergy);
     mEliade->Fill(domain,DelilaEvent_.Energy_kev);
      
 }
@@ -2233,7 +2262,7 @@ void DelilaSelectorEliade::TreatSolarLaBrCoinc()
 bool DelilaSelectorEliade::TriggerDecision()
 {
    if (det_def_trg == -1) return false;
-   if (channel_trg == -1) return false; 
+//    if (channel_trg == -1) return false; 
    if (debug) std::cout<<" channel_trg "<< channel_trg <<" domain "<<DelilaEvent_.domain <<" det_def "<< DelilaEvent_.det_def<< " \n";
    if (det_def_trg > 0) return (DelilaEvent_.det_def == det_def_trg/1);
    
