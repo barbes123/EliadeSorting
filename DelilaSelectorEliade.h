@@ -206,6 +206,7 @@ public :
   
   TH2F* mDelila;
   TH2F* mEliade;
+  TH2F* mEliadeCores;
   TH2F* mEliade_raw;
 //   TH2F* mEliadeCores;
   TH2F* mElissa;
@@ -271,8 +272,12 @@ public :
   TH1F* hTimeZero;
   TH1F* hTimeSort;
     
-  TH2F* mTimeCalibDomain0;
-  TH2F* mTimeCalib;
+//   TH2F* mTimeCalibDomain0;
+  TH2F* mTimeCalibTrigger;
+  TH2F* mTimeCalibInsideEvent;
+  TH2F* mTimeCalibCoincCoinc;
+  
+//   TH2F* mTimeCalib;
   TH2F* mTimeCalibBGO;
   TH2F* mTimeCalibBGO_cs_dom;
   
