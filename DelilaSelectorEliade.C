@@ -592,6 +592,12 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    std::cout<<"I start definition of hists \n";
 
    
+   
+   hhGammaSi = new TH1F("hhGammaSi", "hhGammaSi", 1e5, -1e8, 99e8);
+   hhGammaSi->GetXaxis()->SetTitle("time some units");
+   hhGammaSi->GetYaxis()->SetTitle("counts");   
+   fOutput->Add(hhGammaSi);
+   
 
    
    hTimeSort = new TH1F("hTimeSort", "time_diff: current-last", 121e2, -1e6,120e6);
@@ -942,7 +948,8 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
            mGG[itna->first]->GetYaxis()->SetTitle("keV");
            fOutput->Add(mGG[itna->first]);
            
-           mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 4e2, -2e6, 2e6);
+//            mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 4e2, -2e6, 2e6);
+           mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 100e2, -1e8, 9e8);
            fOutput->Add(mGG_time_diff[itna->first]);
            
            hMult[itna->first] = new TH1F(Form("%s_hMult",itna->second.c_str()), Form("%s_hMult",itna->second.c_str()), 20,0,20);
@@ -1257,11 +1264,23 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
    mTimeCalibTrigger->SetTitle(Form("TimeDiff domain%i vs domain", channel_trg));
    fOutput->Add(mTimeCalibTrigger);
    
+   mTimeCalibTriggerCores = new TH2F("mTimeCalibTriggerCores", "mTimeCalibTriggerCores", max_domain, -0.5, max_domain-0.5, 1e3,-1e6, 9e6);
+   mTimeCalibTriggerCores->GetXaxis()->SetTitle("coinc ID");
+   mTimeCalibTriggerCores->GetYaxis()->SetTitle("ps");
+   mTimeCalibTriggerCores->SetTitle(Form("TimeDiff domain%i vs domain", channel_trg));
+   fOutput->Add(mTimeCalibTriggerCores);
+   
    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e3,-1e6, 9e6);
    mTimeCalibInsideEvent->GetXaxis()->SetTitle("domain");
    mTimeCalibInsideEvent->GetYaxis()->SetTitle("ps");
    mTimeCalibInsideEvent->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
    fOutput->Add(mTimeCalibInsideEvent);
+   
+   mTimeCalibInsideEventCores = new TH2F("mTimeCalibInsideEventCores", "mTimeCalibInsideEventCores", 100, -0.5, 99.5, 1e3,-1e6, 9e6);
+   mTimeCalibInsideEventCores->GetXaxis()->SetTitle("coreID");
+   mTimeCalibInsideEventCores->GetYaxis()->SetTitle("ps");
+   mTimeCalibInsideEventCores->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
+   fOutput->Add(mTimeCalibInsideEventCores);
    
    if (has_detector["neutron"]){
        
@@ -1383,6 +1402,7 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
 //     nn_current_bunch = 0;
     delilaQu.clear();
     
+    blFirst_event = false;
     
 
  
@@ -1503,6 +1523,9 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      if (DelilaEvent_.Time == 0) {hTimeZero->Fill(daq_ch);};
      hTimeSort->Fill(time_diff_last);
      
+     //Apply time correction
+     DelilaEvent_.Time-= LUT_ELIADE[daq_ch].bgo_time_offset*1e3; //from ns in lut to ps
+     
      if (debug){std::cout<<"I am doing new entry l.1084, ch:"<< daq_ch << "\n";}
      
      lastDelilaTime = DelilaEvent_.Time;     
@@ -1574,6 +1597,8 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      };
     
   if (debug){std::cout<<"I did TreatDelilaEvent_() \n";}
+  
+//   SimpleRun();
   
   if (det_def_trg != -1) EventBuilderPreTrigger();
 //        EventBuilderSimple();
@@ -2077,8 +2102,11 @@ void DelilaSelectorEliade::TimeAlignementTrigger()
      for (; it_!= delilaQu.end();++it_){
           // time_diff_temp = delilaQu.front().Time - TriggerTimeFlag;
 //           time_diff_temp = (*it_).Time - TriggerTimeFlag;
-          time_diff_temp = (*it_).Time - LastTriggerEvent.Time;
+           time_diff_temp = (*it_).Time - LastTriggerEvent.Time;
            mTimeCalibTrigger->Fill((*it_).domain, time_diff_temp);
+           if ((*it_).det_def  == 1) mTimeCalibTriggerCores->Fill((*it_).coreID, time_diff_temp);
+           //debug: checking si-labr coinc
+//            if ((*it_).det_def  == 7) std::cout<<"Time Diff for dom "<<(*it_).domain<<" "<< time_diff_temp<< " \n";
      };
          
     return;
@@ -2094,8 +2122,20 @@ void DelilaSelectorEliade::TimeAlignementInsideEvent()
      if (trigger_domains.empty()) return;
 
      for (; it1_!= delilaQu.end();++it1_){
-//          if ((*it2_).domain != channel_trg/1) continue;
-         if ((*it2_).domain != trigger_domains.front()) continue;
+//            if ((*it2_).domain != channel_trg/1) continue;
+         //checking if there is another trigger in the event
+           std::vector<int>::iterator it_trg_ = trigger_domains.begin();
+           bool blTRG = false;
+           for (; it_trg_!=trigger_domains.end(); ++it_trg_){
+               if ((*it1_).domain == *it_trg_){
+                   blTRG = true;
+                   break;
+               };
+           };
+           if (!blTRG) continue;
+//         return blTRG;
+         
+//          if ((*it2_).domain != trigger_domains.front()) continue;
          it2_ = delilaQu.begin();         
          for (; it2_ != delilaQu.end();++it2_){
              if (it1_ == it2_ ) continue;
@@ -2103,6 +2143,7 @@ void DelilaSelectorEliade::TimeAlignementInsideEvent()
 //           time_diff_temp = (*it_).Time - TriggerTimeFlag;
           time_diff_temp = (*it1_).Time - (*it2_).Time ;
           mTimeCalibInsideEvent->Fill((*it2_).domain, time_diff_temp);
+          if((*it1_).det_def == 1 && (*it2_).det_def == 1 ) mTimeCalibInsideEventCores->Fill((*it2_).coreID, time_diff_temp);
      };
     };
     return;
@@ -2393,7 +2434,7 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
 
        if (abs(time_diff_trigger) > event_length){//close event
 //             TimeAlignementCoincCoinc();
-//            if (blTimeAlignement)        TimeAlignementInsideEvent();
+            if (blTimeAlignement)        TimeAlignementInsideEvent();
             if (blTimeAlignement)        TimeAlignementTrigger();
 //            if (blCS)                cs();
            if (blCS)                    ViewACS();
@@ -3230,6 +3271,52 @@ void DelilaSelectorEliade::GetNMultiplicity()
 //  		<<"\n TOT   " << nn_tot <<"\n";
    
   outputFile.close();
+}
+
+
+void DelilaSelectorEliade::SimpleRun()
+{
+    if (DelilaEvent_.det_def == 3 && !blFirst_event) 
+        {
+            blFirst_event = true;
+            ev_trg = DelilaEvent_;
+            return;
+        };
+    
+    if (!blFirst_event) return;
+    
+    if (DelilaEvent_.det_def == 3 && ev_trg.det_def == 3)
+    {
+        ev_trg = DelilaEvent_;
+        return;
+    }
+    
+    else if (DelilaEvent_.det_def == 7 && ev_trg.det_def == 7)
+    {
+        ev_trg = DelilaEvent_;
+        return;
+    }
+    
+    else if (DelilaEvent_.det_def == 7 && ev_trg.det_def == 3)
+    {
+        hhGammaSi->Fill(DelilaEvent_.Time - ev_trg.Time );
+        ev_trg = DelilaEvent_;
+        return;
+    }
+    
+    else if (DelilaEvent_.det_def == 3 && ev_trg.det_def == 7)
+    {
+        hhGammaSi->Fill(DelilaEvent_.Time - ev_trg.Time );
+        ev_trg = DelilaEvent_;
+        return;
+    };
+    
+    
+    
+    
+    
+    
+    return;
 }
 
 

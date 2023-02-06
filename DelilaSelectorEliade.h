@@ -112,6 +112,10 @@ public :
   HPGeSegTreeEvent  hpge_seg_tree_event;
   LaBrTreeEvent     labr_tree_event;
   ElissaTreeEvent   elissa_tree_event;
+  
+  DelilaEvent       ev_trg;
+  bool              blFirst_event;
+  TH1F              *hhGammaSi;
  
   std::vector<HPGeTreeEvent>    *HPGeEvent;
   std::vector<LaBrTreeEvent>    *LabrEvent;
@@ -274,7 +278,9 @@ public :
     
 //   TH2F* mTimeCalibDomain0;
   TH2F* mTimeCalibTrigger;
+  TH2F* mTimeCalibTriggerCores;
   TH2F* mTimeCalibInsideEvent;
+  TH2F* mTimeCalibInsideEventCores;
   TH2F* mTimeCalibCoincCoinc;
   
 //   TH2F* mTimeCalib;
@@ -435,6 +441,8 @@ public :
    
 //    virtual void GetNMultiplicity(TH1 *hh, int nn_max = 15);
    virtual void GetNMultiplicity();
+   
+   virtual void SimpleRun(); //to run without EventBuilder
 
    
    virtual std::vector<float> trapezoidal(short wave[],int length, int L, int G);//L = 20; G = 0
