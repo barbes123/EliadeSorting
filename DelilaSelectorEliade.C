@@ -912,10 +912,22 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                     mAmaxEnergyDom[dom] = new TH2F(Form("mAmaxEnergy_dom%i",dom), Form("mAmaxEnergy_dom%i",dom), 4096,0, 32768, 10e2,0,10e4);
                     mAmaxEnergyDom[dom] ->GetXaxis()->SetTitle("Energy, a.u.");
                     mAmaxEnergyDom[dom] ->GetYaxis()->SetTitle("rise time (Amax)");
-                    fOutput->Add(mAmaxEnergyDom[dom]); 
+                    fOutput->Add(mAmaxEnergyDom[dom]);
+                                        
+                    if (dom >= 200){
+                        mDee[dom] = new TH2F(Form("mDee_%i",dom), Form("mDee_dom%i",dom), 4096,0, 32768, 10e2,0,10e4);
+                        mDee[dom] ->GetXaxis()->SetTitle("Energy, a.u.");
+                        mDee[dom] ->GetYaxis()->SetTitle("Energy, a.u.");
+                        fOutput->Add(mDee[dom]);
+                    };
                 };
             };
         };
+        
+        mDeeTimeDiff = new TH2F("mDeeTimeDiff", "mDeeTimeDiff_dom%i", 4096,0, 32768, 10e3, 0, 10e6);
+        mDeeTimeDiff ->GetXaxis()->SetTitle("time, ps");
+        mDeeTimeDiff ->GetYaxis()->SetTitle("counts");
+        fOutput->Add(mDeeTimeDiff); 
     
         hAmax = new TH1F("hAmax", "hAmax", 10e4,0,10e4);
         hAmax->GetXaxis()->SetTitle("rise time (Amax)");
@@ -932,6 +944,12 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         mElissa->GetXaxis()->SetTitle("domain");
         mElissa->GetYaxis()->SetTitle("keV");
         fOutput->Add(mElissa);
+        
+//         mDelila_raw = new TH2F("mDelila_raw", "mDelila_raw", max_domain, -0.5, max_domain-0.5, 16384, -0.5, 16383.5);
+//         mDelila_raw->GetXaxis()->SetTitle("domain");
+//         mDelila_raw->GetYaxis()->SetTitle("ADC channels");   
+//         fOutput->Add(mDelila_raw);
+        
        
    };
    
@@ -1385,7 +1403,8 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
   OutputFile.str(std::string());
 //   OutputFile << "selected_trg_run" << "_" << RunID <<"_"<<VolID;
     OutputFile << "selected_run" << "_" << RunID <<"_"<<VolID;
-  if (atoi(ServerID) != 0) {OutputFile<<"_eliadeS"<<ServerID;};
+  //if (atoi(ServerID) != 0) {OutputFile<<"_eliadeS"<<ServerID;};
+    if (atoi(ServerID) != 0) {OutputFile<<"_elifant";};
   OutputFile << ".root";
 //   std::cout <<"ServerID "<<ServerID<<" "<< OutputFile.str().c_str() <<std::endl;
    lastTime = 0;
@@ -3099,7 +3118,7 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
 
 void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
 {
-     std::cout<<"I am reading JSON-LUT \n";
+  /*   std::cout<<"I am reading JSON-LUT \n";
      char* pLUT_Path;
      pLUT_Path = getenv ("ELIADE_LUT");
      if (pLUT_Path!=NULL)
@@ -3190,9 +3209,9 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
           
           
   }
-  
-  fin.close();
  
+  fin.close();
+ */
 }
 
 void DelilaSelectorEliade::TreatBeamCurrent()
@@ -3335,6 +3354,43 @@ void DelilaSelectorEliade::SimpleRun()
     return;
 }
 
+void DelilaSelectorEliade::ViewDeE()
+{
+  std::deque<DelilaEvent>::iterator it1_= delilaQu.begin();
+  std::deque<DelilaEvent>::iterator it2_= delilaQu.begin();
+  
+  std::deque<DelilaEvent>::iterator it_de_= delilaQu.begin();
+  std::deque<DelilaEvent>::iterator it_e_= delilaQu.begin();
+  
+  for (; it1_!= delilaQu.end();++it1_){
+      if ((*it1_).det_def != 7) continue;
+      
+      it2_ = delilaQu.begin();
+      for (; it2_  != delilaQu.end();++it1_){   
+          if ((*it2_).det_def != 7) continue;
+          if (it1_ == it2_) continue;
+          
+          if ((*it2_).domain%100 != (*it1_).domain%100) continue;
+          
+          //get de domain
+          if ((*it1_).domain < (*it2_).domain){
+           it_de_ = it1_;
+           it_e_ = it2_;
+          }
+          else{
+            it_de_ = it2_;
+            it_e_ = it1_;
+          };           
+                               
+          double time_diff = (*it1_).Time - (*it2_).Time;
+          //add time check if needed
+          
+          mDeeTimeDiff -> Fill((*it_de_).domain, time_diff);
+          mDee[(*it1_).domain]->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
+      }
+  }
+ return;
+}
 
 
 // void DelilaSelectorEliade::TimeAlignementCoincCoinc()

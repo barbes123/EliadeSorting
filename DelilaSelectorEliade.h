@@ -63,7 +63,7 @@
 #include <vector>
 
 #include "TDatime.h"
-#include "nlohmann/json.hpp"
+// #include "nlohmann/json.hpp"
 #include <cfloat>
 
 #include "DelilaEvent.h"
@@ -348,6 +348,9 @@ public :
   std::map<int, TH1F*> hACSFold;
   std::map<int, TH2F*> mAcsFold;
   std::map<int, TH2F*> mAcsFoldSeg;
+  
+  std::map<int, TH2F*> mDee;
+  TH2F* mDeeTimeDiff;
 
 
     
@@ -438,6 +441,8 @@ public :
    virtual void ViewAddBackDetectorCS();
    virtual void ViewACS();//for cores
    virtual void ViewACS_segments(); //for segments
+   
+   virtual void ViewDeE();
    
 //    virtual void GetNMultiplicity(TH1 *hh, int nn_max = 15);
    virtual void GetNMultiplicity();
