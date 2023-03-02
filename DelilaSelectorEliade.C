@@ -546,7 +546,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    toks = option.Tokenize(",");
    RunID = ((TObjString*) toks->At(0))->GetString();
    VolID = ((TObjString*) toks->At(1))->GetString();
-   addBackMode = atoi(((TObjString*) toks->At(2))->GetString());
+   addBackMode = atoi(((TObjString*) toks->At(2))->GetString());//not used, placeholder for parameter
    ServerID = ((TObjString*) toks->At(3))->GetString();
    
    nevents = 0;
@@ -1270,7 +1270,8 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
    mTimeCalibTriggerCores->SetTitle(Form("TimeDiff domain%i vs domain", channel_trg));
    fOutput->Add(mTimeCalibTriggerCores);
    
-   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e3,-1e6, 9e6);
+//    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e3,-1e6, 9e6);
+   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 2e3,-5e6, 15e6);
    mTimeCalibInsideEvent->GetXaxis()->SetTitle("domain");
    mTimeCalibInsideEvent->GetYaxis()->SetTitle("ps");
    mTimeCalibInsideEvent->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
@@ -1520,8 +1521,23 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      
      //Check that the Tree is sorted in Time
      if (time_diff_last<0){std::cout<<"\nWarning time_diff_last: .Time  TTree may be not sorted by time "<< time_diff_last<<" \n";};
-     if (DelilaEvent_.Time == 0) {hTimeZero->Fill(daq_ch);};
+     if (DelilaEvent_.Time == 0) {hTimeZero->Fill(daq_ch);return kTRUE;};
      hTimeSort->Fill(time_diff_last);
+     
+//      if (DelilaEvent_.Time < 4.3e14) {return kTRUE;}
+//          else { 
+//              switch (fMod)
+//              {
+//                  case 0: case 1: case 2: case 3: {
+//                   DelilaEvent_.Time-=2e12;
+//                   break;
+//                  };
+//                   case 5: case 6: case 7: case 9: {
+//                    DelilaEvent_.Time+=210e12;
+//                    break;
+//                   };
+//              }
+//         };
      
      //Apply time correction
      DelilaEvent_.Time-= LUT_ELIADE[daq_ch].bgo_time_offset*1e3; //from ns in lut to ps
