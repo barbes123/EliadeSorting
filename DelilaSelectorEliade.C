@@ -53,9 +53,11 @@ bool blAddTriggerToQueue    = false;
 // bool blCS                   = false;
 bool debug            = false;
 bool blDebugElissa    = false;
+bool blLUT_ELIADE = false;
 
 ULong64_t trigger_cnt = 0;
 ULong64_t trigger_events = 0;
+
 
 // int addBackMode = 0;
 
@@ -128,6 +130,7 @@ void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
     }
   }
   lookuptable.close();
+  blLUT_ELIADE = true;
   std::cout << " done" << std::endl;
   //  std::exit(1);
 }
@@ -520,10 +523,16 @@ void DelilaSelectorEliade::Begin(TTree * tree)
        };
     };
     
-   Read_ELIADE_LookUpTable();
+   Read_ELIADE_LookUpTable();   
+   Read_ELIADE_JSONLookUpTable();
+   
+   if (!blLUT_ELIADE)
+   {
+        std::cout<<"Now valid LUT; exciting. Check symbolic link LUT_ELIADE.dat / LUT_ELIADE.json";
+        std::exit(1);
+    };
    
    
-//    Read_ELIADE_JSONLookUpTable();
 //    Print_ELIADE_LookUpTable();
    
    
@@ -3118,7 +3127,9 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
 
 void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
 {
-  /*   std::cout<<"I am reading JSON-LUT \n";
+     if (blLUT_ELIADE) return;
+     
+     std::cout<<"I am reading JSON-LUT \n";
      char* pLUT_Path;
      pLUT_Path = getenv ("ELIADE_LUT");
      if (pLUT_Path!=NULL)
@@ -3126,7 +3137,7 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
  
      std::stringstream fileName;
  //     fileName <<"/home/testov/EliadeSorting/LUT_ELIADE_CL29_new.json";
-     fileName <<pLUT_Path<<"/LUT_ELIADE_CL29_new.json";
+     fileName <<pLUT_Path<<"/LUT_ELIADE.json";
      std::ifstream fin = std::ifstream(fileName.str().c_str());
      
      if (!fin.good()) {
@@ -3211,7 +3222,8 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
   }
  
   fin.close();
- */
+  blLUT_ELIADE = true;
+ 
 }
 
 void DelilaSelectorEliade::TreatBeamCurrent()
