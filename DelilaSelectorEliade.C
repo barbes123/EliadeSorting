@@ -1478,7 +1478,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
 
     int daq_ch = (fMod)*100+fChannel;
     
-    if (LUT_ELIADE.empty()){std::cout<<"LUT is empty \n"; return kTRUE;};//did not work well
+    if (LUT_ELIADE.empty()){std::cout<<"no LUT entry for daq ch "<< daq_ch <<" \n"; return kTRUE;};//did not work well
     
     //Check that daq_ch is defined in LUT
       bool check_daq_ch = false;
@@ -2235,7 +2235,7 @@ void DelilaSelectorEliade::TreatHpGeSingle()//clover
     
     mDelila->Fill(domain,DelilaEvent_.Energy_kev);
     hDelila0[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev); 
-//     mEliade_raw->Fill(domain,DelilaEvent_.fEnergy);
+    mEliade_raw->Fill(domain,DelilaEvent_.fEnergy);
     mEliade->Fill(domain,DelilaEvent_.Energy_kev);
     if (DelilaEvent_.det_def == 1) mEliadeCores->Fill(DelilaEvent_.coreID, DelilaEvent_.Energy_kev);
      
