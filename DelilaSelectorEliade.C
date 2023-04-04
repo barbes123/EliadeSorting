@@ -33,6 +33,7 @@
 #include <TObjString.h>
 #include <unordered_set>
 #include <iomanip>      // sTreatDelilaEvent_td::setwsorted
+#include <string>     // std::string, std::stof
 using namespace std;
 //#include "nlohmann/json.hpp"
 #include <list>
@@ -89,7 +90,8 @@ void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
 
   if (!lookuptable.good()) {
     std::ostringstream os;
-    os << "Could not open " << LUTFile.str().c_str() << " now i will try JSON-LUT;(\n";
+    std::cout << "Could not open " << LUTFile.str().c_str() << " now i will try LUT_ELIADE.json \n";
+//     os << "Could not open " << LUTFile.str().c_str() << " now i will try LUT_ELIADE.json \n";
 //     Abort(os.str().c_str());
   } else {
     while (lookuptable.good()) {
@@ -128,10 +130,13 @@ void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
 	LUT_ELIADE[curDet.ch] = curDet;
       }
     }
-  }
   lookuptable.close();
   blLUT_ELIADE = true;
   std::cout << " done" << std::endl;
+  }
+//   lookuptable.close();
+//   blLUT_ELIADE = true;
+//   std::cout << " done" << std::endl;
   //  std::exit(1);
 }
 
@@ -531,10 +536,9 @@ void DelilaSelectorEliade::Begin(TTree * tree)
         std::cout<<"Now valid LUT; exciting. Check symbolic link LUT_ELIADE.dat / LUT_ELIADE.json";
         std::exit(1);
     };
-   
-   
-//    Print_ELIADE_LookUpTable();
-   
+    
+  Print_ELIADE_LookUpTable();
+//   exit(0);
    
    Read_TimeAlignment_LookUpTable();
 //    Read_CoincCoinc_TimeAlignment_LookUpTable();//for fine coinc-coinc time allignement 
@@ -1412,8 +1416,8 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
   OutputFile.str(std::string());
 //   OutputFile << "selected_trg_run" << "_" << RunID <<"_"<<VolID;
     OutputFile << "selected_run" << "_" << RunID <<"_"<<VolID;
-  //if (atoi(ServerID) != 0) {OutputFile<<"_eliadeS"<<ServerID;};
-    if (atoi(ServerID) != 0) {OutputFile<<"_elifant";};
+    if (atoi(ServerID) != 0) {OutputFile<<"_eliadeS"<<ServerID;};
+//     if (atoi(ServerID) != 0) {OutputFile<<"_elifant";};
   OutputFile << ".root";
 //   std::cout <<"ServerID "<<ServerID<<" "<< OutputFile.str().c_str() <<std::endl;
    lastTime = 0;
@@ -3129,7 +3133,7 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
 {
      if (blLUT_ELIADE) return;
      
-     std::cout<<"I am reading JSON-LUT \n";
+     std::cout<<"I am reading LUT_ELIADE.json \n";
      char* pLUT_Path;
      pLUT_Path = getenv ("ELIADE_LUT");
      if (pLUT_Path!=NULL)
@@ -3148,31 +3152,35 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
     
      nlohmann::json data = nlohmann::json::parse(fin);
  
-    std::cout << data.size() << " entries in the array" << std::endl;
+     std::cout << data.size() << " entries in the array" << std::endl;
   
  
      for(unsigned long int i = 0; i < data.size(); i++) {
        TDelilaDetector curDet;
-       curDet.ch             =  data[i]["channel"];
-       curDet.dom            =  data[i]["domain"];
-       curDet.detType        =  data[i]["detType"];
-       curDet.serial         =  data[i]["serial"];
-       curDet.TimeOffset     =  data[i]["TimeOffset"];
-       curDet.theta          =  data[i]["theta"];
-       curDet.phi            =  data[i]["phi"];
-       curDet.threshold      =  data[i]["threshold"];
-       curDet.cs_dom         =  data[i]["cs_dom"];
-       curDet.cs_dom         =  data[i]["enable"];
-       
+        curDet.ch             =  data[i]["channel"];
+        curDet.dom            =  data[i]["domain"];
+        curDet.detType        =  data[i]["detType"];
+        curDet.serial         =  data[i]["serial"];
+        curDet.TimeOffset     =  data[i]["TimeOffset"];
+        curDet.theta          =  data[i]["theta"];
+        curDet.phi            =  data[i]["phi"];
+        curDet.threshold      =  data[i]["threshold"];
+        curDet.cs_dom         =  data[i]["cs_dom"];
+        curDet.enable         =  data[i]["enable"];
+        
        curDet.pol_order      = 0;
        
      bool blPrintJson = false;
        if (blPrintJson){
        
-           std::cout << "channel: " <<  curDet.ch  << "\n"
-  	      << "domain: " << curDet.dom << "\n"
-  	      << "detType: " << curDet.detType << "\n"
-  	      << "serial: " << curDet.serial << "\n"
+           std::cout <<" Entry : \n"//<< "channel: " <<  curDet.ch  << "\n"
+//   	      << "domain: " << curDet.dom << "\n"
+//   	      << "detType: " << curDet.detType << "\n"
+//   	      << "serial: " << curDet.serial << "\n"
+          << "channel: " << data[i]["channel"] << "\n"
+          << "domain: " << data[i]["domain"] << "\n"
+          << "detType: " << data[i]["detType"] << "\n"
+          << "serial: " << data[i]["serial"] << "\n"
   	      << "TimeOffset: " << data[i]["TimeOffset"] << "\n"
   	      << "theta: " << data[i]["theta"] << "\n"
           << "phi: " << data[i]["phi"] << "\n"
@@ -3180,13 +3188,14 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
           << "cs_dom: " << data[i]["cs_dom"] << "\n"
           << "enable: " << data[i]["enable"] << "\n"
           << "pol_order: " << data[i]["pol_order"]// << "\n"
+          << "pol_list: " << data[i]["pol_list"]// << "\n"
  	      << std::endl;
           
       auto poly = data[i]["pol_list"];
       unsigned long int poly_order = poly.size();
       
       for (unsigned long int j = 0;j<poly_order; j++){
-          curDet.calibE.push_back(poly[j]);
+            curDet.calibE.push_back(poly[j]);
            std::cout<<poly[j]<<" ";
        };
        std::cout<<"\n----- \n";
@@ -3202,22 +3211,6 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
            
        }
     	LUT_ELIADE[curDet.ch] = curDet;
- 
-       
-//     std::cout << "channel: " << data[i]["channel"] << "\n"
-//  	      << "domain: " << data[i]["domain"] << "\n"
-//  	      << "detType: " << data[i]["detType"]<< "\n"
-//  	      << "serial: " << data[i]["expName"] << "\n"
-//  	      << "TimeOffset: " << data[i]["TimeOffset"] << "\n"
-//  	      << "theta: " << data[i]["theta"] << "\n"
-//           << "phi: " << data[i]["phi"] << "\n"
-//           << "threshold: " << data[i]["threshold"] << "\n"
-//           << "cs_dom: " << data[i]["cs_dom"] << "\n"
-//           << "empty: " << data[i]["empty"] << "\n"
-//           << "pol_order: " << data[i]["pol_order"] << "\n"
-//           << "pol_list: " << data[i]["pol_list"] << "\n"
-// 	      << std::endl;
-          
           
   }
  
