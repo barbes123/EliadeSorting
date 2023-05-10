@@ -1478,7 +1478,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
 
     GetEntry(entry);
     nb_entries = GetEntries();
-    if (debug){std::cout<<"I just have got new entry "<< entry<<" fMod="<<fMod<<" fChannel="<<fChannel<<" at l.1390"<<"\n";}
+    if (debug){std::cout<<"I just have got new entry "<< entry<<" fMod="<<fMod<<" fChannel="<<fChannel<<" TS "<<fTimeStampFS<< " at l.1481 "<<"\n";}
 
     int daq_ch = (fMod)*100+fChannel;
     
@@ -1571,12 +1571,13 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
 //              }
 //         };
      
-     //Apply time correction
-     DelilaEvent_.Time-= LUT_ELIADE[daq_ch].bgo_time_offset*1e3; //from ns in lut to ps
+     
      
      if (debug){std::cout<<"I am doing new entry l.1084, ch:"<< daq_ch << "\n";}
      
      lastDelilaTime = DelilaEvent_.Time;     
+     //Apply time correction
+     DelilaEvent_.Time-= LUT_ELIADE[daq_ch].bgo_time_offset*1e3; //from ns in lut to ps
      
 //      DelilaEvent_.Time-=LUT_TA[domain];
 //      DelilaEvent_.Time=DelilaEvent_.Time - LUT_TA[domain];
@@ -3395,6 +3396,17 @@ void DelilaSelectorEliade::ViewDeE()
       }
   }
  return;
+}
+
+
+void DelilaSelectorEliade::EventBuilder()
+{
+//     if (blIsWindow){
+//      // check if is inside the gate
+//      //increment queue   
+//     }
+//     
+    return;
 }
 
 

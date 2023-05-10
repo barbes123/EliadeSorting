@@ -412,6 +412,7 @@ public :
    
    virtual void EventBuilderSimple();
    virtual void EventBuilderPreTrigger();
+   virtual void EventBuilder();//many conditions
    virtual bool TriggerDecision();
    virtual void SetUpNewTriggerSimple();
    virtual void SetUpNewTrigger();
