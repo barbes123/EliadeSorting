@@ -295,6 +295,8 @@ public :
   TH1F* hNN_Mult;
   TH1F* hNN_fired;//fired more than once
   TH1F* hNN_ring;
+  TH1F* hNN_TimeDiff; //1st neutron start; second stop;
+  double LastNeutronTime;
   std::map<int, double> last_neutron_det;
   std::map<int, int> CounterIsFired;
   

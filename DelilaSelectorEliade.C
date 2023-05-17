@@ -1338,6 +1338,11 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
        hNN_fired->GetYaxis()->SetTitle("Counts");
        fOutput->Add(hNN_fired);
        
+       hNN_TimeDiff = new TH1F("hNN_TimeDiff", "hNN_TimeDiff",  3e2, 0, 300e6);
+       hNN_TimeDiff->GetXaxis()->SetTitle("Domain");
+       hNN_TimeDiff->GetYaxis()->SetTitle("Counts");
+       fOutput->Add(hNN_TimeDiff);
+       
        hNN_ring = new TH1F("hNN_ring", "hNN_ring", 5,-0.5,4.5);
        hNN_ring->GetXaxis()->SetTitle("ring");
        hNN_ring->GetYaxis()->SetTitle("Counts");
@@ -1347,7 +1352,8 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
            last_neutron_det[i] = 0;
            CounterIsFired[i] = 0;
        };
-   }
+       LastNeutronTime = 0;
+   };
    
    
    mTimeDiffCS = new TH2F("mTimeDiffCS", "mTimeDiffCS", 100, 0, 100, 4e3, -2e6, 2e6);
@@ -2286,6 +2292,8 @@ void DelilaSelectorEliade::TreatNeutronSingle3He()
     std::map<std::string, int> nnring;
     nnring["A"] = 0; nnring["B"] = 1;  nnring["C"] = 2;
 //     std::cout<<nnring[sz_ring] <<"\n";
+    hNN_TimeDiff->Fill(DelilaEvent_.Time - LastNeutronTime);
+    LastNeutronTime = DelilaEvent_.Time;
     hNN_ring->Fill(nnring[sz_ring]);
     mNN_TimeDiff_counter->Fill(DelilaEvent_.domain, DelilaEvent_.Time - last_neutron_det[DelilaEvent_.domain]);
     last_neutron_det[DelilaEvent_.domain] = DelilaEvent_.Time; 
