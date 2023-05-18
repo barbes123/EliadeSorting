@@ -567,7 +567,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    reset_counter = 0;
    
    blAddBack = (addBackMode > 0);
-   if (det_def_trg > 0) blTimeAlignement = false;//in this case trigger is detector type
+//    if (det_def_trg > 0) blTimeAlignement = false;//in this case trigger is detector type//i commented it checking alignment with pulser and Soiciro 17.5.23
    
    std::cout<<"Making List of Detectors and Cores from LUT_ELIADE.dat \n";
    std::map<int, TDelilaDetector > ::iterator it__ = LUT_ELIADE.begin();
@@ -2159,6 +2159,7 @@ void DelilaSelectorEliade::TimeAlignementTrigger()
 //           time_diff_temp = (*it_).Time - TriggerTimeFlag;
            time_diff_temp = (*it_).Time - LastTriggerEvent.Time;
            mTimeCalibTrigger->Fill((*it_).domain, time_diff_temp);
+//            std::cout<<" "<<time_diff_temp<<"\n";
            if ((*it_).det_def  == 1) mTimeCalibTriggerCores->Fill((*it_).coreID, time_diff_temp);
            //debug: checking si-labr coinc
 //            if ((*it_).det_def  == 7) std::cout<<"Time Diff for dom "<<(*it_).domain<<" "<< time_diff_temp<< " \n";
@@ -2487,7 +2488,7 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
 //        double time_diff_trigger = DelilaEvent_.Time - TriggerTimeFlag;
        double time_diff_trigger = DelilaEvent_.Time - LastTriggerEvent.Time;
 
-//          std::cout<<" time_diff_trigger  "<<time_diff_trigger<<"\n";
+//          std::cout<<" blTimeAlignement  "<<blTimeAlignement<<"\n";
 
        if (abs(time_diff_trigger) > event_length){//close event
 //             TimeAlignementCoincCoinc();
