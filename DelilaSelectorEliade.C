@@ -624,7 +624,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    hTimeZero->GetYaxis()->SetTitle("counts");   
    fOutput->Add(hTimeZero);
     
-   hChannelHit = new TH1F("hChannelHit", "hChannelHit",3216,0,3216);
+   hChannelHit = new TH1F("hChannelHit", "hChannelHit",3400,-0.5,3399.5);
    fOutput->Add(hChannelHit);
    
    hChannelHitNotDefined = new TH1F("hChannelHitNotDefined", "hChannelHitNotDefined",3216,0,3216);
@@ -3197,7 +3197,7 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
           << "threshold: " << data[i]["threshold"] << "\n"
           << "cs_dom: " << data[i]["cs_dom"] << "\n"
           << "enable: " << data[i]["enable"] << "\n"
-          << "pol_order: " << data[i]["pol_order"]// << "\n"
+          << "pol_order: " << data[i]["pol_order"] << "\n"
           << "pol_list: " << data[i]["pol_list"]// << "\n"
  	      << std::endl;
           
