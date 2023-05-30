@@ -1505,6 +1505,8 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
          if (daq_ch > 3216) std::cout<<"daq_ch "<<daq_ch<<" is not defined in LUT_ELIADE.dat, skipping the entry \n" ;
          return kTRUE;
      };
+     
+     if (LUT_ELIADE[daq_ch].enable == 0)  return kTRUE;
     
 //     if (LUT_ELIADE.find(daq_ch) == LUT_ELIADE.end()){std::cout<<"daq_ch "<<daq_ch<<" is not defined in LUT_ELIADE.dat, skipping the entry \n" ;return kTRUE;};//did not work well
     
@@ -1538,7 +1540,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     if ((DelilaEvent_.fEnergy < LUT_ELIADE[daq_ch].threshold)&&(DelilaEvent_.det_def < 9)) return kTRUE;
     
     if (!has_detector[detector_name[DelilaEvent_.det_def]]) return kTRUE;
-    
+        
     DelilaEvent_.cs_domain = LUT_ELIADE[daq_ch].cs_dom;
     DelilaEvent_.theta= LUT_ELIADE[daq_ch].theta;
     DelilaEvent_.phi= LUT_ELIADE[daq_ch].phi;
@@ -3202,6 +3204,12 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
  	      << std::endl;
           
       auto poly = data[i]["pol_list"];
+      if (poly.size() == 0) //does not work to be changed here on in python
+      { poly.push_back(0);
+        poly.push_back(1);
+        
+        std::cout<<"Warning for domain 0 no calibration is found; settung defaults 0+ch*1 \n";
+      }
       unsigned long int poly_order = poly.size();
       
       for (unsigned long int j = 0;j<poly_order; j++){
