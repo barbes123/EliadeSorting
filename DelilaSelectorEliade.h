@@ -265,6 +265,8 @@ public :
   TH2F* mTimeDiff_gg_CS;
   TH1F* hMult_gg_CS;
   
+  std::map<std::string, TH1F*> hTheta;
+  
   TH2F* mLaBr_LabBr_time_diff;
 
   

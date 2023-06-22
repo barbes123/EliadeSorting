@@ -110,8 +110,8 @@ void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
     //  std::cout<<" curDfalseet.ch  "<<curDet.ch <<" curDet.TimeOffset " <<curDet.TimeOffset<<std::endl;
       
       if (curDet.ch >= 0) {
-          curDet.theta *= TMath::DegToRad();
-          curDet.phi *= TMath::DegToRad();
+//           curDet.theta *= TMath::DegToRad();
+//           curDet.phi *= TMath::DegToRad();
 	int pol_order = 0;
  	float offset_gate(0.),slope_gate(1.);
     is >> offset_gate;
@@ -1348,6 +1348,11 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
        hNN_ring->GetYaxis()->SetTitle("Counts");
        fOutput->Add(hNN_ring);
        
+       hTheta["neutron"] = new TH1F("hTheta_neutron", "hTheta_neutron", 40,-200, 200);
+       hTheta["neutron"]->GetXaxis()->SetTitle("#Theta, degrees");
+       fOutput->Add(hTheta["neutron"]);
+       
+       
        for (int i=0;i<=50;i++) {
            last_neutron_det[i] = 0;
            CounterIsFired[i] = 0;
@@ -1586,11 +1591,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      lastDelilaTime = DelilaEvent_.Time;     
      //Apply time correction
      DelilaEvent_.Time-= LUT_ELIADE[daq_ch].bgo_time_offset*1e3; //from ns in lut to ps
-     
 //      DelilaEvent_.Time-=LUT_TA[domain];
-//      DelilaEvent_.Time=DelilaEvent_.Time - LUT_TA[domain];
-     DelilaEvent_.Time=DelilaEvent_.Time - LUT_TA[domain];
-     
      
      switch (DelilaEvent_.det_def){
           case 1:  { 
@@ -2301,6 +2302,8 @@ void DelilaSelectorEliade::TreatNeutronSingle3He()
     mNN_TimeDiff_counter->Fill(DelilaEvent_.domain, DelilaEvent_.Time - last_neutron_det[DelilaEvent_.domain]);
     last_neutron_det[DelilaEvent_.domain] = DelilaEvent_.Time; 
     DelilaEvent_.ring = nnring[sz_ring];
+    hTheta["neutron"]->Fill(DelilaEvent_.theta);
+//     std::cout<<DelilaEvent_.theta<<std::endl;
 }
 
 void DelilaSelectorEliade::TreatNeutronNeutron()
