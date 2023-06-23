@@ -286,6 +286,7 @@ void DelilaSelectorEliade::Read_Confs() {
   bunch_reset = 0;
   det_def_trg = -1;
   channel_trg = -1;
+  ref_dom = 101;
   TriggerTimeFlag = 0;
   beta = 0;
 
@@ -345,6 +346,12 @@ void DelilaSelectorEliade::Read_Confs() {
 //             };
 //               break;
 //           }
+          case 9996:{//reference channel
+              ref_dom = value;
+              std::cout<<"ref_dom "<<ref_dom<<" \n";
+              break;
+              
+          };
           case 9997:{
               int det = value/1;
               bool bl_last_detector = true;
@@ -1305,13 +1312,15 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 2e3,-5e6, 15e6);
    mTimeCalibInsideEvent->GetXaxis()->SetTitle("domain");
    mTimeCalibInsideEvent->GetYaxis()->SetTitle("ps");
-   mTimeCalibInsideEvent->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
+//    mTimeCalibInsideEvent->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
+   mTimeCalibInsideEvent->SetTitle(Form("TimeDiff domain%i vs domain", ref_dom));
    fOutput->Add(mTimeCalibInsideEvent);
    
    mTimeCalibInsideEventCores = new TH2F("mTimeCalibInsideEventCores", "mTimeCalibInsideEventCores", 100, -0.5, 99.5, 1e3,-1e6, 9e6);
    mTimeCalibInsideEventCores->GetXaxis()->SetTitle("coreID");
    mTimeCalibInsideEventCores->GetYaxis()->SetTitle("ps");
-   mTimeCalibInsideEventCores->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
+//    mTimeCalibInsideEventCores->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
+   mTimeCalibInsideEventCores->SetTitle(Form("TimeDiff domain%i vs domain", ref_dom));
    fOutput->Add(mTimeCalibInsideEventCores);
    
    if (has_detector["neutron"]){
@@ -2175,37 +2184,54 @@ void DelilaSelectorEliade::TimeAlignementTrigger()
 void DelilaSelectorEliade::TimeAlignementInsideEvent()
 {
      std::deque<DelilaEvent>::iterator it1_= delilaQu.begin();
-     std::deque<DelilaEvent>::iterator it2_= delilaQu.begin();
      double time_diff_temp = 0;
-     
-     if (trigger_domains.empty()) return;
-
+     double ref_time = -1;
      for (; it1_!= delilaQu.end();++it1_){
-//            if ((*it2_).domain != channel_trg/1) continue;
-         //checking if there is another trigger in the event
-           std::vector<int>::iterator it_trg_ = trigger_domains.begin();
-           bool blTRG = false;
-           for (; it_trg_!=trigger_domains.end(); ++it_trg_){
-               if ((*it1_).domain == *it_trg_){
-                   blTRG = true;
-                   break;
-               };
-           };
-           if (!blTRG) continue;
-//         return blTRG;
-         
-//          if ((*it2_).domain != trigger_domains.front()) continue;
-         it2_ = delilaQu.begin();         
-         for (; it2_ != delilaQu.end();++it2_){
-             if (it1_ == it2_ ) continue;
-          // time_diff_temp = delilaQu.front().Time - TriggerTimeFlag;
-//           time_diff_temp = (*it_).Time - TriggerTimeFlag;
-          time_diff_temp = (*it1_).Time - (*it2_).Time ;
-          mTimeCalibInsideEvent->Fill((*it2_).domain, time_diff_temp);
-          if((*it1_).det_def == 1 && (*it2_).det_def == 1 ) mTimeCalibInsideEventCores->Fill((*it2_).coreID, time_diff_temp);
+      if ((*it1_).domain == ref_dom )
+      {
+          ref_time = (*it1_).Time;       
+          break;
+      }
      };
-    };
-    return;
+     
+     if (ref_time == -1) return;
+     it1_= delilaQu.begin();
+     for (; it1_!= delilaQu.end();++it1_){
+         if ((*it1_).domain == ref_dom) continue;
+         time_diff_temp = ref_time - (*it1_).Time;
+         mTimeCalibInsideEvent->Fill((*it1_).domain, time_diff_temp);
+     };     
+     
+     
+     
+//      if (trigger_domains.empty()) return;
+// 
+//      for (; it1_!= delilaQu.end();++it1_){
+// //            if ((*it2_).domain != channel_trg/1) continue;
+//          //checking if there is another trigger in the event
+//            std::vector<int>::iterator it_trg_ = trigger_domains.begin();
+//            bool blTRG = false;
+//            for (; it_trg_!=trigger_domains.end(); ++it_trg_){
+//                if ((*it1_).domain == *it_trg_){
+//                    blTRG = true;
+//                    break;
+//                };
+//            };
+//            if (!blTRG) continue;
+// //         return blTRG;
+//          
+// //          if ((*it2_).domain != trigger_domains.front()) continue;
+//          it2_ = delilaQu.begin();         
+//          for (; it2_ != delilaQu.end();++it2_){
+//              if (it1_ == it2_ ) continue;
+//           // time_diff_temp = delilaQu.front().Time - TriggerTimeFlag;
+// //           time_diff_temp = (*it_).Time - TriggerTimeFlag;
+//           time_diff_temp = (*it1_).Time - (*it2_).Time ;
+//           mTimeCalibInsideEvent->Fill((*it2_).domain, time_diff_temp);
+//           if((*it1_).det_def == 1 && (*it2_).det_def == 1 ) mTimeCalibInsideEventCores->Fill((*it2_).coreID, time_diff_temp);
+//      };
+//     };
+//     return;
 }
 
 void DelilaSelectorEliade::TreatLaBrSingle()

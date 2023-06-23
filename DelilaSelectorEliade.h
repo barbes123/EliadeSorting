@@ -311,6 +311,7 @@ public :
 
   int det_def_trg;
   int channel_trg;
+  int ref_dom; //for time Allignement
   std::vector<int> trigger_domains;
   double TriggerTimeFlag;
   double lastDelilaTime;
@@ -569,6 +570,8 @@ void DelilaSelectorEliade::Init(TTree *tree)
       }
   else if (det_def_trg > 0){std::cout<<" any of "<<" "<<detector_name[det_def_trg]<< " detectors ("<< det_def_trg<<") \n";}
   else {std::cout<<" trigger is not set correctly \n";};
+  
+  std::cout<<" TA reference domaim: "<<ref_dom<<" \n";
   
   blCS = false;
   if (coinc_gates.find(15) != coinc_gates.end()){blCS = true;};
