@@ -106,7 +106,7 @@ void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
       std::istringstream is(oneline);
       if (debug) std::cout << is.str().c_str() << std::endl;
 //       is >> curDet.ch >> curDet.dom >> curDet.theta >> curDet.phi >> curDet.TimeOffset >> curDet.threshold;
-      is >> curDet.ch >> curDet.dom >> curDet.detType >> curDet.serial >> curDet.bgo_time_offset>> curDet.theta >> curDet.phi >> curDet.threshold >> curDet.cs_dom;
+      is >> curDet.ch >> curDet.dom >> curDet.detType >> curDet.serial >> curDet.time_offset>> curDet.theta >> curDet.phi >> curDet.threshold >> curDet.cs_dom;
     //  std::cout<<" curDfalseet.ch  "<<curDet.ch <<" curDet.TimeOffset " <<curDet.TimeOffset<<std::endl;
       
       if (curDet.ch >= 0) {
@@ -1599,7 +1599,10 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      
      lastDelilaTime = DelilaEvent_.Time;     
      //Apply time correction
-     DelilaEvent_.Time-= LUT_ELIADE[daq_ch].bgo_time_offset*1e3; //from ns in lut to ps
+     DelilaEvent_.Time= DelilaEvent_.Time + LUT_ELIADE[daq_ch].time_offset;//*1e3; //from ns in lut to ps
+     
+     
+     
 //      DelilaEvent_.Time-=LUT_TA[domain];
      
      switch (DelilaEvent_.det_def){
@@ -3202,7 +3205,7 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
         curDet.dom            =  data[i]["domain"];
         curDet.detType        =  data[i]["detType"];
         curDet.serial         =  data[i]["serial"];
-        curDet.TimeOffset     =  data[i]["TimeOffset"];
+        curDet.time_offset     =  data[i]["TimeOffset"];
         curDet.theta          =  data[i]["theta"];
         curDet.phi            =  data[i]["phi"];
         curDet.threshold      =  data[i]["threshold"];

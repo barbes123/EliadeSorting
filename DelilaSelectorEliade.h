@@ -97,8 +97,8 @@ public :
     Float_t	 phi;  
 //     UShort_t detType;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
     int detType;//0 - nothing; 1 - core; 2 - segment; 3 - CeBr; 4 - CsI; 5 - BGO1; 6 - BGO2; 9 - pulser
-    Int_t	 TimeOffset;
-    double_t bgo_time_offset;
+    Int_t	 TimeOffset;//to be removed
+    double_t time_offset;
     Int_t 	 threshold; 
     Int_t	 pol_order;
     Int_t    cs_dom;
