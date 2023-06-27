@@ -106,12 +106,12 @@ void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
       std::istringstream is(oneline);
       if (debug) std::cout << is.str().c_str() << std::endl;
 //       is >> curDet.ch >> curDet.dom >> curDet.theta >> curDet.phi >> curDet.TimeOffset >> curDet.threshold;
-      is >> curDet.ch >> curDet.dom >> curDet.detType >> curDet.serial >> curDet.time_offset>> curDet.theta >> curDet.phi >> curDet.threshold >> curDet.cs_dom;
+      is >> curDet.ch >> curDet.dom >> curDet.detType >> curDet.serial >> curDet.bgo_time_offset>> curDet.theta >> curDet.phi >> curDet.threshold >> curDet.cs_dom;
     //  std::cout<<" curDfalseet.ch  "<<curDet.ch <<" curDet.TimeOffset " <<curDet.TimeOffset<<std::endl;
       
       if (curDet.ch >= 0) {
-//           curDet.theta *= TMath::DegToRad();
-//           curDet.phi *= TMath::DegToRad();
+          curDet.theta *= TMath::DegToRad();
+          curDet.phi *= TMath::DegToRad();
 	int pol_order = 0;
  	float offset_gate(0.),slope_gate(1.);
     is >> offset_gate;
@@ -174,49 +174,6 @@ void DelilaSelectorEliade::Read_TimeAlignment_LookUpTable() {
       int coinc_id = 0; int time_corr = 0;
       is >> coinc_id >> time_corr;
       LUT_TA[coinc_id] = time_corr;
-
- 
-  }
-  lookuptable.close();
-  }
-  std::cout << " done" << std::endl;
-  //  std::exit(1);
-}
-
-void DelilaSelectorEliade::Read_AddBackTable() {
-  std::cout << "I am Reading AddBackTable ... ";
- 
-  char* pLUT_Path;
-  pLUT_Path = getenv ("ELIADE_LUT");
-  if (pLUT_Path!=NULL)
-    printf ("The AddBackTable path is: %s \n",pLUT_Path);
-
-
-  std::stringstream LUTFile;
-  LUTFile << pLUT_Path <<"/"<<"AddBack_distances_simple.dat";
-// //   const int nbr_of_ch = 200;
-  std::ifstream lookuptable(LUTFile.str().c_str());
-
-  if (!lookuptable.good()) {
-    std::ostringstream os;
-    os << "Could not open " << LUTFile.str().c_str()
-    << " no addback will be done\n";
-//        << " and I need it ;(\n";
-//     Abort(os.str().c_str());
-  } else {
-    while (lookuptable.good()) {
-      std::string oneline;
-      std::getline(lookuptable, oneline);
-      if (!lookuptable.good()) continue;
-      if (oneline[0] == '#') continue; // ignore lines stating with #
-      if (oneline.empty())   continue; // ignore empty lines
-
-      std::istringstream is(oneline);
- 
-      int dom1 = 0; int dom2 = 0; float dist = 0.;
-      is >> dom1 >> dom2 >> dist;
-      AddBack_distances[dom1][dom2] = dist;
-      AddBack_distances[dom2][dom1] = dist;
 
  
   }
@@ -329,7 +286,6 @@ void DelilaSelectorEliade::Read_Confs() {
   bunch_reset = 0;
   det_def_trg = -1;
   channel_trg = -1;
-  ref_dom = 101;
   TriggerTimeFlag = 0;
   beta = 0;
 
@@ -389,12 +345,6 @@ void DelilaSelectorEliade::Read_Confs() {
 //             };
 //               break;
 //           }
-          case 9996:{//reference channel
-              ref_dom = value;
-              std::cout<<"ref_dom "<<ref_dom<<" \n";
-              break;
-              
-          };
           case 9997:{
               int det = value/1;
               bool bl_last_detector = true;
@@ -591,7 +541,6 @@ void DelilaSelectorEliade::Begin(TTree * tree)
 //   exit(0);
    
    Read_TimeAlignment_LookUpTable();
-   Read_AddBackTable();
 //    Read_CoincCoinc_TimeAlignment_LookUpTable();//for fine coinc-coinc time allignement 
 //    Print_CoincCoinc_TimeAlignment_LookUpTable();
    //Print_TimeAlignment_LookUpTable();
@@ -853,7 +802,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         mFoldSpecSum[*it1_coreid_]->GetXaxis()->SetTitle("fold");
         mFoldSpecSum[*it1_coreid_]->GetYaxis()->SetTitle("keV");
         fOutput->Add(mFoldSpecSum[*it1_coreid_]);
-        std::cout<<" core ID "<<*it1_coreid_<<" AddBack hists Initialized \n"; 
+        
         
         if (blCS){
             mTimeDiffCoreSegmentsCS[*it1_coreid_] = new TH2F(Form("mTimeDiffCoreSegmentsCS_%i", *it1_coreid_), Form("mTimeDiffCoreSegmentsCS_%i", *it1_coreid_), 50, -0.5, 49.5, 4e2, -2e6, 2e6);
@@ -1356,15 +1305,13 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 2e3,-5e6, 15e6);
    mTimeCalibInsideEvent->GetXaxis()->SetTitle("domain");
    mTimeCalibInsideEvent->GetYaxis()->SetTitle("ps");
-//    mTimeCalibInsideEvent->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
-   mTimeCalibInsideEvent->SetTitle(Form("TimeDiff domain%i vs domain", ref_dom));
+   mTimeCalibInsideEvent->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
    fOutput->Add(mTimeCalibInsideEvent);
    
    mTimeCalibInsideEventCores = new TH2F("mTimeCalibInsideEventCores", "mTimeCalibInsideEventCores", 100, -0.5, 99.5, 1e3,-1e6, 9e6);
    mTimeCalibInsideEventCores->GetXaxis()->SetTitle("coreID");
    mTimeCalibInsideEventCores->GetYaxis()->SetTitle("ps");
-//    mTimeCalibInsideEventCores->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
-   mTimeCalibInsideEventCores->SetTitle(Form("TimeDiff domain%i vs domain", ref_dom));
+   mTimeCalibInsideEventCores->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
    fOutput->Add(mTimeCalibInsideEventCores);
    
    if (has_detector["neutron"]){
@@ -1400,11 +1347,6 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
        hNN_ring->GetXaxis()->SetTitle("ring");
        hNN_ring->GetYaxis()->SetTitle("Counts");
        fOutput->Add(hNN_ring);
-       
-       hTheta["neutron"] = new TH1F("hTheta_neutron", "hTheta_neutron", 40,-200, 200);
-       hTheta["neutron"]->GetXaxis()->SetTitle("#Theta, degrees");
-       fOutput->Add(hTheta["neutron"]);
-       
        
        for (int i=0;i<=50;i++) {
            last_neutron_det[i] = 0;
@@ -1597,7 +1539,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     
     if ((DelilaEvent_.fEnergy < LUT_ELIADE[daq_ch].threshold)&&(DelilaEvent_.det_def < 9)) return kTRUE;
     
-    if (!has_detector[detector_name[DelilaEvent_.det_def]]) return kTRUE;
+    if (!has_detector[detector_name[DelilaEvent_.det_def]]) return kTRUE; //already checked 20 lines above
         
     DelilaEvent_.cs_domain = LUT_ELIADE[daq_ch].cs_dom;
     DelilaEvent_.theta= LUT_ELIADE[daq_ch].theta;
@@ -1643,11 +1585,12 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      
      lastDelilaTime = DelilaEvent_.Time;     
      //Apply time correction
-     DelilaEvent_.Time= DelilaEvent_.Time + LUT_ELIADE[daq_ch].time_offset;//*1e3; //from ns in lut to ps
-     
-     
+     DelilaEvent_.Time -= LUT_ELIADE[daq_ch].bgo_time_offset*1e3; //from ns in lut to ps
      
 //      DelilaEvent_.Time-=LUT_TA[domain];
+//      DelilaEvent_.Time=DelilaEvent_.Time - LUT_TA[domain];
+     DelilaEvent_.Time=DelilaEvent_.Time - LUT_TA[domain];
+     
      
      switch (DelilaEvent_.det_def){
           case 1:  { 
@@ -2231,54 +2174,37 @@ void DelilaSelectorEliade::TimeAlignementTrigger()
 void DelilaSelectorEliade::TimeAlignementInsideEvent()
 {
      std::deque<DelilaEvent>::iterator it1_= delilaQu.begin();
+     std::deque<DelilaEvent>::iterator it2_= delilaQu.begin();
      double time_diff_temp = 0;
-     double ref_time = -1;
+     
+     if (trigger_domains.empty()) return;
+
      for (; it1_!= delilaQu.end();++it1_){
-      if ((*it1_).domain == ref_dom )
-      {
-          ref_time = (*it1_).Time;       
-          break;
-      }
+//            if ((*it2_).domain != channel_trg/1) continue;
+         //checking if there is another trigger in the event
+           std::vector<int>::iterator it_trg_ = trigger_domains.begin();
+           bool blTRG = false;
+           for (; it_trg_!=trigger_domains.end(); ++it_trg_){
+               if ((*it1_).domain == *it_trg_){
+                   blTRG = true;
+                   break;
+               };
+           };
+           if (!blTRG) continue;
+//         return blTRG;
+         
+//          if ((*it2_).domain != trigger_domains.front()) continue;
+         it2_ = delilaQu.begin();         
+         for (; it2_ != delilaQu.end();++it2_){
+             if (it1_ == it2_ ) continue;
+          // time_diff_temp = delilaQu.front().Time - TriggerTimeFlag;
+//           time_diff_temp = (*it_).Time - TriggerTimeFlag;
+          time_diff_temp = (*it1_).Time - (*it2_).Time ;
+          mTimeCalibInsideEvent->Fill((*it2_).domain, time_diff_temp);
+          if((*it1_).det_def == 1 && (*it2_).det_def == 1 ) mTimeCalibInsideEventCores->Fill((*it2_).coreID, time_diff_temp);
      };
-     
-     if (ref_time == -1) return;
-     it1_= delilaQu.begin();
-     for (; it1_!= delilaQu.end();++it1_){
-         if ((*it1_).domain == ref_dom) continue;
-         time_diff_temp = ref_time - (*it1_).Time;
-         mTimeCalibInsideEvent->Fill((*it1_).domain, time_diff_temp);
-     };     
-     
-     
-     
-//      if (trigger_domains.empty()) return;
-// 
-//      for (; it1_!= delilaQu.end();++it1_){
-// //            if ((*it2_).domain != channel_trg/1) continue;
-//          //checking if there is another trigger in the event
-//            std::vector<int>::iterator it_trg_ = trigger_domains.begin();
-//            bool blTRG = false;
-//            for (; it_trg_!=trigger_domains.end(); ++it_trg_){
-//                if ((*it1_).domain == *it_trg_){
-//                    blTRG = true;
-//                    break;
-//                };
-//            };
-//            if (!blTRG) continue;
-// //         return blTRG;
-//          
-// //          if ((*it2_).domain != trigger_domains.front()) continue;
-//          it2_ = delilaQu.begin();         
-//          for (; it2_ != delilaQu.end();++it2_){
-//              if (it1_ == it2_ ) continue;
-//           // time_diff_temp = delilaQu.front().Time - TriggerTimeFlag;
-// //           time_diff_temp = (*it_).Time - TriggerTimeFlag;
-//           time_diff_temp = (*it1_).Time - (*it2_).Time ;
-//           mTimeCalibInsideEvent->Fill((*it2_).domain, time_diff_temp);
-//           if((*it1_).det_def == 1 && (*it2_).det_def == 1 ) mTimeCalibInsideEventCores->Fill((*it2_).coreID, time_diff_temp);
-//      };
-//     };
-//     return;
+    };
+    return;
 }
 
 void DelilaSelectorEliade::TreatLaBrSingle()
@@ -2375,8 +2301,6 @@ void DelilaSelectorEliade::TreatNeutronSingle3He()
     mNN_TimeDiff_counter->Fill(DelilaEvent_.domain, DelilaEvent_.Time - last_neutron_det[DelilaEvent_.domain]);
     last_neutron_det[DelilaEvent_.domain] = DelilaEvent_.Time; 
     DelilaEvent_.ring = nnring[sz_ring];
-    hTheta["neutron"]->Fill(DelilaEvent_.theta);
-//     std::cout<<DelilaEvent_.theta<<std::endl;
 }
 
 void DelilaSelectorEliade::TreatNeutronNeutron()
@@ -2576,10 +2500,10 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
            if (blCS)                    ViewACS();
            if (blCS)                    ViewACS_segments();
            if (blFold)                  TreatFold(3);
-            if (blAddBack)               ViewAddBackDetector();//for segments
+//            if (blAddBack)               ViewAddBackDetector();//for segments
 //            if (blAddBack)               ViewAddBackDetectorCS();
 //             if (blAddBack)           ViewAddBackCrystal();
-//            if (blAddBack)               ViewAddBackCoreCore();
+            if (blAddBack)               ViewAddBackCoreCore();
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
            
@@ -2855,7 +2779,6 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
 {
      std::deque<DelilaEvent>::iterator it1_= delilaQu.begin();
      std::deque<DelilaEvent>::iterator it2_= delilaQu.begin();
-
      for (; it1_!= delilaQu.end();++it1_){
          
          if ((*it1_).det_def != 1) continue;         
@@ -2888,30 +2811,16 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
                SegQu.push_back(*it2_);
            };
          };
-         
+        
         std::deque<DelilaEvent>::iterator it3_= SegQu.begin();
         int nnfold = SegQu.size();
         double foldsum = 0;
-        bool goAddBack = true;
         for (; it3_!= SegQu.end();++it3_){
-          std::deque<DelilaEvent>::iterator it4_= it3_ + 1;
-          for (; it4_!= SegQu.end();++it4_){
-            if (AddBack_distances[(*it3_).domain%100][(*it4_).domain%100]>nnfold){
-              goAddBack = false;
-              break;
-            }
-          }
-          if (!goAddBack){break;}
-        }
-        it3_= SegQu.begin();
-        if (goAddBack){
-          for (; it3_!= SegQu.end();++it3_){
-            mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
-            foldsum+= (*it3_).Energy_kev;
-          };
-          mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
-        }
+          mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
+          foldsum+= (*it3_).Energy_kev;
+        };
         SegQu.clear();
+        mFoldSpecSum[det_id1]->Fill(nnfold, foldsum); 
      };
 }
 
@@ -3264,7 +3173,7 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
         curDet.dom            =  data[i]["domain"];
         curDet.detType        =  data[i]["detType"];
         curDet.serial         =  data[i]["serial"];
-        curDet.time_offset     =  data[i]["TimeOffset"];
+        curDet.TimeOffset     =  data[i]["TimeOffset"];
         curDet.theta          =  data[i]["theta"];
         curDet.phi            =  data[i]["phi"];
         curDet.threshold      =  data[i]["threshold"];

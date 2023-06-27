@@ -247,6 +247,7 @@ public :
 
   std::map<UInt_t, std::string> gg_coinc_id;
   std::map<int, Float_t> coinc_gates;//in ps
+  std::map<int, std::map<int, float>> AddBack_distances;
 
   
   std::map<int, std::string> domain_list;
@@ -388,6 +389,7 @@ public :
    virtual Long64_t GetEntries() { return fChain ? fChain->GetEntries() : 0;}
 
    virtual void  Read_ELIADE_LookUpTable();
+   virtual void  Read_AddBackTable();
    virtual void  Read_SeaTable();
    virtual void  Read_ELIADE_JSONLookUpTable();
    virtual void  Read_TimeAlignment_LookUpTable();
