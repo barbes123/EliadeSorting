@@ -809,6 +809,17 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         mEliade_raw->GetXaxis()->SetTitle("domain");
         mEliade_raw->GetYaxis()->SetTitle("a.u.");
         fOutput->Add(mEliade_raw);
+        
+        if (ListOfCores.empty()) std::cout<<"ListOfCores is empty \n";
+        std::vector<int > ::iterator it2_coreid_ = ListOfCores.begin();
+        for (; it2_coreid_ != ListOfCores.end(); ++it2_coreid_) {
+            
+            mTimeDiffCoreCore[*it2_coreid_] = new TH2F(Form("mTimeDiffCoreCore_%i", *it2_coreid_), Form("mTimeDiffCoreCore_%i", *it2_coreid_), 32, -0.5, 31.5, 4e2, -2e6, 2e6);
+            mTimeDiffCoreCore[*it2_coreid_]->GetXaxis()->SetTitle("core");
+            mTimeDiffCoreCore[*it2_coreid_]->GetYaxis()->SetTitle("10 ns / bin");
+            fOutput->Add(mTimeDiffCoreCore[*it2_coreid_]);
+            
+        };
  /*       
         mEliadeCores = new TH2F("mEliadeCores", "mEliade", max_domain, -0.5, max_domain-0.5, 4096, -0.5, 8191.5);
         mEliadeCores->GetXaxis()->SetTitle("domain");
