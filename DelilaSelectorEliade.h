@@ -248,6 +248,12 @@ public :
   std::map<UInt_t, std::string> gg_coinc_id;
   std::map<int, Float_t> coinc_gates;//in ps
   std::map<int, std::map<int, float>> AddBack_distances;
+  
+  TTree* addbackTree;
+  int nfoldAddback;
+  float EAddback;
+  std::vector<int> *vDomain;
+  std::vector<float> *vEAddback;
 
   
   std::map<int, std::string> domain_list;
@@ -556,7 +562,18 @@ void DelilaSelectorEliade::Init(TTree *tree)
   std::cout<<" AddBack option: "<< addBackMode <<" \n";
   std::cout<<" Beta: "<< beta <<" \n";
   
-  
+  if (addBackMode > 0){
+      foutFile->cd();
+      addbackTree = new TTree("AddBackEvents","AddBackEvents");
+      nfoldAddback = 0;
+      addbackTree->Branch("nfoldAddback",&nfoldAddback);
+      EAddback = 0;
+      addbackTree->Branch("EAddback",&EAddback);
+      vDomain = new std::vector<int>;
+      addbackTree->Branch("vDomain",&vDomain);
+      vEAddback = new std::vector<float>;
+      addbackTree->Branch("vEAddback",&vEAddback);
+ };
     
   std::cout<<" Trigger: ";
   if (det_def_trg == -1){std::cout<<" No trigger \n";}

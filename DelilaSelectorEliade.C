@@ -193,7 +193,7 @@ void DelilaSelectorEliade::Read_AddBackTable() {
 
 
   std::stringstream LUTFile;
-  LUTFile << pLUT_Path <<"/"<<"AddBack_distances_simple.dat";
+  LUTFile << pLUT_Path <<"/"<<"LUT_AB.dat";
 // //   const int nbr_of_ch = 200;
   std::ifstream lookuptable(LUTFile.str().c_str());
 
@@ -217,6 +217,7 @@ void DelilaSelectorEliade::Read_AddBackTable() {
       is >> dom1 >> dom2 >> dist;
       AddBack_distances[dom1][dom2] = dist;
       AddBack_distances[dom2][dom1] = dist;
+      std::cout<<dom1<<" "<<dom2<<" "<<dist<<" "<<AddBack_distances[dom1][dom2]<<" "<<AddBack_distances[dom2][dom1]<<endl;
 
  
   }
@@ -855,7 +856,8 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         mGGCoreSegments[*it1_coreid_]->GetYaxis()->SetTitle("keV");
         fOutput->Add(mGGCoreSegments[*it1_coreid_]);
         
-        mFoldSpec[*it1_coreid_] = new TH2F(Form("mFoldSpec_%i", *it1_coreid_), Form("mFoldSpec_%i", *it1_coreid_),   50, -0.5, 49.5, 4096, -0.5, 16383.5);
+        //mFoldSpec[*it1_coreid_] = new TH2F(Form("mFoldSpec_%i", *it1_coreid_), Form("mFoldSpec_%i", *it1_coreid_),   50, -0.5, 49.5, 4096, -0.5, 16383.5);
+        mFoldSpec[*it1_coreid_] = new TH2F(Form("mFoldSpec_%i", *it1_coreid_), Form("mFoldSpec_%i", *it1_coreid_),   50, -0.5, 49.5, 50, -0.5, 49.5);
         mFoldSpec[*it1_coreid_]->GetXaxis()->SetTitle("fold");
         mFoldSpec[*it1_coreid_]->GetYaxis()->SetTitle("keV");
         fOutput->Add(mFoldSpec[*it1_coreid_]);
@@ -1193,7 +1195,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
            };
          };
       
-        hDelila0[itna1->first] = new TH1F(Form("%s",itna1->second.c_str()), Form("%s before EventB",itna1->second.c_str()), 4096, -0.5, 16383.5);
+        hDelila0[itna1->first] = new TH1F(Form("%s",itna1->second.c_str()), Form("%s before EventB",itna1->second.c_str()), 16384, -0.5, 16383.5);
         hDelila0[itna1->first]->GetYaxis()->SetTitle("counts");
         hDelila0[itna1->first]->GetXaxis()->SetTitle("keV");
         fOutput->Add(hDelila0[itna1->first]);
@@ -1571,7 +1573,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      };
      if (!check_daq_ch) {
          hChannelHitNotDefined->Fill(daq_ch);         
-         if (daq_ch > 3216) std::cout<<"daq_ch "<<daq_ch<<" is not defined in LUT_ELIADE.dat, skipping the entry \n" ;
+         if (daq_ch > 3216 && daq_ch!=25755) std::cout<<"daq_ch "<<daq_ch<<" is not defined in LUT_ELIADE.dat, skipping the entry \n" ;
          return kTRUE;
      };
      
@@ -2003,6 +2005,7 @@ void DelilaSelectorEliade::Terminate()
       if (has_detector["Elissa"]) foutFile->mkdir("AmaxEnergy","AmaxEnergy");
       
       outputTree->Write();
+      if (blAddBack) addbackTree->Write();
       
        while ((obj = iter())) {
            TString name = obj->GetName();
@@ -2578,6 +2581,7 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
        double time_diff_trigger = DelilaEvent_.Time - LastTriggerEvent.Time;
 
 //          std::cout<<" blTimeAlignement  "<<blTimeAlignement<<"\n";
+//          std::cout<<" blTimeAlignement  "<<abs(time_diff_trigger)<<"\n";
 
        if (abs(time_diff_trigger) > event_length){//close event
 //             TimeAlignementCoincCoinc();
@@ -2587,9 +2591,9 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
            if (blCS)                    ViewACS();
            if (blCS)                    ViewACS_segments();
            if (blFold)                  TreatFold(3);
-            if (blAddBack)               ViewAddBackDetector();//for segments
+           if (blAddBack)               ViewAddBackDetector();//for segments
 //            if (blAddBack)               ViewAddBackDetectorCS();
-//             if (blAddBack)           ViewAddBackCrystal();
+//            if (blAddBack)               ViewAddBackCrystal();
 //            if (blAddBack)               ViewAddBackCoreCore();
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
@@ -2893,35 +2897,94 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
            mTimeDiffCoreSegments[det_id1]->Fill(seg_id,time_diff_core_seg);
            
            if (time_diff_core_seg < coinc_gates[12]) {
-               mCoreSegments[det_id1]->Fill(seg_id,(*it2_).Energy_kev);
-               mGGCoreSegments[det_id1]->Fill((*it1_).Energy_kev,(*it2_).Energy_kev);
-               hCoreFold[det_id1]->SetBinContent(seg_id, hCoreFold[det_id1]->GetBinContent(seg_id)+1);
                SegQu.push_back(*it2_);
            };
          };
          
         std::deque<DelilaEvent>::iterator it3_= SegQu.begin();
         int nnfold = SegQu.size();
-        double foldsum = 0;
+        float foldsum = 0;
         bool goAddBack = true;
         for (; it3_!= SegQu.end();++it3_){
           std::deque<DelilaEvent>::iterator it4_= it3_ + 1;
           for (; it4_!= SegQu.end();++it4_){
-            if (AddBack_distances[(*it3_).domain%100][(*it4_).domain%100]>nnfold){
+            //std::cout<<(*it3_).domain%100<<" "<<(*it4_).domain%100<<" "<<AddBack_distances[(*it3_).domain%100][(*it4_).domain%100]<<" "<<(nnfold-1)*AddBack_distances[01][05]<<endl;
+            //if (AddBack_distances[(*it3_).domain%100][(*it4_).domain%100]>(nnfold-1.)*AddBack_distances[01][05]){
+            if (false){//AddBack_all
+            //if ((*it3_).domain/10%10!=(*it4_).domain/10%10){//Same as core signal fold 1
               goAddBack = false;
               break;
             }
           }
-          if (!goAddBack){break;}
         }
         it3_= SegQu.begin();
+        vDomain->clear();
+        vEAddback->clear();
         if (goAddBack){
+          if (nnfold==2){
+            if ((*it3_).domain%100>(*(it3_+1)).domain%100){
+              mFoldSpec[det_id1]->Fill((*it3_).domain%100,(*(it3_+1)).domain%100);
+            }
+            else{
+              mFoldSpec[det_id1]->Fill((*(it3_+1)).domain%100,(*it3_).domain%100);
+            }
+          } 
           for (; it3_!= SegQu.end();++it3_){
-            mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
+            mCoreSegments[det_id1]->Fill((*it3_).domain%100,(*it3_).Energy_kev);
+            mGGCoreSegments[det_id1]->Fill((*it1_).Energy_kev,(*it3_).Energy_kev);
+            hCoreFold[det_id1]->SetBinContent((*it3_).domain%100, hCoreFold[det_id1]->GetBinContent((*it3_).domain%100)+1);
+            //mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev); 
             foldsum+= (*it3_).Energy_kev;
+            vDomain->push_back((*it3_).domain);
+            vEAddback->push_back((*it3_).Energy_kev);
           };
           mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
+          nfoldAddback = nnfold;
+          EAddback = foldsum;
+          addbackTree->Fill();
         }
+        else{
+          for (; it3_!= SegQu.end();++it3_){
+            mCoreSegments[det_id1]->Fill((*it3_).domain%100,(*it3_).Energy_kev);
+            mGGCoreSegments[det_id1]->Fill((*it1_).Energy_kev,(*it3_).Energy_kev);
+            hCoreFold[det_id1]->SetBinContent((*it3_).domain%100, hCoreFold[det_id1]->GetBinContent((*it3_).domain%100)+1);
+            //mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev); 
+            mFoldSpecSum[det_id1]->Fill(1, (*it3_).Energy_kev);
+            vDomain->push_back((*it3_).domain);
+            vEAddback->push_back((*it3_).Energy_kev);
+            nfoldAddback = nnfold;
+            EAddback = (*it3_).Energy_kev;
+            addbackTree->Fill();
+            vDomain->clear();
+            vEAddback->clear();
+          };
+          /*for (int domfold1 = 0; domfold1 < 4; domfold1++){//Same as core signal fold 1
+            nnfold = 0.;
+            foldsum = 0.;
+            for (; it3_!= SegQu.end();++it3_){
+              if ((*it3_).domain/10%10==domfold1){
+                mCoreSegments[det_id1]->Fill((*it3_).domain%100,(*it3_).Energy_kev);
+                mGGCoreSegments[det_id1]->Fill((*it1_).Energy_kev,(*it3_).Energy_kev);
+                hCoreFold[det_id1]->SetBinContent((*it3_).domain%100, hCoreFold[det_id1]->GetBinContent((*it3_).domain%100)+1);
+                //mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev); 
+                mFoldSpecSum[det_id1]->Fill(1, (*it3_).Energy_kev);
+                vDomain->push_back((*it3_).domain);
+                vEAddback->push_back((*it3_).Energy_kev);
+                foldsum += (*it3_).Energy_kev;
+              }
+            }
+            nfoldAddback = nnfold;
+            EAddback = foldsum;
+            if (EAddback > 0){
+              addbackTree->Fill();
+            }
+            vDomain->clear();
+            vEAddback->clear();
+            it3_= SegQu.begin();
+          }*/
+        }
+        vDomain->clear();
+        vEAddback->clear();
         SegQu.clear();
      };
 }
