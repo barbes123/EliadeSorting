@@ -2920,6 +2920,7 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
         it3_= SegQu.begin();
         vDomain->clear();
         vEAddback->clear();
+        vTime->clear();
         if (goAddBack){
           if (nnfold==2){
             if ((*it3_).domain%100>(*(it3_+1)).domain%100){
@@ -2937,6 +2938,7 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
             foldsum+= (*it3_).Energy_kev;
             vDomain->push_back((*it3_).domain);
             vEAddback->push_back((*it3_).Energy_kev);
+            vTime->push_back((*it3_).Time);
           };
           mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
           nfoldAddback = nnfold;
@@ -2952,11 +2954,13 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
             mFoldSpecSum[det_id1]->Fill(1, (*it3_).Energy_kev);
             vDomain->push_back((*it3_).domain);
             vEAddback->push_back((*it3_).Energy_kev);
+            vTime->push_back((*it3_).Time);
             nfoldAddback = nnfold;
             EAddback = (*it3_).Energy_kev;
             addbackTree->Fill();
             vDomain->clear();
             vEAddback->clear();
+            vTime->clear();
           };
           /*for (int domfold1 = 0; domfold1 < 4; domfold1++){//Same as core signal fold 1
             nnfold = 0.;
@@ -2970,6 +2974,7 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
                 mFoldSpecSum[det_id1]->Fill(1, (*it3_).Energy_kev);
                 vDomain->push_back((*it3_).domain);
                 vEAddback->push_back((*it3_).Energy_kev);
+                vTime->push_back((*it3_).Time);
                 foldsum += (*it3_).Energy_kev;
               }
             }
@@ -2980,11 +2985,13 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
             }
             vDomain->clear();
             vEAddback->clear();
+            vTime->clear();
             it3_= SegQu.begin();
           }*/
         }
         vDomain->clear();
         vEAddback->clear();
+        vTime->clear();
         SegQu.clear();
      };
 }

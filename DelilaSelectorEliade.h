@@ -254,6 +254,7 @@ public :
   float EAddback;
   std::vector<int> *vDomain;
   std::vector<float> *vEAddback;
+  std::vector<double> *vTime;
 
   
   std::map<int, std::string> domain_list;
@@ -573,6 +574,8 @@ void DelilaSelectorEliade::Init(TTree *tree)
       addbackTree->Branch("vDomain",&vDomain);
       vEAddback = new std::vector<float>;
       addbackTree->Branch("vEAddback",&vEAddback);
+      vTime = new std::vector<double>;
+      addbackTree->Branch("vTime",&vTime);
  };
     
   std::cout<<" Trigger: ";
