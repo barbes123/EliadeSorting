@@ -5,16 +5,18 @@
 #include <iostream> 
 using namespace std;
 
-void start_me (UInt_t AddBAck = 0, int serverID=5, UInt_t first_run=195, UInt_t vol0=1, int nevents=0)
-{
+void start_me(UInt_t AddBAck = 0, int serverID=5, UInt_t first_run=195, UInt_t vol0=1, int nevents=0){
+
  
- std::cout<<" start_me.C is running "<<std::endl;
+ 
+ 
+ std::cout<<" sorting_eliade.C is running "<<std::endl;
  
  UInt_t vol1 = vol0;  
  UInt_t last_run = first_run;
- string data_path = Form("/eliadedisks/s%i/root_files", serverID);  
+ string data_path = "/eliadedisks/s3/root_files";  
 // string suffix = "ssgant1";
- string suffix = Form("eliadeS%i", serverID);
+ string suffix = Form("eliadeS%i",serverID);
  string file_name_prefix = "run";
   
  for(UInt_t run=first_run;run<=last_run;++run){     
