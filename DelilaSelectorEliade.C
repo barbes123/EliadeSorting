@@ -2910,6 +2910,7 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
           for (; it4_!= SegQu.end();++it4_){
             //std::cout<<(*it3_).domain%100<<" "<<(*it4_).domain%100<<" "<<AddBack_distances[(*it3_).domain%100][(*it4_).domain%100]<<" "<<(nnfold-1)*AddBack_distances[01][05]<<endl;
             //if (AddBack_distances[(*it3_).domain%100][(*it4_).domain%100]>(nnfold-1.)*AddBack_distances[01][05]){
+            //if (AddBack_distances[(*it3_).domain%100][(*it4_).domain%100]>110.){
             if (false){//AddBack_all
             //if ((*it3_).domain/10%10!=(*it4_).domain/10%10){//Same as core signal fold 1
               goAddBack = false;
