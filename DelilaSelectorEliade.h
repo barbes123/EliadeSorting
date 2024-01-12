@@ -162,6 +162,9 @@ public :
   Long64_t pre_event_length;
   Long64_t bunch_reset;
   
+  Long64_t addback_distance;
+  Long64_t addback_tree;
+  
   UChar_t	        fMod; 
   UChar_t	        fChannel; 
  

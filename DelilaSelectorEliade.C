@@ -333,6 +333,8 @@ void DelilaSelectorEliade::Read_Confs() {
   ref_dom = 101;
   TriggerTimeFlag = 0;
   beta = 0;
+  addback_distance = 10000;
+  addback_tree = 0;
 
   if (!lookuptable.good()) {
     std::ostringstream os;
@@ -378,6 +380,16 @@ void DelilaSelectorEliade::Read_Confs() {
           case 1111:{
                beta = value;
                std::cout<<"Beta is "<<beta<<" % \n";
+              break;
+          };
+          case 2000:{
+               addback_distance = value;
+               std::cout<<"Addback_distance is "<<addback_distance<<" % \n";
+              break;
+          };
+          case 2001:{
+               addback_tree = value;
+               std::cout<<"Addback_tree is "<<addback_tree<<" % \n";
               break;
           };
 //           case 9997:{
@@ -862,7 +874,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         mFoldSpec[*it1_coreid_]->GetYaxis()->SetTitle("keV");
         fOutput->Add(mFoldSpec[*it1_coreid_]);
         
-        mFoldSpecSum[*it1_coreid_] = new TH2F(Form("mFoldSpecSum_%i", *it1_coreid_), Form("mFoldSpecSum_%i", *it1_coreid_),   50, -0.5, 49.5, 4096, -0.5, 16383.5);
+        mFoldSpecSum[*it1_coreid_] = new TH2F(Form("mFoldSpecSum_%i", *it1_coreid_), Form("mFoldSpecSum_%i", *it1_coreid_),   50, -0.5, 49.5, 16384, -0.5, 16383.5);
         mFoldSpecSum[*it1_coreid_]->GetXaxis()->SetTitle("fold");
         mFoldSpecSum[*it1_coreid_]->GetYaxis()->SetTitle("keV");
         fOutput->Add(mFoldSpecSum[*it1_coreid_]);
@@ -2910,8 +2922,8 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
           for (; it4_!= SegQu.end();++it4_){
             //std::cout<<(*it3_).domain%100<<" "<<(*it4_).domain%100<<" "<<AddBack_distances[(*it3_).domain%100][(*it4_).domain%100]<<" "<<(nnfold-1)*AddBack_distances[01][05]<<endl;
             //if (AddBack_distances[(*it3_).domain%100][(*it4_).domain%100]>(nnfold-1.)*AddBack_distances[01][05]){
-            //if (AddBack_distances[(*it3_).domain%100][(*it4_).domain%100]>110.){
-            if (false){//AddBack_all
+            if (AddBack_distances[(*it3_).domain%100][(*it4_).domain%100]>addback_distance){
+            //if (false){//AddBack_all
             //if ((*it3_).domain/10%10!=(*it4_).domain/10%10){//Same as core signal fold 1
               goAddBack = false;
               break;
@@ -2944,7 +2956,9 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
           mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
           nfoldAddback = nnfold;
           EAddback = foldsum;
-          addbackTree->Fill();
+          if (addback_tree>0){
+            addbackTree->Fill();
+          }
         }
         else{
           for (; it3_!= SegQu.end();++it3_){
@@ -2958,7 +2972,9 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
             vTime->push_back((*it3_).Time);
             nfoldAddback = nnfold;
             EAddback = (*it3_).Energy_kev;
-            addbackTree->Fill();
+            if (addback_tree>0){
+              addbackTree->Fill();
+            }
             vDomain->clear();
             vEAddback->clear();
             vTime->clear();
