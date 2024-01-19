@@ -227,6 +227,46 @@ void DelilaSelectorEliade::Read_AddBackTable() {
   //  std::exit(1);
 }
 
+void DelilaSelectorEliade::Read_AcsTable() {
+  std::cout << "I am Reading AcsTable ... ";
+ 
+  char* pLUT_Path;
+  pLUT_Path = getenv ("ELIADE_LUT");
+  if (pLUT_Path!=NULL)
+    printf ("The AddBackTable path is: %s \n",pLUT_Path);
+
+  std::stringstream LUTFile;
+  LUTFile << pLUT_Path <<"/"<<"LUT_ACS.dat";
+  std::ifstream lookuptable(LUTFile.str().c_str());
+
+  if (!lookuptable.good()) {
+    std::ostringstream os;
+    os << "Could not open " << LUTFile.str().c_str()
+    << " no acs might be done or done based only on Time anti-coinc\n";
+//        << " and I need it ;(\n";
+//     Abort(os.str().c_str());
+  } else {
+    while (lookuptable.good()) {
+      std::string oneline;
+      std::getline(lookuptable, oneline);
+      if (!lookuptable.good()) continue;
+      if (oneline[0] == '#') continue; // ignore lines stating with #
+      if (oneline.empty())   continue; // ignore empty lines
+
+      std::istringstream is(oneline);
+ 
+      int id = 0; float dist = 0.;
+      is >> id >> dist;
+      acs_distances[id] = id;
+      acs_distances[id] = dist;
+      std::cout<<"acsCoincID "<<id<<" distance "<<dist<<" \n";
+  }
+  lookuptable.close();
+  }
+  std::cout << " done" << std::endl;
+  //  std::exit(1);
+}
+
 
 void DelilaSelectorEliade::Read_SeaTable() {
   std::cout << "I am trying to read SEA Table ... ";
@@ -600,11 +640,12 @@ void DelilaSelectorEliade::Begin(TTree * tree)
         std::exit(1);
     };
     
-  Print_ELIADE_LookUpTable();
+//   Print_ELIADE_LookUpTable();
 //   exit(0);
    
    Read_TimeAlignment_LookUpTable();
    Read_AddBackTable();
+   Read_AcsTable();
 //    Read_CoincCoinc_TimeAlignment_LookUpTable();//for fine coinc-coinc time allignement 
 //    Print_CoincCoinc_TimeAlignment_LookUpTable();
    //Print_TimeAlignment_LookUpTable();
@@ -2554,35 +2595,35 @@ void DelilaSelectorEliade::MovePreQu2Qu()
 void DelilaSelectorEliade::EventBuilderSimple()
 {
     
-    if (!blIsTrigger) {
-    if (TriggerDecision()) SetUpNewTriggerSimple();
-//        return kTRUE;
-   }else {//if (blIsTrigger){
-       
-         double time_diff_trigger = DelilaEvent_.Time - LastTriggerEvent.Time;
-
-         if (time_diff_trigger > event_length){//close event
-            if (blTimeAlignement)   TimeAlignementTrigger();
-            if (blCS)               cs();
-            if (blGammaGamma)       TreatGammaGammaCoinc();
-            if (blFold)             TreatFold(3);
-            if (blOutTree)          FillOutputTree();
-            
-            hdelilaQu_size->Fill(delilaQu.size());
-            delilaQu.clear();
-            blIsTrigger = false;
-            
-//             std::cout<<" Event is done  # "<< trigger_cnt <<" \n";     
-            
-            if (TriggerDecision()) SetUpNewTriggerSimple();          
-            
-        }else{
-            hDelila_single[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev);
-            DelilaEvent_.trg = trigger_cnt;
-            delilaQu.push_back(DelilaEvent_);
-        };
-        
-    };
+//     if (!blIsTrigger) {
+//     if (TriggerDecision()) SetUpNewTriggerSimple();
+// //        return kTRUE;
+//    }else {//if (blIsTrigger){
+//        
+//          double time_diff_trigger = DelilaEvent_.Time - LastTriggerEvent.Time;
+// 
+//          if (time_diff_trigger > event_length){//close event
+//             if (blTimeAlignement)   TimeAlignementTrigger();
+//             if (blCS)               cs();
+//             if (blGammaGamma)       TreatGammaGammaCoinc();
+//             if (blFold)             TreatFold(3);
+//             if (blOutTree)          FillOutputTree();
+//             
+//             hdelilaQu_size->Fill(delilaQu.size());
+//             delilaQu.clear();
+//             blIsTrigger = false;
+//             
+// //             std::cout<<" Event is done  # "<< trigger_cnt <<" \n";     
+//             
+//             if (TriggerDecision()) SetUpNewTriggerSimple();          
+//             
+//         }else{
+//             hDelila_single[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev);
+//             DelilaEvent_.trg = trigger_cnt;
+//             delilaQu.push_back(DelilaEvent_);
+//         };
+//         
+//     };
     
 }
 
@@ -2598,11 +2639,11 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
        if (abs(time_diff_trigger) > event_length){//close event
 //             TimeAlignementCoincCoinc();
             if (blTimeAlignement)        TimeAlignementInsideEvent();
-            if (blTimeAlignement)        TimeAlignementTrigger();
+//             if (blTimeAlignement)        TimeAlignementTrigger();//we do not use
 //            if (blCS)                cs();
-           if (blCS)                    ViewACS();
-           if (blCS)                    ViewACS_segments();
-           if (blFold)                  TreatFold(3);
+//            if (blCS)                    ViewACS();
+//            if (blCS)                    ViewACS_segments();
+//            if (blFold)                  TreatFold(3);
            if (blAddBack)               ViewAddBackDetector();//for segments
 //            if (blAddBack)               ViewAddBackDetectorCS();
 //            if (blAddBack)               ViewAddBackCrystal();

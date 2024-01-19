@@ -9,6 +9,9 @@ AddBAck=${6:-0}
 server=${7:-3}
 
 
+
+TESTLUTs=0
+
 echo "Put Parameters: AddBack (0 - if none); server_nbr (0 - if none); run_nbr; volume_from; volume_to;"
 
 echo "RUNfirst      $runnb"
@@ -28,6 +31,8 @@ lut_file="LUT_S3_CL32_run32_raluca.dat"
 lut_ta=""
 lut_conf="LUT_CONF_S3_CL32.dat"
 lut_json="LUT_S3_CL32_run32_raluca.json"
+lut_acs="LUT_ACS.dat"
+lut_ab="AddBack_distances_real.dat"
 #lut_json=""
 
 unlink "$lut_link""LUT_ELIADE.dat"
@@ -112,16 +117,43 @@ else
       unlink "$lut_link""LUT_CONF.dat"
       ln -s "$lut_path$lut_conf" "$lut_link""LUT_CONF.dat"
 fi
+
+###########################LUT_AB##########################
+if [ -z "$lut_conf" ]
+then
+      echo "LUT_AB.dat is missing"
+else
+      unlink "$lut_link""LUT_AB.dat"
+      ln -s "$lut_path$lut_ab" "$lut_link""LUT_CONF.dat"
+fi
+
+
+###########################LUT_ACS##########################
+if [ -z "$lut_conf" ]
+then
+      echo "LUT_ACS.dat is missing"
+else
+      unlink "$lut_link""LUT_ACS.dat"
+      ln -s "$lut_path$lut_acs" "$lut_link""LUT_ACS.dat"
+fi
 #############################################################
 
 echo "--------------------------------------------------------"
 echo "Setting of LUT(s)"
 echo "--------------------------------------------------------"	
+echo -ne "LUT FOLDER 	: "; tput setaf 2; echo " $lut_path";tput sgr0;
 echo -ne "LUT_ELIADE dat 	: "; tput setaf 2; echo " $lut_file";tput sgr0;
 echo -ne "LUT_ELIADE json	: "; tput setaf 2; echo " $lut_json";tput sgr0;
 echo -ne "LUT_CONF file	: "; tput setaf 2; echo " $lut_conf";tput sgr0;
 echo -ne "LUT_TA file	: "; tput setaf 2; echo " $lut_ta";tput sgr0;
+echo -ne "LUT_AB file	: "; tput setaf 2; echo " $lut_ab";tput sgr0;
+echo -ne "LUT_ACS file	: "; tput setaf 2; echo " $lut_acs";tput sgr0;
 echo "--------------------------------------------------------"
+
+if [ "$TESTLUTs" -eq "1" ]; then
+	echo "Testing LUTs; to run the Selector change TESTLUTs to 0"
+	exit	
+fi
 
 
 while test $runnb -le $runnb1

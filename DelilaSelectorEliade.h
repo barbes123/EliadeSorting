@@ -251,6 +251,7 @@ public :
   std::map<UInt_t, std::string> gg_coinc_id;
   std::map<int, Float_t> coinc_gates;//in ps
   std::map<int, std::map<int, float>> AddBack_distances;
+  std::map<int, int> acs_distances;
   
   TTree* addbackTree;
   int nfoldAddback;
@@ -400,6 +401,7 @@ public :
 
    virtual void  Read_ELIADE_LookUpTable();
    virtual void  Read_AddBackTable();
+   virtual void  Read_AcsTable();
    virtual void  Read_SeaTable();
    virtual void  Read_ELIADE_JSONLookUpTable();
    virtual void  Read_TimeAlignment_LookUpTable();
@@ -457,7 +459,8 @@ public :
    virtual void ViewAddBackCrystal();
    virtual void ViewAddBackDetector();
    virtual void ViewAddBackDetectorCS();
-   virtual void ViewACS();//for cores
+   virtual void ViewACS();//for cores old
+   virtual void ViewACS_cores();//for cores
    virtual void ViewACS_segments(); //for segments
    
    virtual void ViewDeE();
