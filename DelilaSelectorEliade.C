@@ -3106,7 +3106,7 @@ void DelilaSelectorEliade::ViewAddBackDetectorCS()
     
 }
 
-void DelilaSelectorEliade::ViewACS()
+void DelilaSelectorEliade::ViewACS_cores()
 {
      std::deque<DelilaEvent>::iterator it_core_= delilaQu.begin();
      std::deque<DelilaEvent>::iterator it_acs_= delilaQu.begin();

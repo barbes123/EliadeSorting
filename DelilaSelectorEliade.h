@@ -459,7 +459,7 @@ public :
    virtual void ViewAddBackCrystal();
    virtual void ViewAddBackDetector();
    virtual void ViewAddBackDetectorCS();
-   virtual void ViewACS();//for cores old
+//    virtual void ViewACS();//for cores old
    virtual void ViewACS_cores();//for cores
    virtual void ViewACS_segments(); //for segments
    
