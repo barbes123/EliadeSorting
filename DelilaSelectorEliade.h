@@ -324,6 +324,7 @@ public :
   int det_def_trg;
   int channel_trg;
   int ref_dom; //for time Allignement
+  bool EVENT_BUILDER;
   std::vector<int> trigger_domains;
   double TriggerTimeFlag;
   double lastDelilaTime;
@@ -583,9 +584,10 @@ void DelilaSelectorEliade::Init(TTree *tree)
       vTime = new std::vector<double>;
       addbackTree->Branch("vTime",&vTime);
  };
-    
-  std::cout<<" Trigger: ";
-  if (det_def_trg == -1){std::cout<<" No trigger \n";}
+
+  std::cout<<" Trigger: ";  
+//   if (det_def_trg == -1){std::cout<<" No trigger \n";}
+  if (!EVENT_BUILDER){std::cout<<" No trigger \n";}
 //   else if (det_def_trg == 0){std::cout<<" Domain: "<<detector_name[channel_trg]<< "\n";}//I am not sure one should comment, i will see how it goes
   else if (det_def_trg == 0 && !trigger_domains.empty()){
             std::cout<<" Domain(s): ";

@@ -259,7 +259,7 @@ void DelilaSelectorEliade::Read_AcsTable() {
       is >> id >> dist;
       acs_distances[id] = id;
       acs_distances[id] = dist;
-      std::cout<<"acsCoincID "<<id<<" distance "<<dist<<" \n";
+//       std::cout<<"acsCoincID "<<id<<" distance "<<dist<<" \n";
   }
   lookuptable.close();
   }
@@ -375,6 +375,7 @@ void DelilaSelectorEliade::Read_Confs() {
   beta = 0;
   addback_distance = 10000;
   addback_tree = 0;
+  EVENT_BUILDER = true;
 
   if (!lookuptable.good()) {
     std::ostringstream os;
@@ -475,8 +476,9 @@ void DelilaSelectorEliade::Read_Confs() {
               break;
           }
           case 9998:{
-               det_def_trg = value/1;
-               std::cout<<"trg_det_type "<<det_def_trg<<" \n";
+              if (value < 0) EVENT_BUILDER = false;
+              det_def_trg = value/1;              
+              std::cout<<"trg_det_type "<<det_def_trg<<" \n";
               break;
           }
           case 9999:{
@@ -1749,7 +1751,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
                 else return kTRUE;
              break;
          };case 9:  { 
-             if (has_detector["pulser"]) CheckPulserAllignement(90);
+             if (has_detector["pulser"]) //CheckPulserAllignement(90);
                 return kTRUE;
              break;
          };case 10:  { 
@@ -1780,7 +1782,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
   
 //   SimpleRun();
   
-  if (det_def_trg != -1) EventBuilderPreTrigger();
+  if (EVENT_BUILDER) EventBuilderPreTrigger();
 //        EventBuilderSimple();
   
 
@@ -1795,10 +1797,8 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
 	      << round(((int) eta) % 60) << std::setw(8) << " min ETA)";
     std::cout.flush();
     };
-//    };
    
    nevents++;
-//    nevents_reset++;
    return kTRUE;
 }
 
