@@ -34,16 +34,16 @@
 
 #include "TDataMember.h"
 
-// The generated code does not explicitly qualifies STL entities
-namespace std {} using namespace std;
-
 // Header files passed as explicit arguments
 #include "LaBrTreeEvent.h"
 
 // Header files passed via #pragma extra_include
 
+// The generated code does not explicitly qualify STL entities
+namespace std {} using namespace std;
+
 namespace ROOT {
-   static void *new_LaBrTreeEvent(void *p = 0);
+   static void *new_LaBrTreeEvent(void *p = nullptr);
    static void *newArray_LaBrTreeEvent(Long_t size, void *p);
    static void delete_LaBrTreeEvent(void *p);
    static void deleteArray_LaBrTreeEvent(void *p);
@@ -52,8 +52,8 @@ namespace ROOT {
    // Function generating the singleton type initializer
    static TGenericClassInfo *GenerateInitInstanceLocal(const ::LaBrTreeEvent*)
    {
-      ::LaBrTreeEvent *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::LaBrTreeEvent >(0);
+      ::LaBrTreeEvent *ptr = nullptr;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::LaBrTreeEvent >(nullptr);
       static ::ROOT::TGenericClassInfo 
          instance("LaBrTreeEvent", ::LaBrTreeEvent::Class_Version(), "LaBrTreeEvent.h", 10,
                   typeid(::LaBrTreeEvent), ::ROOT::Internal::DefineBehavior(ptr, ptr),
@@ -68,14 +68,14 @@ namespace ROOT {
    }
    TGenericClassInfo *GenerateInitInstance(const ::LaBrTreeEvent*)
    {
-      return GenerateInitInstanceLocal((::LaBrTreeEvent*)0);
+      return GenerateInitInstanceLocal((::LaBrTreeEvent*)nullptr);
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const ::LaBrTreeEvent*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const ::LaBrTreeEvent*)nullptr); R__UseDummy(_R__UNIQUE_DICT_(Init));
 } // end of namespace ROOT
 
 //______________________________________________________________________________
-atomic_TClass_ptr LaBrTreeEvent::fgIsA(0);  // static to hold class pointer
+atomic_TClass_ptr LaBrTreeEvent::fgIsA(nullptr);  // static to hold class pointer
 
 //______________________________________________________________________________
 const char *LaBrTreeEvent::Class_Name()
@@ -86,26 +86,26 @@ const char *LaBrTreeEvent::Class_Name()
 //______________________________________________________________________________
 const char *LaBrTreeEvent::ImplFileName()
 {
-   return ::ROOT::GenerateInitInstanceLocal((const ::LaBrTreeEvent*)0x0)->GetImplFileName();
+   return ::ROOT::GenerateInitInstanceLocal((const ::LaBrTreeEvent*)nullptr)->GetImplFileName();
 }
 
 //______________________________________________________________________________
 int LaBrTreeEvent::ImplFileLine()
 {
-   return ::ROOT::GenerateInitInstanceLocal((const ::LaBrTreeEvent*)0x0)->GetImplFileLine();
+   return ::ROOT::GenerateInitInstanceLocal((const ::LaBrTreeEvent*)nullptr)->GetImplFileLine();
 }
 
 //______________________________________________________________________________
 TClass *LaBrTreeEvent::Dictionary()
 {
-   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::LaBrTreeEvent*)0x0)->GetClass();
+   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::LaBrTreeEvent*)nullptr)->GetClass();
    return fgIsA;
 }
 
 //______________________________________________________________________________
 TClass *LaBrTreeEvent::Class()
 {
-   if (!fgIsA.load()) { R__LOCKGUARD(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::LaBrTreeEvent*)0x0)->GetClass(); }
+   if (!fgIsA.load()) { R__LOCKGUARD(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::LaBrTreeEvent*)nullptr)->GetClass(); }
    return fgIsA;
 }
 
@@ -145,7 +145,7 @@ namespace ROOT {
 namespace ROOT {
    static TClass *vectorlELaBrTreeEventgR_Dictionary();
    static void vectorlELaBrTreeEventgR_TClassManip(TClass*);
-   static void *new_vectorlELaBrTreeEventgR(void *p = 0);
+   static void *new_vectorlELaBrTreeEventgR(void *p = nullptr);
    static void *newArray_vectorlELaBrTreeEventgR(Long_t size, void *p);
    static void delete_vectorlELaBrTreeEventgR(void *p);
    static void deleteArray_vectorlELaBrTreeEventgR(void *p);
@@ -154,10 +154,10 @@ namespace ROOT {
    // Function generating the singleton type initializer
    static TGenericClassInfo *GenerateInitInstanceLocal(const vector<LaBrTreeEvent>*)
    {
-      vector<LaBrTreeEvent> *ptr = 0;
+      vector<LaBrTreeEvent> *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<LaBrTreeEvent>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<LaBrTreeEvent>", -2, "vector", 386,
+         instance("vector<LaBrTreeEvent>", -2, "vector", 389,
                   typeid(vector<LaBrTreeEvent>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlELaBrTreeEventgR_Dictionary, isa_proxy, 4,
                   sizeof(vector<LaBrTreeEvent>) );
@@ -172,11 +172,11 @@ namespace ROOT {
       return &instance;
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<LaBrTreeEvent>*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<LaBrTreeEvent>*)nullptr); R__UseDummy(_R__UNIQUE_DICT_(Init));
 
    // Dictionary for non-ClassDef classes
    static TClass *vectorlELaBrTreeEventgR_Dictionary() {
-      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<LaBrTreeEvent>*)0x0)->GetClass();
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<LaBrTreeEvent>*)nullptr)->GetClass();
       vectorlELaBrTreeEventgR_TClassManip(theClass);
    return theClass;
    }
@@ -211,12 +211,12 @@ namespace {
   void TriggerDictionaryInitialization_LaBrTreeEventDict_Impl() {
     static const char* headers[] = {
 "LaBrTreeEvent.h",
-0
+nullptr
     };
     static const char* includePaths[] = {
-"/home/testov/root/include/",
-"/home/testov/EliadeSorting/lib/",
-0
+"/home/vincent/root/root_install/include/",
+"/home/vincent/EliadeSorting/lib/",
+nullptr
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(
 #line 1 "LaBrTreeEventDict dictionary forward declarations' payload"

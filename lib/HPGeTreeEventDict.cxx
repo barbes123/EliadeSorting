@@ -34,16 +34,16 @@
 
 #include "TDataMember.h"
 
-// The generated code does not explicitly qualifies STL entities
-namespace std {} using namespace std;
-
 // Header files passed as explicit arguments
 #include "HPGeTreeEvent.h"
 
 // Header files passed via #pragma extra_include
 
+// The generated code does not explicitly qualify STL entities
+namespace std {} using namespace std;
+
 namespace ROOT {
-   static void *new_HPGeTreeEvent(void *p = 0);
+   static void *new_HPGeTreeEvent(void *p = nullptr);
    static void *newArray_HPGeTreeEvent(Long_t size, void *p);
    static void delete_HPGeTreeEvent(void *p);
    static void deleteArray_HPGeTreeEvent(void *p);
@@ -52,8 +52,8 @@ namespace ROOT {
    // Function generating the singleton type initializer
    static TGenericClassInfo *GenerateInitInstanceLocal(const ::HPGeTreeEvent*)
    {
-      ::HPGeTreeEvent *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::HPGeTreeEvent >(0);
+      ::HPGeTreeEvent *ptr = nullptr;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::HPGeTreeEvent >(nullptr);
       static ::ROOT::TGenericClassInfo 
          instance("HPGeTreeEvent", ::HPGeTreeEvent::Class_Version(), "HPGeTreeEvent.h", 10,
                   typeid(::HPGeTreeEvent), ::ROOT::Internal::DefineBehavior(ptr, ptr),
@@ -68,14 +68,14 @@ namespace ROOT {
    }
    TGenericClassInfo *GenerateInitInstance(const ::HPGeTreeEvent*)
    {
-      return GenerateInitInstanceLocal((::HPGeTreeEvent*)0);
+      return GenerateInitInstanceLocal((::HPGeTreeEvent*)nullptr);
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const ::HPGeTreeEvent*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const ::HPGeTreeEvent*)nullptr); R__UseDummy(_R__UNIQUE_DICT_(Init));
 } // end of namespace ROOT
 
 //______________________________________________________________________________
-atomic_TClass_ptr HPGeTreeEvent::fgIsA(0);  // static to hold class pointer
+atomic_TClass_ptr HPGeTreeEvent::fgIsA(nullptr);  // static to hold class pointer
 
 //______________________________________________________________________________
 const char *HPGeTreeEvent::Class_Name()
@@ -86,26 +86,26 @@ const char *HPGeTreeEvent::Class_Name()
 //______________________________________________________________________________
 const char *HPGeTreeEvent::ImplFileName()
 {
-   return ::ROOT::GenerateInitInstanceLocal((const ::HPGeTreeEvent*)0x0)->GetImplFileName();
+   return ::ROOT::GenerateInitInstanceLocal((const ::HPGeTreeEvent*)nullptr)->GetImplFileName();
 }
 
 //______________________________________________________________________________
 int HPGeTreeEvent::ImplFileLine()
 {
-   return ::ROOT::GenerateInitInstanceLocal((const ::HPGeTreeEvent*)0x0)->GetImplFileLine();
+   return ::ROOT::GenerateInitInstanceLocal((const ::HPGeTreeEvent*)nullptr)->GetImplFileLine();
 }
 
 //______________________________________________________________________________
 TClass *HPGeTreeEvent::Dictionary()
 {
-   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::HPGeTreeEvent*)0x0)->GetClass();
+   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::HPGeTreeEvent*)nullptr)->GetClass();
    return fgIsA;
 }
 
 //______________________________________________________________________________
 TClass *HPGeTreeEvent::Class()
 {
-   if (!fgIsA.load()) { R__LOCKGUARD(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::HPGeTreeEvent*)0x0)->GetClass(); }
+   if (!fgIsA.load()) { R__LOCKGUARD(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::HPGeTreeEvent*)nullptr)->GetClass(); }
    return fgIsA;
 }
 
@@ -145,7 +145,7 @@ namespace ROOT {
 namespace ROOT {
    static TClass *vectorlEHPGeTreeEventgR_Dictionary();
    static void vectorlEHPGeTreeEventgR_TClassManip(TClass*);
-   static void *new_vectorlEHPGeTreeEventgR(void *p = 0);
+   static void *new_vectorlEHPGeTreeEventgR(void *p = nullptr);
    static void *newArray_vectorlEHPGeTreeEventgR(Long_t size, void *p);
    static void delete_vectorlEHPGeTreeEventgR(void *p);
    static void deleteArray_vectorlEHPGeTreeEventgR(void *p);
@@ -154,10 +154,10 @@ namespace ROOT {
    // Function generating the singleton type initializer
    static TGenericClassInfo *GenerateInitInstanceLocal(const vector<HPGeTreeEvent>*)
    {
-      vector<HPGeTreeEvent> *ptr = 0;
+      vector<HPGeTreeEvent> *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<HPGeTreeEvent>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<HPGeTreeEvent>", -2, "vector", 386,
+         instance("vector<HPGeTreeEvent>", -2, "vector", 389,
                   typeid(vector<HPGeTreeEvent>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEHPGeTreeEventgR_Dictionary, isa_proxy, 4,
                   sizeof(vector<HPGeTreeEvent>) );
@@ -172,11 +172,11 @@ namespace ROOT {
       return &instance;
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<HPGeTreeEvent>*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<HPGeTreeEvent>*)nullptr); R__UseDummy(_R__UNIQUE_DICT_(Init));
 
    // Dictionary for non-ClassDef classes
    static TClass *vectorlEHPGeTreeEventgR_Dictionary() {
-      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<HPGeTreeEvent>*)0x0)->GetClass();
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<HPGeTreeEvent>*)nullptr)->GetClass();
       vectorlEHPGeTreeEventgR_TClassManip(theClass);
    return theClass;
    }
@@ -211,12 +211,12 @@ namespace {
   void TriggerDictionaryInitialization_HPGeTreeEventDict_Impl() {
     static const char* headers[] = {
 "HPGeTreeEvent.h",
-0
+nullptr
     };
     static const char* includePaths[] = {
-"/home/testov/root/include/",
-"/home/testov/EliadeSorting/lib/",
-0
+"/home/vincent/root/root_install/include/",
+"/home/vincent/EliadeSorting/lib/",
+nullptr
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(
 #line 1 "HPGeTreeEventDict dictionary forward declarations' payload"

@@ -34,18 +34,18 @@
 
 #include "TDataMember.h"
 
-// The generated code does not explicitly qualifies STL entities
-namespace std {} using namespace std;
-
 // Header files passed as explicit arguments
 #include "DelilaEvent.h"
 
 // Header files passed via #pragma extra_include
 
+// The generated code does not explicitly qualify STL entities
+namespace std {} using namespace std;
+
 namespace ROOT {
    static TClass *DelilaEvent_Dictionary();
    static void DelilaEvent_TClassManip(TClass*);
-   static void *new_DelilaEvent(void *p = 0);
+   static void *new_DelilaEvent(void *p = nullptr);
    static void *newArray_DelilaEvent(Long_t size, void *p);
    static void delete_DelilaEvent(void *p);
    static void deleteArray_DelilaEvent(void *p);
@@ -54,7 +54,7 @@ namespace ROOT {
    // Function generating the singleton type initializer
    static TGenericClassInfo *GenerateInitInstanceLocal(const ::DelilaEvent*)
    {
-      ::DelilaEvent *ptr = 0;
+      ::DelilaEvent *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::DelilaEvent));
       static ::ROOT::TGenericClassInfo 
          instance("DelilaEvent", "DelilaEvent.h", 10,
@@ -70,14 +70,14 @@ namespace ROOT {
    }
    TGenericClassInfo *GenerateInitInstance(const ::DelilaEvent*)
    {
-      return GenerateInitInstanceLocal((::DelilaEvent*)0);
+      return GenerateInitInstanceLocal((::DelilaEvent*)nullptr);
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const ::DelilaEvent*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const ::DelilaEvent*)nullptr); R__UseDummy(_R__UNIQUE_DICT_(Init));
 
    // Dictionary for non-ClassDef classes
    static TClass *DelilaEvent_Dictionary() {
-      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::DelilaEvent*)0x0)->GetClass();
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::DelilaEvent*)nullptr)->GetClass();
       DelilaEvent_TClassManip(theClass);
    return theClass;
    }
@@ -111,7 +111,7 @@ namespace ROOT {
 namespace ROOT {
    static TClass *vectorlEintgR_Dictionary();
    static void vectorlEintgR_TClassManip(TClass*);
-   static void *new_vectorlEintgR(void *p = 0);
+   static void *new_vectorlEintgR(void *p = nullptr);
    static void *newArray_vectorlEintgR(Long_t size, void *p);
    static void delete_vectorlEintgR(void *p);
    static void deleteArray_vectorlEintgR(void *p);
@@ -120,10 +120,10 @@ namespace ROOT {
    // Function generating the singleton type initializer
    static TGenericClassInfo *GenerateInitInstanceLocal(const vector<int>*)
    {
-      vector<int> *ptr = 0;
+      vector<int> *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<int>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<int>", -2, "vector", 386,
+         instance("vector<int>", -2, "vector", 389,
                   typeid(vector<int>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEintgR_Dictionary, isa_proxy, 4,
                   sizeof(vector<int>) );
@@ -138,11 +138,11 @@ namespace ROOT {
       return &instance;
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<int>*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<int>*)nullptr); R__UseDummy(_R__UNIQUE_DICT_(Init));
 
    // Dictionary for non-ClassDef classes
    static TClass *vectorlEintgR_Dictionary() {
-      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<int>*)0x0)->GetClass();
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<int>*)nullptr)->GetClass();
       vectorlEintgR_TClassManip(theClass);
    return theClass;
    }
@@ -176,7 +176,7 @@ namespace ROOT {
 namespace ROOT {
    static TClass *vectorlEfloatgR_Dictionary();
    static void vectorlEfloatgR_TClassManip(TClass*);
-   static void *new_vectorlEfloatgR(void *p = 0);
+   static void *new_vectorlEfloatgR(void *p = nullptr);
    static void *newArray_vectorlEfloatgR(Long_t size, void *p);
    static void delete_vectorlEfloatgR(void *p);
    static void deleteArray_vectorlEfloatgR(void *p);
@@ -185,10 +185,10 @@ namespace ROOT {
    // Function generating the singleton type initializer
    static TGenericClassInfo *GenerateInitInstanceLocal(const vector<float>*)
    {
-      vector<float> *ptr = 0;
+      vector<float> *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<float>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<float>", -2, "vector", 386,
+         instance("vector<float>", -2, "vector", 389,
                   typeid(vector<float>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEfloatgR_Dictionary, isa_proxy, 4,
                   sizeof(vector<float>) );
@@ -203,11 +203,11 @@ namespace ROOT {
       return &instance;
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<float>*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<float>*)nullptr); R__UseDummy(_R__UNIQUE_DICT_(Init));
 
    // Dictionary for non-ClassDef classes
    static TClass *vectorlEfloatgR_Dictionary() {
-      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<float>*)0x0)->GetClass();
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<float>*)nullptr)->GetClass();
       vectorlEfloatgR_TClassManip(theClass);
    return theClass;
    }
@@ -241,7 +241,7 @@ namespace ROOT {
 namespace ROOT {
    static TClass *vectorlEDelilaEventgR_Dictionary();
    static void vectorlEDelilaEventgR_TClassManip(TClass*);
-   static void *new_vectorlEDelilaEventgR(void *p = 0);
+   static void *new_vectorlEDelilaEventgR(void *p = nullptr);
    static void *newArray_vectorlEDelilaEventgR(Long_t size, void *p);
    static void delete_vectorlEDelilaEventgR(void *p);
    static void deleteArray_vectorlEDelilaEventgR(void *p);
@@ -250,10 +250,10 @@ namespace ROOT {
    // Function generating the singleton type initializer
    static TGenericClassInfo *GenerateInitInstanceLocal(const vector<DelilaEvent>*)
    {
-      vector<DelilaEvent> *ptr = 0;
+      vector<DelilaEvent> *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<DelilaEvent>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<DelilaEvent>", -2, "vector", 386,
+         instance("vector<DelilaEvent>", -2, "vector", 389,
                   typeid(vector<DelilaEvent>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEDelilaEventgR_Dictionary, isa_proxy, 4,
                   sizeof(vector<DelilaEvent>) );
@@ -268,11 +268,11 @@ namespace ROOT {
       return &instance;
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<DelilaEvent>*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<DelilaEvent>*)nullptr); R__UseDummy(_R__UNIQUE_DICT_(Init));
 
    // Dictionary for non-ClassDef classes
    static TClass *vectorlEDelilaEventgR_Dictionary() {
-      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<DelilaEvent>*)0x0)->GetClass();
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<DelilaEvent>*)nullptr)->GetClass();
       vectorlEDelilaEventgR_TClassManip(theClass);
    return theClass;
    }
@@ -307,12 +307,12 @@ namespace {
   void TriggerDictionaryInitialization_DelilaEventDict_Impl() {
     static const char* headers[] = {
 "DelilaEvent.h",
-0
+nullptr
     };
     static const char* includePaths[] = {
-"/home/testov/root/include/",
-"/home/testov/EliadeSorting/lib/",
-0
+"/home/vincent/root/root_install/include/",
+"/home/vincent/EliadeSorting/lib/",
+nullptr
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(
 #line 1 "DelilaEventDict dictionary forward declarations' payload"

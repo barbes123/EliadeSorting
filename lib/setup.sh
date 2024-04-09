@@ -1,6 +1,6 @@
 #!/bin/bash
 
-versioncpp=${1:-11}
+versioncpp=${1:-17}
 echo "Compilation for version c++$versioncpp"
 
 rootcint -f DelilaEventDict.cxx -c DelilaEvent.h DelilaEventLinkDef.h

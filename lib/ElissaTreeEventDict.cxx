@@ -34,16 +34,16 @@
 
 #include "TDataMember.h"
 
-// The generated code does not explicitly qualifies STL entities
-namespace std {} using namespace std;
-
 // Header files passed as explicit arguments
 #include "ElissaTreeEvent.h"
 
 // Header files passed via #pragma extra_include
 
+// The generated code does not explicitly qualify STL entities
+namespace std {} using namespace std;
+
 namespace ROOT {
-   static void *new_ElissaTreeEvent(void *p = 0);
+   static void *new_ElissaTreeEvent(void *p = nullptr);
    static void *newArray_ElissaTreeEvent(Long_t size, void *p);
    static void delete_ElissaTreeEvent(void *p);
    static void deleteArray_ElissaTreeEvent(void *p);
@@ -52,8 +52,8 @@ namespace ROOT {
    // Function generating the singleton type initializer
    static TGenericClassInfo *GenerateInitInstanceLocal(const ::ElissaTreeEvent*)
    {
-      ::ElissaTreeEvent *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::ElissaTreeEvent >(0);
+      ::ElissaTreeEvent *ptr = nullptr;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::ElissaTreeEvent >(nullptr);
       static ::ROOT::TGenericClassInfo 
          instance("ElissaTreeEvent", ::ElissaTreeEvent::Class_Version(), "ElissaTreeEvent.h", 10,
                   typeid(::ElissaTreeEvent), ::ROOT::Internal::DefineBehavior(ptr, ptr),
@@ -68,14 +68,14 @@ namespace ROOT {
    }
    TGenericClassInfo *GenerateInitInstance(const ::ElissaTreeEvent*)
    {
-      return GenerateInitInstanceLocal((::ElissaTreeEvent*)0);
+      return GenerateInitInstanceLocal((::ElissaTreeEvent*)nullptr);
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const ::ElissaTreeEvent*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const ::ElissaTreeEvent*)nullptr); R__UseDummy(_R__UNIQUE_DICT_(Init));
 } // end of namespace ROOT
 
 //______________________________________________________________________________
-atomic_TClass_ptr ElissaTreeEvent::fgIsA(0);  // static to hold class pointer
+atomic_TClass_ptr ElissaTreeEvent::fgIsA(nullptr);  // static to hold class pointer
 
 //______________________________________________________________________________
 const char *ElissaTreeEvent::Class_Name()
@@ -86,26 +86,26 @@ const char *ElissaTreeEvent::Class_Name()
 //______________________________________________________________________________
 const char *ElissaTreeEvent::ImplFileName()
 {
-   return ::ROOT::GenerateInitInstanceLocal((const ::ElissaTreeEvent*)0x0)->GetImplFileName();
+   return ::ROOT::GenerateInitInstanceLocal((const ::ElissaTreeEvent*)nullptr)->GetImplFileName();
 }
 
 //______________________________________________________________________________
 int ElissaTreeEvent::ImplFileLine()
 {
-   return ::ROOT::GenerateInitInstanceLocal((const ::ElissaTreeEvent*)0x0)->GetImplFileLine();
+   return ::ROOT::GenerateInitInstanceLocal((const ::ElissaTreeEvent*)nullptr)->GetImplFileLine();
 }
 
 //______________________________________________________________________________
 TClass *ElissaTreeEvent::Dictionary()
 {
-   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::ElissaTreeEvent*)0x0)->GetClass();
+   fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::ElissaTreeEvent*)nullptr)->GetClass();
    return fgIsA;
 }
 
 //______________________________________________________________________________
 TClass *ElissaTreeEvent::Class()
 {
-   if (!fgIsA.load()) { R__LOCKGUARD(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::ElissaTreeEvent*)0x0)->GetClass(); }
+   if (!fgIsA.load()) { R__LOCKGUARD(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::ElissaTreeEvent*)nullptr)->GetClass(); }
    return fgIsA;
 }
 
@@ -145,7 +145,7 @@ namespace ROOT {
 namespace ROOT {
    static TClass *vectorlEElissaTreeEventgR_Dictionary();
    static void vectorlEElissaTreeEventgR_TClassManip(TClass*);
-   static void *new_vectorlEElissaTreeEventgR(void *p = 0);
+   static void *new_vectorlEElissaTreeEventgR(void *p = nullptr);
    static void *newArray_vectorlEElissaTreeEventgR(Long_t size, void *p);
    static void delete_vectorlEElissaTreeEventgR(void *p);
    static void deleteArray_vectorlEElissaTreeEventgR(void *p);
@@ -154,10 +154,10 @@ namespace ROOT {
    // Function generating the singleton type initializer
    static TGenericClassInfo *GenerateInitInstanceLocal(const vector<ElissaTreeEvent>*)
    {
-      vector<ElissaTreeEvent> *ptr = 0;
+      vector<ElissaTreeEvent> *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<ElissaTreeEvent>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<ElissaTreeEvent>", -2, "vector", 386,
+         instance("vector<ElissaTreeEvent>", -2, "vector", 389,
                   typeid(vector<ElissaTreeEvent>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEElissaTreeEventgR_Dictionary, isa_proxy, 4,
                   sizeof(vector<ElissaTreeEvent>) );
@@ -172,11 +172,11 @@ namespace ROOT {
       return &instance;
    }
    // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<ElissaTreeEvent>*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<ElissaTreeEvent>*)nullptr); R__UseDummy(_R__UNIQUE_DICT_(Init));
 
    // Dictionary for non-ClassDef classes
    static TClass *vectorlEElissaTreeEventgR_Dictionary() {
-      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<ElissaTreeEvent>*)0x0)->GetClass();
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<ElissaTreeEvent>*)nullptr)->GetClass();
       vectorlEElissaTreeEventgR_TClassManip(theClass);
    return theClass;
    }
@@ -211,12 +211,12 @@ namespace {
   void TriggerDictionaryInitialization_ElissaTreeEventDict_Impl() {
     static const char* headers[] = {
 "ElissaTreeEvent.h",
-0
+nullptr
     };
     static const char* includePaths[] = {
-"/home/testov/root/include/",
-"/home/testov/EliadeSorting/lib/",
-0
+"/home/vincent/root/root_install/include/",
+"/home/vincent/EliadeSorting/lib/",
+nullptr
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(
 #line 1 "ElissaTreeEventDict dictionary forward declarations' payload"
