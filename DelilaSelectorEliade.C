@@ -41,7 +41,7 @@ using namespace std;
 ////////////////////////////////Please, modify if needed////////////////////////////////////////////
 // bool blGammaGamma           = true;
 bool blOutTree              = false;
-bool blFold                 = false;
+// bool blFold                 = false;
 // bool blTimeAlignement       = true;
 bool blFillAmaxEnergyDom    = false;
 bool blFillSingleSpectra    = true;
@@ -376,6 +376,9 @@ void DelilaSelectorEliade::Read_Confs() {
   addback_distance = 10000;
   addback_tree = 0;
   EVENT_BUILDER = true;
+  blFineTimeStamp = true;
+  blFold = false;
+
 
   if (!lookuptable.good()) {
     std::ostringstream os;
@@ -400,7 +403,17 @@ void DelilaSelectorEliade::Read_Confs() {
           {
               blTimeAlignement = (value == 1);
               break;
-          }          
+          }
+          case 1:
+          {
+              blFineTimeStamp = (value == 1);
+              break;
+          }
+          case 2:
+          {
+              blFold = (value == 1);
+              break;
+          }      
           case 1000: {
               event_length = value;
               std::cout<<"event_length "<<event_length<<" ps \n";
@@ -1482,7 +1495,8 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
    };
    
    
-   mTimeDiffCS = new TH2F("mTimeDiffCS", "mTimeDiffCS", 100, 0, 100, 4e3, -2e6, 2e6);
+//    mTimeDiffCS = new TH2F("mTimeDiffCS", "mTimeDiffCS", 100, 0, 100, 4e3, -2e6, 2e6);
+   mTimeDiffCS = new TH2F("mTimeDiffCS", "mTimeDiffCS", 1000, 0, 1000, 4e3, -2e6, 2e6);
    mTimeDiffCS->GetXaxis()->SetTitle("domain");
    mTimeDiffCS->GetYaxis()->SetTitle("ps");
    mTimeDiffCS->SetTitle("LaBr_BGO time diff");
@@ -1679,8 +1693,12 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     if (debug){std::cout<<"I am doing new entry l.1435, ch:"<< daq_ch <<" det_def "<<DelilaEvent_.det_def << "\n";}
 
      //Check if the tree is time sorted
-      DelilaEvent_.Time = fTimeStampFS;
-//      DelilaEvent_.Time=fTimeStamp;
+     if (blFineTimeStamp){
+         DelilaEvent_.Time = fTimeStampFS;
+     }
+     else{
+        DelilaEvent_.Time=fTimeStamp;
+     }
      double time_diff_last = DelilaEvent_.Time - lastDelilaTime;
      
      if (debug){std::cout<<"I am doing new entry l.1079, ch:"<< daq_ch << "\n";}
@@ -2640,10 +2658,10 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
 //             TimeAlignementCoincCoinc();
             if (blTimeAlignement)        TimeAlignementInsideEvent();
 //             if (blTimeAlignement)        TimeAlignementTrigger();//we do not use
-//            if (blCS)                cs();
+            if (blCS)                cs();
 //            if (blCS)                    ViewACS();
 //            if (blCS)                    ViewACS_segments();
-//            if (blFold)                  TreatFold(3);
+            if (blFold)                  TreatFold(3);
 //           if (blAddBack)               ViewAddBackDetector();//for segments
 //            if (blAddBack)               ViewAddBackDetectorCS();
 //            if (blAddBack)               ViewAddBackCrystal();
@@ -3769,6 +3787,106 @@ void DelilaSelectorEliade::EventBuilder()
 // };
 
 
+void DelilaSelectorEliade::cs_simple()
+{//see cs(), should work
+    if (delilaQu.empty()) return;
+/*    
+    //BGO-GAMMA forward
+    std::map<int, double> last_bgo_time;
+    
+//     std::map<unsigned int, TDelilaDetector >::iterator it_lut_ = LUT_ELIADE.begin();
+    std::map<int, TDelilaDetector >::iterator it_lut_ = LUT_ELIADE.begin();
+    for (; it_lut_ != LUT_ELIADE.end(); ++it_lut_){
+        last_bgo_time[LUT_ELIADE[it_lut_->first].cs_dom] = -1;
+    }
+    
+
+//     double last_bgo_time = 0;
+    double time_diff_bgo = -1;
+    std::deque<DelilaEvent>  ::iterator it_ev__ = delilaQu.begin();
+    
+    for (; it_ev__ != delilaQu.end(); ++it_ev__){
+        int cs_dom = (*it_ev__).cs_domain;
+        int det = (*it_ev__).det_def;
+        
+        switch (det)
+        {
+            case 5: {
+                last_bgo_time[cs_dom] = (*it_ev__).Time; 
+                break;
+            };
+            case 1: case 3: {
+               if (last_bgo_time[cs_dom] == -1)
+               {
+                 break;  
+               }else{
+                 time_diff_bgo =  (*it_ev__).Time - last_bgo_time[cs_dom];
+                 mTimeDiffCS ->Fill(cs_dom, time_diff_bgo);
+//                  std::cout<<"time_diff_bgo forw "<<time_diff_bgo<<" bunch ID "<<(*it_ev__).bunch <<"\n";
+                 if (abs(time_diff_bgo) < coinc_gates[det*10+5]) //10000)
+                 {
+                      (*it_ev__).CS = 1;  
+                 }else{
+                     last_bgo_time[cs_dom] = -1;
+                 };
+                 
+               };
+            };
+            default: break;
+        };
+        
+    };
+
+     //GAMMA-BGO backward
+//     last_bgo_time = 0;
+    time_diff_bgo = -1;
+    it_lut_ = LUT_ELIADE.begin();
+    for (; it_lut_ != LUT_ELIADE.end(); ++it_lut_){
+        last_bgo_time[LUT_ELIADE[it_lut_->first].cs_dom] = -1;
+    }
+    time_diff_bgo = -1;
+    it_ev__ = delilaQu.end();
+    
+    for (; it_ev__ != delilaQu.begin(); --it_ev__){
+        int cs_dom = (*it_ev__).cs_domain;
+        int det = (*it_ev__).det_def;
+        
+        switch (det)
+        {
+            case 5: {
+                last_bgo_time[cs_dom] = (*it_ev__).TimeBunch; 
+                break;
+            };
+            case 1: case 3: {
+               if ((last_bgo_time[cs_dom] == -1)||((*it_ev__).CS == 1))
+               {
+                 break;  
+               }else{
+                 time_diff_bgo =  (*it_ev__).TimeBunch - last_bgo_time[cs_dom];
+                 mTimeDiffCS ->Fill(cs_dom, time_diff_bgo);
+//                  std::cout<<"time_diff_bgo back "<<time_diff_bgo<<" bunch ID "<<(*it_ev__).bunch <<"\n";
+                if (abs(time_diff_bgo) < coinc_gates[det*10+5]) //10000)
+                 {
+                      (*it_ev__).CS = 1;  
+                 }else{
+                     last_bgo_time[cs_dom] = -1;
+                 };
+                 
+               };
+            };
+            default: break;
+        };
+        
+    };
+    
+    it_ev__ = delilaQu.begin();
+    
+    for (; it_ev__ != delilaQu.end(); ++it_ev__){
+         if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 3)) hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).EnergyCal);
+         if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 1)) hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).EnergyCal);
+    };*/
+    
+};
 
 
 

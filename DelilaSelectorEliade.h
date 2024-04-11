@@ -332,7 +332,9 @@ public :
   bool blCS;
   bool blGammaGamma;
   bool blTimeAlignement;
+  bool blFineTimeStamp;
   bool blAddBack;
+  bool blFold;
   double beta;
 
   //options of the selector
@@ -465,6 +467,9 @@ public :
    virtual void ViewACS_segments(); //for segments
    
    virtual void ViewDeE();
+   
+   virtual void cs_simple();
+
    
 //    virtual void GetNMultiplicity(TH1 *hh, int nn_max = 15);
    virtual void GetNMultiplicity();
@@ -620,7 +625,12 @@ void DelilaSelectorEliade::Init(TTree *tree)
   if (blGammaGamma) {cout<<" GammaGamma: enabled \n";}
   else {cout<<" GammaGamma: disabled \n";};
   
-  if (blTimeAlignement) {cout<<" Time Alignement matrix: enabled \n";}
+  if (blTimeAlignement) {cout<<" Time Alignement matrix: enabled \n";}  
+  
+  
+  if (blFineTimeStamp){cout<<" Time: TimeStamp\n";} else{cout<<" Time: FineTimeStamp\n";}
+  
+  if (blFold){cout<<" Fold: enabled\n";} else{cout<<" Fold: disabled\n";}
   
   std::cout<<" === Time settings ps === \n";
   std::map<int, Float_t> ::iterator itcc_ = coinc_gates.begin();
