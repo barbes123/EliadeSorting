@@ -369,6 +369,18 @@ public :
   std::map<int, TH2F*> mAcsFold;
   std::map<int, TH2F*> mAcsFoldSeg;
   
+  
+  //Elissa stuff
+  std::map<int, TH2F*> mDee_Sector; //dEs-E-S
+  TH2F* mDee_Sector_TimeDiff;
+  TH2F* mDee_SectorAll;
+  TH1F* hDee_SectorAll_TimeDiff;
+  
+  std::map<int, TH2F*> mDee_Ring; //dEs-E-S
+  TH2F* mDee_Ring_TimeDiff;
+  TH2F* mDee_RingAll;
+  TH1F* hDee_RingAll_TimeDiff;
+  
   std::map<int, TH2F*> mDee;
   TH2F* mDeeTimeDiff;
 
@@ -466,7 +478,8 @@ public :
    virtual void ViewACS_cores();//for cores
    virtual void ViewACS_segments(); //for segments
    
-   virtual void ViewDeE();
+   virtual void ViewDeESector();
+   virtual void ViewDeERings();
    
    virtual void cs_simple();
 
@@ -542,7 +555,7 @@ void DelilaSelectorEliade::Init(TTree *tree)
       outputTree->Branch("LaBrEvents",&LabrEvent);
     };
   
-  if (has_detector["Elissa"]){
+  if (has_detector["Elissa"] || has_detector["dElissa"]){
       ElissaEvent= new std::vector<ElissaTreeEvent>;
       outputTree->Branch("ElissaEvents",&ElissaEvent);
   };

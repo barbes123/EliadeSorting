@@ -46,6 +46,7 @@ bool blOutTree              = false;
 bool blFillAmaxEnergyDom    = false;
 bool blFillSingleSpectra    = true;
 bool blLong                 = false;
+bool blDeeSector            = true;
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 bool blIsTrigger            = false; //the SimpleTrigger is open
 bool blIsWindow             = false; //the preTrigger is open
@@ -55,6 +56,7 @@ bool blAddTriggerToQueue    = false;
 bool debug            = false;
 bool blDebugElissa    = false;
 bool blLUT_ELIADE = false;
+bool blLUT_TA = false; //if tru read TA from LUT_TA file
 
 ULong64_t trigger_cnt = 0;
 ULong64_t trigger_events = 0;
@@ -174,9 +176,8 @@ void DelilaSelectorEliade::Read_TimeAlignment_LookUpTable() {
       int coinc_id = 0; int time_corr = 0;
       is >> coinc_id >> time_corr;
       LUT_TA[coinc_id] = time_corr;
-
- 
   }
+  blLUT_TA = true;
   lookuptable.close();
   }
   std::cout << " done" << std::endl;
@@ -607,6 +608,7 @@ void DelilaSelectorEliade::Begin(TTree * tree)
   detector_name[5]="BGOs";     has_detector[detector_name[5]] = false; //side
   detector_name[6]="BGOf";     has_detector[detector_name[6]] = false;//front
   detector_name[7]="Elissa";   has_detector[detector_name[7]] = false;
+  detector_name[17]="dElissa"; has_detector[detector_name[17]] = false;
   detector_name[8]="neutron";  has_detector[detector_name[8]] = false;
   detector_name[9]="pulser";   has_detector[detector_name[9]] = false;
   detector_name[10]="core10";   has_detector[detector_name[10]] = false;
@@ -637,6 +639,10 @@ void DelilaSelectorEliade::Begin(TTree * tree)
          };
            case 37: {
                gg_coinc_id[it_c_gates_->first]="mgg_labr_elissa";
+               break;
+         };
+           case 177: {
+               gg_coinc_id[it_c_gates_->first]="mdee_elissa";
                break;
          };
          default: {
@@ -1045,11 +1051,11 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    
    
    
-   if (has_detector["Elissa"]){
+   if (has_detector["Elissa"] || has_detector["dElissa"]){
 
        std::map<int, TDelilaDetector > ::iterator it_lut_ = LUT_ELIADE.begin();
         
-        if (blFillAmaxEnergyDom){
+        if (blFillAmaxEnergyDom){            
             for (; it_lut_ != LUT_ELIADE.end(); ++it_lut_) {
                 if (LUT_ELIADE[it_lut_->first].detType == 7){
                     int dom = LUT_ELIADE[it_lut_->first].dom;
@@ -1068,6 +1074,63 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                 };
             };
         };
+        
+        //matrices for dEs-Es
+        if (blDeeSector){
+            for (; it_lut_ != LUT_ELIADE.end(); ++it_lut_) {
+                    if (LUT_ELIADE[it_lut_->first].detType == 7){
+                        int dee_dom = LUT_ELIADE[it_lut_->first].cs_dom;           
+                        mDee_Sector[dee_dom] = new TH2F(Form("mDee_Sector_dom%i",dee_dom), Form("mDee_Sector_dom%i",dee_dom), 4096,0, 32768, 10e2,0,10e4);
+                        mDee_Sector[dee_dom] ->GetXaxis()->SetTitle("Energy dE, a.u.");
+                        mDee_Sector[dee_dom] ->GetYaxis()->SetTitle("Energy E, a.u.");
+                        fOutput->Add(mDee_Sector[dee_dom]);
+                    };
+                    if (LUT_ELIADE[it_lut_->first].detType == 17){
+                        int dee_dom = LUT_ELIADE[it_lut_->first].dom;           
+                        mDee_Ring[dee_dom] = new TH2F(Form("mDee_Ring_dom%i",dee_dom), Form("mDee_Ring_dom%i",dee_dom), 4096,0, 32768, 10e2,0,10e4);
+                        mDee_Ring[dee_dom] ->GetXaxis()->SetTitle("Energy dE, a.u.");
+                        mDee_Ring[dee_dom] ->GetYaxis()->SetTitle("Energy E, a.u.");
+                        fOutput->Add(mDee_Ring[dee_dom]);
+                    };
+            };
+            mDee_Sector_TimeDiff = new TH2F("mDee_Sector_TimeDiff", "mDee_Sector_TimeDiff", 100,99.5,200.5, 10e3, -10e6, 10e6);
+            mDee_Sector_TimeDiff ->GetXaxis()->SetTitle("time, ps");
+            mDee_Sector_TimeDiff ->GetYaxis()->SetTitle("counts");
+            fOutput->Add(mDee_Sector_TimeDiff); 
+            
+            mDee_Ring_TimeDiff = new TH2F("mDee_Ring_TimeDiff", "mDee_Ring_TimeDiff", 500,499.5,500.5, 10e3, -10e6, 10e6);
+            mDee_Ring_TimeDiff ->GetXaxis()->SetTitle("time, ps");
+            mDee_Ring_TimeDiff ->GetYaxis()->SetTitle("counts");
+            fOutput->Add(mDee_Ring_TimeDiff); 
+            
+            
+            
+            mDee_SectorAll = new TH2F("mDee_SectorAll", "mDee_SectorAll", 4096,0, 32768, 10e2,0,10e4);
+            mDee_SectorAll ->GetXaxis()->SetTitle("Energy dE, a.u.");
+            mDee_SectorAll ->GetYaxis()->SetTitle("Energy E, a.u.");
+            fOutput->Add(mDee_SectorAll);
+            
+            mDee_RingAll = new TH2F("mDee_RingAll", "mDee_RingAll", 4096,0, 32768, 10e2,0,10e4);
+            mDee_RingAll ->GetXaxis()->SetTitle("Energy dE, a.u.");
+            mDee_RingAll ->GetYaxis()->SetTitle("Energy E, a.u.");
+            fOutput->Add(mDee_RingAll);
+            
+            hDee_SectorAll_TimeDiff = new TH1F("hDee_SectorAll_TimeDiff", "hDee_SectorAll_TimeDiff", 10e3, -10e6, 10e6);
+            hDee_SectorAll_TimeDiff ->GetXaxis()->SetTitle("time, ps");
+//             mDee_SectorAll_TimeDiff ->GetYaxis()->SetTitle("counts");
+            fOutput->Add(hDee_SectorAll_TimeDiff); 
+            
+            hDee_RingAll_TimeDiff = new TH1F("hDee_RingAll_TimeDiff", "hDee_RingAll_TimeDiff", 10e3, -10e6, 10e6);
+            hDee_RingAll_TimeDiff ->GetXaxis()->SetTitle("time, ps");
+//             mDee_SectorAll_TimeDiff ->GetYaxis()->SetTitle("counts");
+            fOutput->Add(hDee_RingAll_TimeDiff); 
+            
+            
+            
+            
+            std::cout<<"Created dEs-Es matricies \n";        
+            
+        }
         
         mDeeTimeDiff = new TH2F("mDeeTimeDiff", "mDeeTimeDiff_dom%i", 4096,0, 32768, 10e3, 0, 10e6);
         mDeeTimeDiff ->GetXaxis()->SetTitle("time, ps");
@@ -1433,8 +1496,8 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
    mTimeCalibTriggerCores->SetTitle(Form("TimeDiff domain%i vs domain", channel_trg));
    fOutput->Add(mTimeCalibTriggerCores);
    
-//    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e3,-1e6, 9e6);
-   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 2e3,-5e6, 15e6);
+   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e4,-1e5, 9e5);
+//    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 2e3,-5e6, 15e6);
    mTimeCalibInsideEvent->GetXaxis()->SetTitle("domain");
    mTimeCalibInsideEvent->GetYaxis()->SetTitle("ps");
 //    mTimeCalibInsideEvent->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
@@ -1708,28 +1771,16 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      if (DelilaEvent_.Time == 0) {hTimeZero->Fill(daq_ch);return kTRUE;};
      hTimeSort->Fill(time_diff_last);
      
-//      if (DelilaEvent_.Time < 4.3e14) {return kTRUE;}
-//          else { 
-//              switch (fMod)
-//              {
-//                  case 0: case 1: case 2: case 3: {
-//                   DelilaEvent_.Time-=2e12;
-//                   break;
-//                  };
-//                   case 5: case 6: case 7: case 9: {
-//                    DelilaEvent_.Time+=210e12;
-//                    break;
-//                   };
-//              }
-//         };
-     
-     
-     
      if (debug){std::cout<<"I am doing new entry l.1084, ch:"<< daq_ch << "\n";}
      
      lastDelilaTime = DelilaEvent_.Time;     
      //Apply time correction
-     DelilaEvent_.Time= DelilaEvent_.Time + LUT_ELIADE[daq_ch].time_offset;//*1e3; //from ns in lut to ps
+     if (blLUT_TA){
+            DelilaEvent_.Time= DelilaEvent_.Time + LUT_TA[domain];//*1e3; //from ns in lut to ps
+        }
+     else{
+        DelilaEvent_.Time= DelilaEvent_.Time + LUT_ELIADE[daq_ch].time_offset;//*1e3; //from ns in lut to ps
+     };
      
      
      
@@ -1760,7 +1811,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
              if (has_detector["BGOf"]) {TreatBGOSingle();}
                 else return kTRUE;
              break;
-         };case 7:  { 
+         };case 7: case 17:  { 
              if (has_detector["Elissa"]) {TreatElissaSingle();}
                 else return kTRUE;
              break;
@@ -3710,39 +3761,51 @@ void DelilaSelectorEliade::SimpleRun()
     return;
 }
 
-void DelilaSelectorEliade::ViewDeE()
+void DelilaSelectorEliade::ViewDeESector()
 {
-  std::deque<DelilaEvent>::iterator it1_= delilaQu.begin();
-  std::deque<DelilaEvent>::iterator it2_= delilaQu.begin();
-  
   std::deque<DelilaEvent>::iterator it_de_= delilaQu.begin();
   std::deque<DelilaEvent>::iterator it_e_= delilaQu.begin();
   
-  for (; it1_!= delilaQu.end();++it1_){
-      if ((*it1_).det_def != 7) continue;
+  for (; it_de_!= delilaQu.end();++it_de_){
+      if ((*it_de_).det_def != 17) continue;
+      it_e_ = delilaQu.begin();
       
-      it2_ = delilaQu.begin();
-      for (; it2_  != delilaQu.end();++it1_){   
-          if ((*it2_).det_def != 7) continue;
-          if (it1_ == it2_) continue;
+      for (; it_e_  != delilaQu.end();++it_e_){   
+          if ((*it_e_).det_def != 7) continue;
+          if (it_de_ == it_e_) continue;
+          if ((*it_de_).cs_domain != (*it_e_).cs_domain) continue;
+          if ( abs((*it_de_).Time - (*it_e_).Time ) > coinc_gates[177]) continue;
+                         
+          double time_diff = (*it_de_).Time - (*it_e_).Time;
           
-          if ((*it2_).domain%100 != (*it1_).domain%100) continue;
+          mDee_Sector_TimeDiff -> Fill((*it_de_).domain, time_diff);
+          mDee_Sector[(*it_de_).cs_domain]->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
+          mDee_SectorAll->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
+          hDee_SectorAll_TimeDiff->Fill(time_diff);
+      }
+  }
+ return;
+}
+
+void DelilaSelectorEliade::ViewDeERings()
+{
+  std::deque<DelilaEvent>::iterator it_de_= delilaQu.begin();
+  std::deque<DelilaEvent>::iterator it_e_= delilaQu.begin();
+  
+  for (; it_de_!= delilaQu.end();++it_de_){
+      if ( ((*it_de_).det_def != 17) && ((*it_de_).domain <= 200))continue;//dEi = 200; dEm = 300; dEo = 400
+      it_e_ = delilaQu.begin();
+      
+      for (; it_e_  != delilaQu.end();++it_e_){   //any if E sector is okay
+          if ((*it_e_).det_def != 7) continue;
+          if ( abs((*it_de_).Time - (*it_e_).Time ) > coinc_gates[177]) continue;
+                         
+          double time_diff = (*it_de_).Time - (*it_e_).Time;
           
-          //get de domain
-          if ((*it1_).domain < (*it2_).domain){
-           it_de_ = it1_;
-           it_e_ = it2_;
-          }
-          else{
-            it_de_ = it2_;
-            it_e_ = it1_;
-          };           
-                               
-          double time_diff = (*it1_).Time - (*it2_).Time;
-          //add time check if needed
-          
-          mDeeTimeDiff -> Fill((*it_de_).domain, time_diff);
-          mDee[(*it1_).domain]->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
+          mDee_Ring_TimeDiff -> Fill((*it_de_).domain, time_diff);
+          mDee_Ring[(*it_de_).cs_domain]->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
+          mDee_RingAll->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
+          hDee_RingAll_TimeDiff ->Fill(time_diff);
       }
   }
  return;
