@@ -47,6 +47,7 @@ bool blFillAmaxEnergyDom    = false;
 bool blFillSingleSpectra    = true;
 bool blLong                 = false;
 bool blDeeSector            = true;
+bool blDeeRing              = true;
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 bool blIsTrigger            = false; //the SimpleTrigger is open
 bool blIsWindow             = false; //the preTrigger is open
@@ -1076,41 +1077,41 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         };
         
         //matrices for dEs-Es
-        if (blDeeSector){
+        if (blDeeSector || blDeeRing){
             for (; it_lut_ != LUT_ELIADE.end(); ++it_lut_) {
                     if (LUT_ELIADE[it_lut_->first].detType == 7){
                         int dee_dom = LUT_ELIADE[it_lut_->first].cs_dom;           
-                        mDee_Sector[dee_dom] = new TH2F(Form("mDee_Sector_dom%i",dee_dom), Form("mDee_Sector_dom%i",dee_dom), 4096,0, 32768, 10e2,0,10e4);
+                        mDee_Sector[dee_dom] = new TH2F(Form("mDee_Sector_dom%i",dee_dom), Form("mDee_Sector_dom%i",dee_dom), 4096,0, 8192, 4096, 0,8192);
                         mDee_Sector[dee_dom] ->GetXaxis()->SetTitle("Energy dE, a.u.");
                         mDee_Sector[dee_dom] ->GetYaxis()->SetTitle("Energy E, a.u.");
                         fOutput->Add(mDee_Sector[dee_dom]);
                     };
                     if (LUT_ELIADE[it_lut_->first].detType == 17){
-                        int dee_dom = LUT_ELIADE[it_lut_->first].dom;           
-                        mDee_Ring[dee_dom] = new TH2F(Form("mDee_Ring_dom%i",dee_dom), Form("mDee_Ring_dom%i",dee_dom), 4096,0, 32768, 10e2,0,10e4);
-                        mDee_Ring[dee_dom] ->GetXaxis()->SetTitle("Energy dE, a.u.");
-                        mDee_Ring[dee_dom] ->GetYaxis()->SetTitle("Energy E, a.u.");
-                        fOutput->Add(mDee_Ring[dee_dom]);
+                        int dee_dom1 = LUT_ELIADE[it_lut_->first].dom;           
+                        mDee_Ring[dee_dom1] = new TH2F(Form("mDee_Ring_dom%i",dee_dom1), Form("mDee_Ring_dom%i",dee_dom1),  4096,0, 8192, 4096, 0,8192);
+                        mDee_Ring[dee_dom1] ->GetXaxis()->SetTitle("Energy dE, a.u.");
+                        mDee_Ring[dee_dom1] ->GetYaxis()->SetTitle("Energy E, a.u.");
+                        fOutput->Add(mDee_Ring[dee_dom1]);
                     };
             };
-            mDee_Sector_TimeDiff = new TH2F("mDee_Sector_TimeDiff", "mDee_Sector_TimeDiff", 100,99.5,200.5, 10e3, -10e6, 10e6);
+            mDee_Sector_TimeDiff = new TH2F("mDee_Sector_TimeDiff", "mDee_Sector_TimeDiff", 100,99.5,200.5, 1e3, -1e5, 1e5);
             mDee_Sector_TimeDiff ->GetXaxis()->SetTitle("time, ps");
             mDee_Sector_TimeDiff ->GetYaxis()->SetTitle("counts");
             fOutput->Add(mDee_Sector_TimeDiff); 
             
-            mDee_Ring_TimeDiff = new TH2F("mDee_Ring_TimeDiff", "mDee_Ring_TimeDiff", 500,499.5,500.5, 10e3, -10e6, 10e6);
+            mDee_Ring_TimeDiff = new TH2F("mDee_Ring_TimeDiff", "mDee_Ring_TimeDiff", 500,499.5,500.5, 1e3, -1e5, 1e5);
             mDee_Ring_TimeDiff ->GetXaxis()->SetTitle("time, ps");
             mDee_Ring_TimeDiff ->GetYaxis()->SetTitle("counts");
             fOutput->Add(mDee_Ring_TimeDiff); 
             
             
             
-            mDee_SectorAll = new TH2F("mDee_SectorAll", "mDee_SectorAll", 4096,0, 32768, 10e2,0,10e4);
+            mDee_SectorAll = new TH2F("mDee_SectorAll", "mDee_SectorAll",  4096,0, 8192, 4096, 0,8192);
             mDee_SectorAll ->GetXaxis()->SetTitle("Energy dE, a.u.");
             mDee_SectorAll ->GetYaxis()->SetTitle("Energy E, a.u.");
             fOutput->Add(mDee_SectorAll);
             
-            mDee_RingAll = new TH2F("mDee_RingAll", "mDee_RingAll", 4096,0, 32768, 10e2,0,10e4);
+            mDee_RingAll = new TH2F("mDee_RingAll", "mDee_RingAll",  4096,0, 8192, 4096, 0,8192);
             mDee_RingAll ->GetXaxis()->SetTitle("Energy dE, a.u.");
             mDee_RingAll ->GetYaxis()->SetTitle("Energy E, a.u.");
             fOutput->Add(mDee_RingAll);
@@ -1497,7 +1498,7 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
    mTimeCalibTriggerCores->SetTitle(Form("TimeDiff domain%i vs domain", channel_trg));
    fOutput->Add(mTimeCalibTriggerCores);
    
-   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e4,-1e5, 9e5);
+   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e4,-5e5, 5e5);
 //    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 2e3,-5e6, 15e6);
    mTimeCalibInsideEvent->GetXaxis()->SetTitle("domain");
    mTimeCalibInsideEvent->GetYaxis()->SetTitle("ps");
@@ -2124,7 +2125,7 @@ void DelilaSelectorEliade::Terminate()
       if (blAddBack)                foutFile->mkdir("AddBack","AddBack");
       if (blCS)                     foutFile->mkdir("CS","CS");
       if (has_detector["neutron"])  foutFile->mkdir("Neutron","Neutron");
-      if (blDeeSector)              foutFile->mkdir("GammaGamma","GammaGamma");
+//      if (blDeeSector)              foutFile->mkdir("GammaGamma","GammaGamma");
       
       if (has_detector["Elissa"]) foutFile->mkdir("dee","dee");
       
@@ -2723,7 +2724,8 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
             if (blAddBack)               ViewAddBackCoreCore();
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
-           
+           if (blDeeSector)		ViewDeESector();
+           //if (blDeeRing)		ViewDeERings();
            if (has_detector["neutron"]) TreatNeutronNeutron();
            
            if (blFillSingleSpectra)     FillSingleSpectra();
@@ -3783,8 +3785,8 @@ void DelilaSelectorEliade::ViewDeESector()
           double time_diff = (*it_de_).Time - (*it_e_).Time;
           
           mDee_Sector_TimeDiff -> Fill((*it_de_).domain, time_diff);
-          mDee_Sector[(*it_de_).cs_domain]->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
-          mDee_SectorAll->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
+          mDee_Sector[(*it_de_).cs_domain]->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
+          mDee_SectorAll->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
           hDee_SectorAll_TimeDiff->Fill(time_diff);
       }
   }
@@ -3807,8 +3809,9 @@ void DelilaSelectorEliade::ViewDeERings()
           double time_diff = (*it_de_).Time - (*it_e_).Time;
           
           mDee_Ring_TimeDiff -> Fill((*it_de_).domain, time_diff);
-          mDee_Ring[(*it_de_).cs_domain]->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
-          mDee_RingAll->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
+         // mDee_Ring[(*it_de_).domain]->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
+          mDee_Ring[(*it_de_).domain]->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
+          mDee_RingAll->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
           hDee_RingAll_TimeDiff ->Fill(time_diff);
       }
   }
