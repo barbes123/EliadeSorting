@@ -2123,8 +2123,9 @@ void DelilaSelectorEliade::Terminate()
       if (blAddBack)                foutFile->mkdir("AddBack","AddBack");
       if (blCS)                     foutFile->mkdir("CS","CS");
       if (has_detector["neutron"])  foutFile->mkdir("Neutron","Neutron");
+      if (blDeeSector)              foutFile->mkdir("GammaGamma","GammaGamma");
       
-      if (has_detector["Elissa"]) foutFile->mkdir("AmaxEnergy","AmaxEnergy");
+      if (has_detector["Elissa"]) foutFile->mkdir("dee","dee");
       
       outputTree->Write();
       if (blAddBack) addbackTree->Write();
@@ -2160,7 +2161,9 @@ void DelilaSelectorEliade::Terminate()
 //              std::cout<<Form("%s:/GammaGamma", OutputFile.str().c_str())<<std::endl;
             }else if (name.Contains("long") && blLong){
                 foutFile->cd(Form("%s:/long", OutputFile.str().c_str()));      
-            } else {
+            }else if (name.Contains("mDee")){
+                foutFile->cd(Form("%s:/dee", OutputFile.str().c_str()));      
+            }else {
                 foutFile->cd(Form("%s:/", OutputFile.str().c_str()));
             };  
             
