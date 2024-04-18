@@ -324,10 +324,12 @@ public :
   int det_def_trg;
   int channel_trg;
   int ref_dom; //for time Allignement
+  float rf_time;
   bool EVENT_BUILDER;
   std::vector<int> trigger_domains;
   double TriggerTimeFlag;
   double lastDelilaTime;
+  double RF_N;
   
   bool blCS;
   bool blGammaGamma;

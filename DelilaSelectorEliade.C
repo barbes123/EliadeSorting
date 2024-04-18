@@ -379,7 +379,9 @@ void DelilaSelectorEliade::Read_Confs() {
   addback_tree = 0;
   EVENT_BUILDER = true;
   blFineTimeStamp = true;
-  blFold = false;
+  blFold = true;
+  rf_time = 0;
+  RF_N = 0;
 
 
   if (!lookuptable.good()) {
@@ -461,6 +463,12 @@ void DelilaSelectorEliade::Read_Confs() {
           case 9996:{//reference channel
               ref_dom = value;
               std::cout<<"ref_dom "<<ref_dom<<" \n";
+              break;
+              
+          };
+           case 9995:{//rf_time 
+              rf_time = value;
+              std::cout<<"rf_time "<<rf_time<<" \n";
               break;
               
           };
@@ -1783,6 +1791,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      else{
         DelilaEvent_.Time= DelilaEvent_.Time + LUT_ELIADE[daq_ch].time_offset;//*1e3; //from ns in lut to ps
      };
+     if (rf_time !=0) {DelilaEvent_.Time-= RF_N*rf_time;};
      
      
      
@@ -1963,7 +1972,7 @@ void DelilaSelectorEliade::TreatFold(int det)
      for (; it_delila_!= delilaQu.end();++it_delila_){
          if (it_delila_->det_def == det) {
              it_delila_->fold = nfold;
-//              mFoldEnergy->Fill(nfold,it_delila_->Energy_kev);
+             mFoldEnergy->Fill(nfold,it_delila_->Energy_kev);
 //              if (blOutTree) {
 //                 DelilaEvent_Treated = *it_delila_;                
 //                 outputTree->Fill();
@@ -2778,6 +2787,7 @@ void DelilaSelectorEliade::SetUpNewTrigger(){
     
 //     std::cout<<" TriggerTimeFlag is "<<TriggerTimeFlag<<" DelilaEvent_.Time "<<DelilaEvent_.Time<<"  \n";  
     
+    if (rf_time != 0) RF_N++;
     
     if (TriggerTimeFlag < 0){
       std::cout<<"SetUpNewTrigger() TriggerTimeFlag is < 0 \n";  
