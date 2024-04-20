@@ -45,7 +45,7 @@ bool blOutTree              = false;
 // bool blTimeAlignement       = true;
 bool blFillAmaxEnergyDom    = false;
 bool blFillSingleSpectra    = true;
-bool blLong                 = false;
+bool blLong                 = true;
 bool blDeeSector            = true;
 bool blDeeRing              = true;
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
@@ -382,6 +382,7 @@ void DelilaSelectorEliade::Read_Confs() {
   blFold = true;
   rf_time = 0;
   RF_N = 0;
+  blExtTrigger = false;
 
 
   if (!lookuptable.good()) {
@@ -468,6 +469,7 @@ void DelilaSelectorEliade::Read_Confs() {
           };
            case 9995:{//rf_time 
               rf_time = value;
+//               if (rf_time > 0) blExtTrigger = true;
               std::cout<<"rf_time "<<rf_time<<" \n";
               break;
               
@@ -501,6 +503,7 @@ void DelilaSelectorEliade::Read_Confs() {
           case 9998:{
               if (value < 0) EVENT_BUILDER = false;
               det_def_trg = value/1;              
+              if (det_def_trg == 99) blExtTrigger = true;
               std::cout<<"trg_det_type "<<det_def_trg<<" \n";
               break;
           }
@@ -548,7 +551,7 @@ void DelilaSelectorEliade::Read_Confs() {
   };
   if (!blAnyDetector){
       std::cout<<"Terminated. No detectors are defined in LUT_CONF.dat. Add at least one detector type \n"<<
-      "1 - Clover (/HPGe); \n"<< "2 - segment; \n" << "3 - LaBr; \n" << "4 - CsI (back) \n"  << "5 - BGO-side; \n" <<  "6 - BGO-front; \n" <<  "7 - Elissa(/Si); \n" <<  "8 - Neutron; \n"  "9 - pulser; \n";
+      "1 - Clover (or HPGe); \n"<< "2 - segment; \n" << "3 - LaBr; \n" << "4 - CsI (back) \n"  << "5 - BGO-side; \n" <<  "6 - BGO-front; \n" <<  "7 - Elissa E (or Si); \n" <<  "8 - Neutron; \n"  "9 - pulser; \n" << "11 - Clover (HPGe) core 2 \n"<< "17 -Elissa (dE) \n"<<"99 - External Trigger \n";
       exit(0);
   };
 
@@ -621,6 +624,7 @@ void DelilaSelectorEliade::Begin(TTree * tree)
   detector_name[8]="neutron";  has_detector[detector_name[8]] = false;
   detector_name[9]="pulser";   has_detector[detector_name[9]] = false;
   detector_name[10]="core10";   has_detector[detector_name[10]] = false;
+  detector_name[99]="ExtTrigger";   has_detector[detector_name[99]] = false;
 //   detector_name[18]="neutronTN"; has_detector[detector_name[18]] = false;
 
 
@@ -782,6 +786,8 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    
    hTimeDiffPulser = new TH1F("hTimeDiffPulser", "hTimeDiffPulser", 1000, -99.5, 899.5);
    fOutput->Add(hTimeDiffPulser);
+   
+ 
 
    mDelila_raw = new TH2F("mDelila_raw", "mDelila_raw", max_domain, -0.5, max_domain-0.5, 16384, -0.5, 16383.5);
    mDelila_raw->GetXaxis()->SetTitle("domain");
@@ -790,7 +796,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    
    mDelila = new TH2F("mDelila", "mDelila", max_domain, -0.5, max_domain-0.5, 16384, -0.5, 16383.5);
    mDelila->GetXaxis()->SetTitle("domain");
-   mDelila->GetYaxis()->SetTitle("keV");
+   mDelila->GetYaxis()->SetTitle("1 keV/bin ");
    fOutput->Add(mDelila);
    
    
@@ -802,40 +808,40 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 //    };
    
    
-   mDelilaDC = new TH2F("mDelilaDC", "mDelilaDC", max_domain, 0, max_domain, 16384, -0.5, 16383.5);
+   mDelilaDC = new TH2F("mDelilaDC", "mDelilaDC", max_domain, 0, max_domain, 4096, -0.5, 32767.5);
    mDelilaDC->GetXaxis()->SetTitle("domain");
-   mDelilaDC->GetYaxis()->SetTitle("keV");
+   mDelilaDC->GetYaxis()->SetTitle("8 keV/bin");
    fOutput->Add(mDelilaDC);   
    
-   mDelilaCS = new TH2F("mDelilaCS", "mDelilaCS", max_domain, 0, max_domain, 16384, -0.5, 16383.5);
-   mDelilaCS->GetXaxis()->SetTitle("domain");
+   mDelilaCS = new TH2F("mDelilaCS", "mDelilaCS", max_domain, 0, max_domain, 4096, -0.5, 32767.5);
+   mDelilaCS->GetXaxis()->SetTitle("8 keV/bin");
    mDelilaCS->GetYaxis()->SetTitle("keV");
    fOutput->Add(mDelilaCS);
    
-   mDelilaCS_DC = new TH2F("mDelilaCS_DC", "mDelilaCS_DC", max_domain, 0, max_domain, 16384, -0.5, 16383.5);
+   mDelilaCS_DC = new TH2F("mDelilaCS_DC", "mDelilaCS_DC", max_domain, 0, max_domain, 4096, -0.5, 32767.5);
    mDelilaCS_DC->GetXaxis()->SetTitle("domain");
-   mDelilaCS_DC->GetYaxis()->SetTitle("keV");
+   mDelilaCS_DC->GetYaxis()->SetTitle("8 keV/bin");
    fOutput->Add(mDelilaCS_DC);
    
    ////////////////
-   mDelila_long = new TH2F("mDelila_long", "mDelila_long", max_domain, 0, max_domain, 4096, -0.5,  65535.5);
+   mDelila_long = new TH2F("mDelila_long", "mDelila_long", max_domain, 0, max_domain, 4096, -0.5,  32767.5);
    mDelila_long->GetXaxis()->SetTitle("domain");
-   mDelila_long->GetYaxis()->SetTitle("keV");
+   mDelila_long->GetYaxis()->SetTitle("8 keV/bin");
    fOutput->Add(mDelila_long);
    
-   mDelilaDC_long = new TH2F("mDelilaDC_long", "mDelilaDC_long", max_domain, 0, max_domain, 4096, -0.5,  65535.5);
+   mDelilaDC_long = new TH2F("mDelilaDC_long", "mDelilaDC_long", max_domain, 0, max_domain, 4096, -0.5,  32767.5);
    mDelilaDC_long->GetXaxis()->SetTitle("domain");
-   mDelilaDC_long->GetYaxis()->SetTitle("keV");
+   mDelilaDC_long->GetYaxis()->SetTitle("8 keV/bin");
    fOutput->Add(mDelilaDC_long);   
    
-   mDelilaCS_long = new TH2F("mDelilaCS_long", "mDelilaCS_long", max_domain, 0, max_domain, 4096, -0.5,  65535.5);
+   mDelilaCS_long = new TH2F("mDelilaCS_long", "mDelilaCS_long", max_domain, 0, max_domain, 4096, -0.5,  32767.5);
    mDelilaCS_long->GetXaxis()->SetTitle("domain");
-   mDelilaCS_long->GetYaxis()->SetTitle("keV");
+   mDelilaCS_long->GetYaxis()->SetTitle("8 keV/bin");
    fOutput->Add(mDelilaCS_long);
    
-   mDelilaCS_DC_long = new TH2F("mDelilaCS_DC_long", "mDelilaCS_DC_long", max_domain, 0, max_domain, 4096, -0.5,  65535.5);
+   mDelilaCS_DC_long = new TH2F("mDelilaCS_DC_long", "mDelilaCS_DC_long", max_domain, 0, max_domain, 4096, -0.5,  32767.5);
    mDelilaCS_DC_long->GetXaxis()->SetTitle("domain");
-   mDelilaCS_DC_long->GetYaxis()->SetTitle("keV");
+   mDelilaCS_DC_long->GetYaxis()->SetTitle("8 keV/bin");
    fOutput->Add(mDelilaCS_DC_long);
    
    ///////////////////////
@@ -1331,35 +1337,36 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
          for (int k=1; k<=addBackMode; k++){
            hAddBack[k] = new TH1F(Form("AddBackMode_%i",k), Form("AddBackMode_%i",k), 4096, -0.5, 16383.5);
            hAddBack[k]->GetYaxis()->SetTitle("counts");
-           hAddBack[k]->GetXaxis()->SetTitle("keV");
+           hAddBack[k]->GetXaxis()->SetTitle("4 keV/bin");
                fOutput->Add(hAddBack[k]);
            };
          };
       
-        hDelila0[itna1->first] = new TH1F(Form("%s",itna1->second.c_str()), Form("%s before EventB",itna1->second.c_str()), 16384, -0.5, 16383.5);
+        hDelila0[itna1->first] = new TH1F(Form("%s",itna1->second.c_str()), Form("%s before EventB",itna1->second.c_str()), 4096, -0.5, 16383.5);
         hDelila0[itna1->first]->GetYaxis()->SetTitle("counts");
-        hDelila0[itna1->first]->GetXaxis()->SetTitle("keV");
+        hDelila0[itna1->first]->GetXaxis()->SetTitle("4 keV/bin ");
         fOutput->Add(hDelila0[itna1->first]);
         
         hDelila_single[itna1->first] = new TH1F(Form("%s_single",itna1->second.c_str()), Form("%s_single",itna1->second.c_str()), 4096, -0.5, 16383.5);
         hDelila_single[itna1->first]->GetYaxis()->SetTitle("counts");
-        hDelila_single[itna1->first]->GetXaxis()->SetTitle("keV");
+        hDelila_single[itna1->first]->GetXaxis()->SetTitle("4 keV/bin");
         fOutput->Add(hDelila_single[itna1->first]);
    
         hDelilaCS[itna1->first] = new TH1F(Form("%s_CS",itna1->second.c_str()), Form("%s_CS",itna1->second.c_str()), 4096, -0.5, 16383.5);
         hDelilaCS[itna1->first]->GetYaxis()->SetTitle("counts");
-        hDelilaCS[itna1->first]->GetXaxis()->SetTitle("keV");
+        hDelilaCS[itna1->first]->GetXaxis()->SetTitle("4 keV/bin");
         hDelilaCS[itna1->first]->SetLineColor(2);
         fOutput->Add(hDelilaCS[itna1->first]);
         
         hDelilaDC[itna1->first] = new TH1F(Form("%s_DC",itna1->second.c_str()), Form("%s_DC",itna1->second.c_str()), 4096, -0.5, 16383.5);
         hDelilaDC[itna1->first]->GetYaxis()->SetTitle("counts");
-        hDelilaDC[itna1->first]->GetXaxis()->SetTitle("keV");
+        hDelilaDC[itna1->first]->GetXaxis()->SetTitle("4 keV/bin");
+        hDelilaDC[itna1->first]->SetLineColor(kBlack);
         fOutput->Add(hDelilaDC[itna1->first]);
         
         hDelilaCS_DC[itna1->first] = new TH1F(Form("%s_CS_DC",itna1->second.c_str()), Form("%s_CS_DC",itna1->second.c_str()), 4096, -0.5, 16383.5);
         hDelilaCS_DC[itna1->first]->GetYaxis()->SetTitle("counts");
-        hDelilaCS_DC[itna1->first]->GetXaxis()->SetTitle("keV");
+        hDelilaCS_DC[itna1->first]->GetXaxis()->SetTitle("4 keV/bin");
         fOutput->Add(hDelilaCS_DC[itna1->first]);
      
   };
@@ -1368,32 +1375,47 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
   itna1 =  detector_name.begin();
 
   for(;itna1!=detector_name.end();++itna1){
-   hDelila_long[itna1->first] = new TH1F(Form("%s_long",itna1->second.c_str()), Form("%s_long",itna1->second.c_str()), 4096, -0.5, 65535.5);
+   hDelila_long[itna1->first] = new TH1F(Form("%s_long",itna1->second.c_str()), Form("%s_long",itna1->second.c_str()), 4096, -0.5, 32767.5);
    hDelila_long[itna1->first]->GetYaxis()->SetTitle("counts");
-   hDelila_long[itna1->first]->GetXaxis()->SetTitle("keV");
+   hDelila_long[itna1->first]->GetXaxis()->SetTitle("8 keV/bin ");
    fOutput->Add(hDelila_long[itna1->first]);
    
-   hDelilaCS_long[itna1->first] = new TH1F(Form("%s_CS_long",itna1->second.c_str()), Form("%s_CS_long",itna1->second.c_str()), 4096, -0.5, 65535.5);
+   hDelilaCS_long[itna1->first] = new TH1F(Form("%s_CS_long",itna1->second.c_str()), Form("%s_CS_long",itna1->second.c_str()), 4096, -0.5, 32767.5);
    hDelilaCS_long[itna1->first]->GetYaxis()->SetTitle("counts");
-   hDelilaCS_long[itna1->first]->GetXaxis()->SetTitle("keV");
+   hDelilaCS_long[itna1->first]->GetXaxis()->SetTitle("8 keV/bin");
    fOutput->Add(hDelilaCS_long[itna1->first]);
    
-   hDelilaDC_long[itna1->first] = new TH1F(Form("%s_DC_long",itna1->second.c_str()), Form("%s_DC_long",itna1->second.c_str()), 4096, -0.5, 65535.5);
+   hDelilaDC_long[itna1->first] = new TH1F(Form("%s_DC_long",itna1->second.c_str()), Form("%s_DC_long",itna1->second.c_str()), 4096, -0.5, 32767.5);
    hDelilaDC_long[itna1->first]->GetYaxis()->SetTitle("counts");
-   hDelilaDC_long[itna1->first]->GetXaxis()->SetTitle("keV");
+   hDelilaDC_long[itna1->first]->GetXaxis()->SetTitle("8 keV/bin");
    fOutput->Add(hDelilaDC_long[itna1->first]);
    
-   hDelilaCS_DC_long[itna1->first] = new TH1F(Form("%s_CS_DC_long",itna1->second.c_str()), Form("%s_CS_DC_long",itna1->second.c_str()), 4096, -0.5, 65535.5);
+   hDelilaCS_DC_long[itna1->first] = new TH1F(Form("%s_CS_DC_long",itna1->second.c_str()), Form("%s_CS_DC_long",itna1->second.c_str()), 4096, -0.5, 32767.5);
    hDelilaCS_DC_long[itna1->first]->GetYaxis()->SetTitle("counts");
-   hDelilaCS_DC_long[itna1->first]->GetXaxis()->SetTitle("keV");
+   hDelilaCS_DC_long[itna1->first]->GetXaxis()->SetTitle("8 keV/bin");
    fOutput->Add(hDelilaCS_DC_long[itna1->first]);
       
   };
    
-   mEnergyTimeDiff_trigger = new TH2F("mEnergyTimeDiff_trigger", "mEnergyTimeDiff_trigger", 16384, -0.5, 16383.5, 10e3, 0, 10e6);
-   mEnergyTimeDiff_trigger->GetXaxis()->SetTitle("Energy, keV");
-   mEnergyTimeDiff_trigger->GetYaxis()->SetTitle("Time diff, ps");
-   fOutput->Add(mEnergyTimeDiff_trigger);
+//    mEnergyTimeDiff[3] = new TH2F("mEnergyTimeDiffLaBr", "mEnergyTimeDiffLaBr", 4096, -0.5, 16383.5, 7000, -2e5, 5e5);
+   mEnergyTimeDiff[3] = new TH2F("mEnergyTimeDiffLaBr", "mEnergyTimeDiffLaBr", 256, -0.5, 32767.5, 14000, -2e5, 5e5);//128 keV per bin
+   mEnergyTimeDiff[3]->GetXaxis()->SetTitle("Energy, 128 keV/bin");
+   mEnergyTimeDiff[3]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
+   fOutput->Add(mEnergyTimeDiff[3]);
+   
+   
+   mEnergyTimeDiffDC[3] = new TH2F("mEnergyTimeDiffDC", "mEnergyTimeDiffDC", 256, -0.5, 32767.5, 14000, -2e5, 5e5);//128 keV per bin
+   mEnergyTimeDiffDC[3]->GetXaxis()->SetTitle("Energy, 128 keV/bin");
+   mEnergyTimeDiffDC[3]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
+   fOutput->Add(mEnergyTimeDiffDC[3]);
+   
+   hTimeMinusTriggerLaBr = new TH1F("hTimeMinusTriggerLaBr", "hTimeMinusTriggerLaBr", 14000, -2e5, 5e5);
+   fOutput->Add(hTimeMinusTriggerLaBr);
+   
+   mEnergyTimeDiff[7] = new TH2F("mEnergyTimeDiffSiE", "mEnergyTimeDiffSiE", 4096, -0.5, 16383.5, 1e3, 0, 10e6);
+   mEnergyTimeDiff[7]->GetXaxis()->SetTitle("Energy, keV");
+   mEnergyTimeDiff[7]->GetYaxis()->SetTitle("Time diff, ps");
+   fOutput->Add(mEnergyTimeDiff[7]);
    
    mDomainTimeDiff_trigger = new TH2F("mDomainTimeDiff_trigger", "mDomainTimeDiff_trigger", max_domain, 0, max_domain, 10e3, -1e6, 9e6);
 //    mDomainTimeDiff_trigger = new TH2F("mDomainTimeDiff_trigger", "mDomainTimeDiff_trigger", max_domain, 0, max_domain, 3e2, 0, 3e5);
@@ -1784,18 +1806,37 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      if (debug){std::cout<<"I am doing new entry l.1084, ch:"<< daq_ch << "\n";}
      
      lastDelilaTime = DelilaEvent_.Time;     
-     //Apply time correction
-     if (blLUT_TA){
+     //Apply time correction, usually should not be done for ExtTrigger, so it is not specified in LUT timeoffset for him
+     
+     if (blLUT_TA && !blExtTrigger){
             DelilaEvent_.Time= DelilaEvent_.Time + LUT_TA[domain];//*1e3; //from ns in lut to ps
         }
-     else{
+     else if (!blExtTrigger){
         DelilaEvent_.Time= DelilaEvent_.Time + LUT_ELIADE[daq_ch].time_offset;//*1e3; //from ns in lut to ps
      };
-     if (rf_time !=0) {DelilaEvent_.Time-= RF_N*rf_time;};
+//      if (rf_time !=0) {DelilaEvent_.Time = DelilaEvent_.Time - RF_N*rf_time;
+//              std::cout<<DelilaEvent_.Time<<" "<<DelilaEvent_.Energy_kev<< " "<<RF_N <<" "<<RF_N*rf_time<<"\n";
+//         };
      
-     
-     
-//      DelilaEvent_.Time-=LUT_TA[domain];
+     if (blExtTrigger && DelilaEvent_.det_def != 99) {
+//            std::cout<<"Time: "<<DelilaEvent_.Time<<" Trigger Time: "<<LastTriggerEvent.Time<< " Time -Trigger: "<<DelilaEvent_.Time - LastTriggerEvent.Time <<"\n";
+//            DelilaEvent_.TimeBunch = DelilaEvent_.Time - LastTriggerEvent.Time;
+         
+            DelilaEvent_.TimeTrg = DelilaEvent_.Time - LastTriggerEvent.Time;
+            int nn =  DelilaEvent_.TimeTrg  / rf_time;
+            DelilaEvent_.TimeBunch = DelilaEvent_.TimeTrg  - nn * rf_time;
+            DelilaEvent_.TimeBunch= DelilaEvent_.TimeBunch + LUT_TA[domain];//*1e3; //from ns in lut to ps
+
+         
+         
+         
+           hTimeMinusTriggerLaBr->Fill(DelilaEvent_.TimeBunch);
+          
+           if (blTimeAlignement) mTimeCalibInsideEvent->Fill(DelilaEvent_.domain, DelilaEvent_.TimeBunch);
+          
+//           if (blExtTrigger && (DelilaEvent_.det_def == 3)) hTimeMinusTriggerLaBr->Fill(DelilaEvent_.Time);
+//
+                 };
      
      switch (DelilaEvent_.det_def){
           case 1:  { 
@@ -1847,12 +1888,13 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
              return kTRUE;
              break;
          };
-          case 99:  { 
-             if (blIsWindow)  return kTRUE;
-             break;
-         };
          case 11:  { //second core
              return kTRUE;
+             break;
+         };
+         case 99:  { //trigger
+             if (has_detector["ExtTrigger"]) { ;}
+                 else return kTRUE;
              break;
          };
          
@@ -2069,28 +2111,28 @@ void DelilaSelectorEliade::TreatGammaGammaCoinc()
 void DelilaSelectorEliade::TreatDelilaEvent()
 {
     
-    UShort_t daq_ch = DelilaEvent_.channel;
-    UShort_t domain = DelilaEvent_.domain;
-    
-    mDelila->Fill(domain,DelilaEvent_.Energy_kev);
-    
-    
-    if (beta != 0){
-        double costheta = TMath::Cos(LUT_ELIADE[daq_ch].theta);
-        DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
-        mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
-        if (blLong) mDelilaDC_long->Fill(domain,DelilaEvent_.EnergyDC);
-    }
-    
-//     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
-//     hDelila[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev);
-//     mThetaPhi->Fill(DelilaEvent_.theta, DelilaEvent_.phi);
-
-
-    
-    if (blLong){
-       mDelila_long->Fill(domain,DelilaEvent_.Energy_kev);
-    };
+//     UShort_t daq_ch = DelilaEvent_.channel;
+//     UShort_t domain = DelilaEvent_.domain;
+//     
+//     mDelila->Fill(domain,DelilaEvent_.Energy_kev);
+//     
+//     
+//     if (beta != 0){
+//         double costheta = TMath::Cos(LUT_ELIADE[daq_ch].theta);
+//         DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
+//         mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
+//         if (blLong) mDelilaDC_long->Fill(domain,DelilaEvent_.EnergyDC);
+//     }
+//     
+// //     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
+// //     hDelila[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev);
+// //     mThetaPhi->Fill(DelilaEvent_.theta, DelilaEvent_.phi);
+// 
+// 
+//     
+//     if (blLong){
+//        mDelila_long->Fill(domain,DelilaEvent_.Energy_kev);
+//     };
     
 
     
@@ -2360,20 +2402,20 @@ void DelilaSelectorEliade::PrintDelilaEvent(DelilaEvent &ev_)
 
 void DelilaSelectorEliade::TimeAlignementTrigger()
 {
-     std::deque<DelilaEvent>::iterator it_= delilaQu.begin();
-     double time_diff_temp = 0;
-
-     for (; it_!= delilaQu.end();++it_){
-          // time_diff_temp = delilaQu.front().Time - TriggerTimeFlag;
-//           time_diff_temp = (*it_).Time - TriggerTimeFlag;
-           time_diff_temp = (*it_).Time - LastTriggerEvent.Time;
-           mTimeCalibTrigger->Fill((*it_).domain, time_diff_temp);
-//            std::cout<<" "<<time_diff_temp<<"\n";
-           if ((*it_).det_def  == 1) mTimeCalibTriggerCores->Fill((*it_).coreID, time_diff_temp);
-           //debug: checking si-labr coinc
-//            if ((*it_).det_def  == 7) std::cout<<"Time Diff for dom "<<(*it_).domain<<" "<< time_diff_temp<< " \n";
-     };
-         
+//      std::deque<DelilaEvent>::iterator it_= delilaQu.begin();
+//      double time_diff_temp = 0;
+// 
+//      for (; it_!= delilaQu.end();++it_){
+//           // time_diff_temp = delilaQu.front().Time - TriggerTimeFlag;
+// //           time_diff_temp = (*it_).Time - TriggerTimeFlag;
+//            time_diff_temp = (*it_).Time - LastTriggerEvent.Time;
+//            mTimeCalibTrigger->Fill((*it_).domain, time_diff_temp);
+// //            std::cout<<" "<<time_diff_temp<<"\n";
+//            if ((*it_).det_def  == 1) mTimeCalibTriggerCores->Fill((*it_).coreID, time_diff_temp);
+//            //debug: checking si-labr coinc
+// //            if ((*it_).det_def  == 7) std::cout<<"Time Diff for dom "<<(*it_).domain<<" "<< time_diff_temp<< " \n";
+//      };
+//          
     return;
 };
 
@@ -2443,11 +2485,20 @@ void DelilaSelectorEliade::TreatLaBrSingle()
     if (beta >0) {
         DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
         mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
+        hDelilaDC[DelilaEvent_.det_def]->Fill(DelilaEvent_.EnergyDC); 
+        if (blLong){mDelilaDC_long ->Fill(domain,DelilaEvent_.EnergyDC);}
+        mEnergyTimeDiffDC[3]->Fill(DelilaEvent_.EnergyDC, DelilaEvent_.TimeBunch);
     };
     
     hDelila0[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev); 
     mDelila->Fill(domain,DelilaEvent_.Energy_kev);
     
+    
+    if (blLong){mDelila_long->Fill(domain,DelilaEvent_.Energy_kev);}
+    
+    mEnergyTimeDiff[3]->Fill(DelilaEvent_.Energy_kev, DelilaEvent_.TimeBunch);
+//     hTimeMinusTriggerLaBr->Fill(DelilaEvent_.Time);
+//     std::cout<<DelilaEvent_.Time<<" "<<DelilaEvent_.Energy_kev<<"\n";
 
     return;
 }
@@ -2603,6 +2654,8 @@ void DelilaSelectorEliade::TreatElissaSingle()
 //     hAmax->Fill(DelilaEvent_.Amax/DelilaEvent_.Energy_kev);
     hDelila0[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev); 
     mElissa->Fill(DelilaEvent_.domain, DelilaEvent_.Energy_kev);
+//     mEnergyTimeDiff[7]->Fill(DelilaEvent_.Time, DelilaEvent_.Energy_kev);
+
     
 }
 
@@ -2715,13 +2768,29 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
     if (blIsWindow){//open
 //        double time_diff_trigger = DelilaEvent_.Time - TriggerTimeFlag;
        double time_diff_trigger = DelilaEvent_.Time - LastTriggerEvent.Time;
-
-//          std::cout<<" blTimeAlignement  "<<blTimeAlignement<<"\n";
 //          std::cout<<" blTimeAlignement  "<<abs(time_diff_trigger)<<"\n";
 
-       if (abs(time_diff_trigger) > event_length){//close event
-//             TimeAlignementCoincCoinc();
-            if (blTimeAlignement)        TimeAlignementInsideEvent();
+//        if ( (blExtTrigger && DelilaEvent_.det_def == 99) || (!blExtTrigger && abs(time_diff_trigger) > event_length) ){//close event
+//        if (DelilaEvent_.det_def == 99){//close event
+        //if (abs(time_diff_trigger) > event_length){//close event
+//        if (blTimeAlignement) mTimeCalibInsideEvent->Fill(DelilaEvent_.domain, DelilaEvent_.Time);
+       
+       bool blCloseCondition = false;
+       
+       if (blExtTrigger){
+           blCloseCondition = (DelilaEvent_.Time > event_length) || ( DelilaEvent_.det_def = 99);
+       }
+       else{
+           blCloseCondition = (abs(time_diff_trigger) > event_length);
+       };
+       
+
+//        if (( (blExtTrigger && ()) || DelilaEvent_.det_def = 99)||(!blExtTrigger && (abs(time_diff_trigger) > event_length))){//close event 
+
+//             std::cout<<" End of Event  \n";
+        if (blCloseCondition){
+            
+            if (blTimeAlignement && !blExtTrigger) TimeAlignementInsideEvent();
 //             if (blTimeAlignement)        TimeAlignementTrigger();//we do not use
             if (blCS)                cs();
 //            if (blCS)                    ViewACS();
@@ -2783,16 +2852,17 @@ void DelilaSelectorEliade::SetUpNewTrigger(){
     
     delilaQu.push_back(DelilaEvent_);
     
-    TriggerTimeFlag = DelilaEvent_.Time - pre_event_length;
+    
     
 //     std::cout<<" TriggerTimeFlag is "<<TriggerTimeFlag<<" DelilaEvent_.Time "<<DelilaEvent_.Time<<"  \n";  
     
-    if (rf_time != 0) RF_N++;
-    
-    if (TriggerTimeFlag < 0){
-      std::cout<<"SetUpNewTrigger() TriggerTimeFlag is < 0 \n";  
-      TriggerTimeFlag = 0;
-    };
+//     if (rf_time != 0) RF_N++;
+//I do not remember  what is for TriggerTimeFlag   
+//     TriggerTimeFlag = DelilaEvent_.Time - pre_event_length;
+//     if (TriggerTimeFlag < 0){
+//       std::cout<<"SetUpNewTrigger() TriggerTimeFlag is < 0 \n";  
+//       TriggerTimeFlag = 0;
+//     };
     
     blIsWindow = true;
     trigger_cnt++;

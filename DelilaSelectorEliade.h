@@ -198,8 +198,7 @@ public :
   TH1F* hBunchFold;
   TH1F* hTimeInBunch;
   TH1F* hEventsPerTrigger;
-  
-  
+
   TH2F* mFoldEnergy;
   
 //   TH1F* hBeamCurrent;
@@ -230,8 +229,10 @@ public :
 
   TH2F* mGammaGammaDC;
 //   TH2F* mGammaGammaCS_DC;
-  
-  TH2F* mEnergyTimeDiff_trigger;
+
+  std::map<int, TH2F*> mEnergyTimeDiff;
+  std::map<int, TH2F*> mEnergyTimeDiffDC;
+//   TH2F* mEnergyTimeDiff_trigger;
   TH2F* mDomainTimeDiff_trigger;
   TH2F* mDomainTimeDiff_bunch;
   
@@ -276,6 +277,8 @@ public :
 //   TH2F* mGammaGammaCS;
   TH2F* mTimeDiff_gg_CS;
   TH1F* hMult_gg_CS;
+  
+  TH1F* hTimeMinusTriggerLaBr;
   
   std::map<std::string, TH1F*> hTheta;
   
@@ -337,6 +340,8 @@ public :
   bool blFineTimeStamp;
   bool blAddBack;
   bool blFold;
+  bool blExtTrigger;
+
   double beta;
 
   //options of the selector
@@ -570,7 +575,7 @@ void DelilaSelectorEliade::Init(TTree *tree)
   
    std::map<std::string, bool> ::iterator it_has_=has_detector.begin();
    for (; it_has_!= has_detector.end();++it_has_){
-       if (has_detector[it_has_->first]) std::cout<< it_has_->first<< "  enabled  \n";
+       if (has_detector[it_has_->first]) std::cout<< it_has_->first<< "\t enabled  \n";
   };
 
   
@@ -590,6 +595,10 @@ void DelilaSelectorEliade::Init(TTree *tree)
   std::cout<<" AddBack option: "<< addBackMode <<" \n";
   std::cout<<" Beta: "<< beta <<" \n";
   
+  
+  if (blExtTrigger) {std::cout<<" External trigger: enabled. Expected to be every "<< rf_time<<" ps" <<"\n";}
+            else cout<<" External trigger: disnabled \n";
+  
   if (addBackMode > 0){
       foutFile->cd();
       addbackTree = new TTree("AddBackEvents","AddBackEvents");
@@ -605,7 +614,7 @@ void DelilaSelectorEliade::Init(TTree *tree)
       addbackTree->Branch("vTime",&vTime);
  };
 
-  std::cout<<" Trigger: ";  
+  std::cout<<" Trigger: \t\t\t";  
 //   if (det_def_trg == -1){std::cout<<" No trigger \n";}
   if (!EVENT_BUILDER){std::cout<<" No trigger \n";}
 //   else if (det_def_trg == 0){std::cout<<" Domain: "<<detector_name[channel_trg]<< "\n";}//I am not sure one should comment, i will see how it goes
@@ -621,13 +630,13 @@ void DelilaSelectorEliade::Init(TTree *tree)
   else if (det_def_trg > 0){std::cout<<" any of "<<" "<<detector_name[det_def_trg]<< " detectors ("<< det_def_trg<<") \n";}
   else {std::cout<<" trigger is not set correctly \n";};
   
-  std::cout<<" TA reference domaim: "<<ref_dom<<" \n";
+  std::cout<<" TA reference domaim: \t\t"<<ref_dom<<" \n";
   
   blCS = false;
   if (coinc_gates.find(15) != coinc_gates.end()){blCS = true;};
   if (coinc_gates.find(35) != coinc_gates.end()){blCS = true;};
-  if (blCS && (has_detector["BGOs"] || has_detector["BGOf"] || has_detector["CsI"] ) ) {std:cout<<" Compton Supression: enabled \n";}
-  else {cout<<" Compton Supression: disabled \n"; blCS = false;};
+  if (blCS && (has_detector["BGOs"] || has_detector["BGOf"] || has_detector["CsI"] ) ) {std:cout<<" Compton Supression: \t \t enabled \n";}
+  else {cout<<" Compton Supression: \t \t disabled \n"; blCS = false;};
   
   
   
@@ -637,23 +646,23 @@ void DelilaSelectorEliade::Init(TTree *tree)
   if (coinc_gates.find(33) != coinc_gates.end() && has_detector["LaBr"]){blGammaGamma = true;};
   if (coinc_gates.find(37) != coinc_gates.end() && has_detector["Elissa"] && has_detector["LaBr"]){blGammaGamma = true;};
   
-  if (blGammaGamma) {cout<<" GammaGamma: enabled \n";}
-  else {cout<<" GammaGamma: disabled \n";};
+  if (blGammaGamma) {cout<<" GammaGamma:\t \t \t enabled \n";}
+  else {cout<<" GammaGamma: \t \t \t disabled \n";};
   
-  if (blTimeAlignement) {cout<<" Time Alignement matrix: enabled \n";}  
+  if (blTimeAlignement) {cout<<" Time Alignement matrix: \t enabled \n";}  
   
   
-  if (blFineTimeStamp){cout<<" Time: TimeStamp\n";} else{cout<<" Time: FineTimeStamp\n";}
+  if (blFineTimeStamp){cout<<" Time: \t\t\t\t FineTimeStamp\n";} else{cout<<" Time: \t\\tt\t TimeStamp\n";}
   
-  if (blFold){cout<<" Fold: enabled\n";} else{cout<<" Fold: disabled\n";}
+  if (blFold){cout<<" Fold: \t\t\t\t enabled\n";} else{cout<<" Fold:\t\t\t\t disabled\n";}
   
   std::cout<<" === Time settings ps === \n";
   std::map<int, Float_t> ::iterator itcc_ = coinc_gates.begin();
   for (; itcc_ != coinc_gates.end(); ++itcc_) {
      std::cout<<" coin_id " << itcc_->first <<" "<< itcc_->second <<" ps \n";
   }
-  std::cout<<" event_length     " << event_length      <<" ps \n";
-  std::cout<<" pre_event_length " << pre_event_length  <<" ps \n";
+  std::cout<<" Event Length  \t\t\t    " << event_length      <<" ps \n";
+  std::cout<<" Pre Event Length \t\t " << pre_event_length  <<" ps \n";
   
   
   std::cout<<" ===                   === \n";

@@ -23,6 +23,7 @@
     int             channel;//ch daq
     UShort_t        CS;//0 - no; 1 - yes
     double          Time;
+    double          TimeBunch;
     double          TimeTrg;
     Float_t         theta;
     Float_t	        phi;
@@ -36,7 +37,7 @@
     UShort_t        coreID;//coreID for ELIADE 
     UShort_t        segmentID;//only for ELIADE
     UShort_t        cloverID;//only for ELIADE
-    DelilaEvent(): domain(-1),channel(-1),fEnergy(-1),CS(0),cs_domain(0),Time(0),trg(0),Amax(0),coincID(0),coreID(0),segmentID(0){};
+    DelilaEvent(): domain(-1),channel(-1),fEnergy(-1),CS(0),cs_domain(0),Time(0),trg(0),Amax(0),coincID(0),coreID(0),segmentID(0),TimeBunch(0),TimeTrg(0){};
  };
 
 
