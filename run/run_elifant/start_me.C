@@ -14,8 +14,8 @@ void start_me(UInt_t AddBAck = 0, int serverID=5, UInt_t first_run=195, UInt_t v
  
  UInt_t vol1 = vol0;  
  UInt_t last_run = first_run;
- string data_path = "/eliadedisks/2022_w39_3MV/root_files";  
- string suffix = "adqws";
+ string data_path = "/data/HOTPDR/root_files";  
+ string suffix = "PuppEx";
  string file_name_prefix = "run";
   
  for(UInt_t run=first_run;run<=last_run;++run){     
