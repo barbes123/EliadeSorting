@@ -17,6 +17,18 @@ https://github.com/barbes123/onlineEliade.git
 # Data folder structure:
 /exp1/root_files 		[for raw root  files]
 /exp1/selector_files 	        [for analysis]
+cp ~/EliadeSorting/run/run_elifant/run_me.sh /exp1/selector_files
+cp ~/EliadeSorting/run/run_elifant/start_me.C /exp1/selector_files
+
+is start_me.C change the path to root_files:  string data_path = "/data/HOTPDR/root_files";
+
+
+ ./run_me.sh 245 245 999 999 will analyze run 245 version 999 (which is full statistic)
+ ./run_me.sh 227 245 999 999 will analyze all runs from 227 up to 245 version 999 (which is full statistic) if file is missing it will skip
+ ./run_me.sh 245 245 0 1 will analyze run 245 version 0 an 1 and will create individual files
+ ./run_me.sh 245  will analyze run 245 version 0 (which is full statistic)
+
+
 3   cp ~/DelilaSorting/run/[routing]/*.* ../exp1/selector_files
     cp ~/DelilaSorting/.rootlogon.C ../exp1/selector_files    
 4. edit ../exp1/selector_files/Delila_selector.C to set data_dir the full path to the data files
