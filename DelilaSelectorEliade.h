@@ -201,6 +201,9 @@ public :
 
   TH2F* mFoldEnergy;
   
+  
+//   TH2F* mCheckBunching;
+  std::map<int, TH2F*> mCheckBunching;
 //   TH1F* hBeamCurrent;
   
   TH1F* hCoincID;
@@ -231,7 +234,9 @@ public :
 //   TH2F* mGammaGammaCS_DC;
 
   std::map<int, TH2F*> mEnergyTimeDiff;
+  std::map<int, TH2F*> mEnergyTimeDiffCS;
   std::map<int, TH2F*> mEnergyTimeDiffDC;
+  std::map<int, TH2F*> mEnergyTimeDiffCS_DC;
 //   TH2F* mEnergyTimeDiff_trigger;
   TH2F* mDomainTimeDiff_trigger;
   TH2F* mDomainTimeDiff_bunch;
@@ -451,7 +456,7 @@ public :
    virtual void TimeAlignementCoincCoinc();//based on pairs det-det coinc
    
    
-   virtual void EventBuilderSimple();
+   virtual void EventBuilderForOliver();
    virtual void EventBuilderPreTrigger();
    virtual void EventBuilder();//many conditions
    virtual bool TriggerDecision();
@@ -488,7 +493,7 @@ public :
    virtual void ViewDeESector();
    virtual void ViewDeERings();
    
-   virtual void cs_simple();
+   virtual void cs_simple(int coin_id);
 
    
 //    virtual void GetNMultiplicity(TH1 *hh, int nn_max = 15);
