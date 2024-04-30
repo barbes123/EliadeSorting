@@ -1,7 +1,7 @@
 #!/bin/bash
 
 runnb=$1
-runnb1=${2:-$runb}
+runnb1=${2:-$runnb}
 volume1=${3:-0}
 volume2=${4:-$volume1}
 nevents=${5:-0}
@@ -20,18 +20,29 @@ echo "ADDBACK       $AddBAck"
 echo "SERVER ID     $server"
 
 
-lut_path="$HOME/onlineEligant/LookUpTables/"
+lut_path="$HOME/onlineAnalysis/LookUpTables/2024_w15_oliver/"
 lut_link="$HOME/EliadeSorting/"
 
-
-lut_file="LUT_ELIGANT_3MV_run21.dat"
-lut_ta=""
-lut_conf="coinc_gates_eligant.dat"
+#lut_file="LUT_ELIFANT_20240409_60Co.dat"
+lut_file="LUT_ELIFANT_20240416_60Co.dat"
+#lut_ta="TimeCalibMaxBin_R10038.dat"
+#lut_ta="LUT_TA_TimeCalibMaxBin_R66.dat"
+#lut_ta="LUT_TA_R71_TimeCalibGaussian.dat"
+#lut_ta="LUT_TA_TimeCalibGaussian_R071_LABR.dat"
+lut_ta="LUT_TA_TimeCalibGaussian_R071_Bunch.dat"
+#lut_ta="LUT_TA_TimeCalibMaxBin_R167_Bunch.dat"
+#lut_ta=""
+#lut_conf="LUT_CONF_SI_TRG.dat"
+lut_conf="LUT_CONF_LaBr_TRG.dat"
 
 unlink "$lut_link""LUT_ELIADE.dat"
 unlink "$lut_link""LUT_ELIADE.json"
 unlink "$lut_link""LUT_TA.dat"
 unlink "$lut_link""LUT_CONF.dat"
+
+if [ "$runnb" -ge "166" ]; then
+	lut_ta="LUT_TA_TimeCalibMaxBin_R167_Bunch.dat"
+fi
       
 ###########################LUT_ELIADE###s#####################
 if [ -z "$lut_file" ]

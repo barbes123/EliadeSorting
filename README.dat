@@ -1,5 +1,7 @@
 #EliadeSelector repository
-https://github.com/barbes123/DelilaSorting.git
+https://github.com/barbes123/EliadeSorting
+
+(to update to the latest verion go to EliadeSorting and git pull)
 
 #LUTs respositories for ELIFANT/ELIGANT-TN/ELIADE
 https://github.com/barbes123/onlineAnalysis.git 
@@ -8,21 +10,66 @@ https://github.com/barbes123/onlineEliade.git
 
 
 # initial EliadeSorting
+- git clone https://github.com/barbes123/EliadeSorting (preferably in home directory)
 - Install nlohmann to alow json support: sudo apt install nlohmann-json3-dev 
+- Add environmental variable: export ELIADE_LUT="$HOME/EliadeSorting" (to .bashrc)
+- Compile the libraries in ~/EliadeSorting/lib (./setup.sh X where X is version of g++, default 17)
+- To compile DelilaSelectorEliade.C (in root shell, .L DelilaSelectorEliade.C+)
 
-1.1 	Put DelilaSorting in $HOME/EliadeSorting
-1.2 	Now threre three independent routings: 
-2   mkdir ../exp1/root_files 		[for raw root  files]
-    mkdir ../exp1/selector_files 	[for analysis]
-3   cp ~/DelilaSorting/run/[routing]/*.* ../exp1/selector_files
-    cp ~/DelilaSorting/.rootlogon.C ../exp1/selector_files    
-4. edit ../exp1/selector_files/Delila_selector.C to set data_dir the full path to the data files
-5. Compile the libraries (only for DelilaSortingElifant). If it complains  
-   cd ~/DelilaSorting/lib
-   ./setup.sh 
-6. add environmental variable: export ELIADE_LUT="$HOME/EliadeSorting"
-7. To start the analysis run: ./run_sorting.sh Addback RUN_NBR V_NBR_FIRST V_NBR_LAST
-	Addback = 0 no addback
-	Addback = 1 addback
+# Data folder structure:
+/exp1/root_files 		[for raw root  files]
+/exp1/selector_files 	        [for analysis]
+cp ~/EliadeSorting/run/run_elifant/run_me.sh /exp1/selector_files
+cp ~/EliadeSorting/run/run_elifant/start_me.C /exp1/selector_files
+cp ~/EliadeSorting/.rootlogon.C ../exp1/selector_files  
+
+in start_me.C change the path to root_files:  string data_path = "/data/HOTPDR/root_files";
+
+ ./run_me.sh 245 245 999 999 will analyze run 245 version 999 (which is full statistic)
+ ./run_me.sh 227 245 999 999 will analyze all runs from 227 up to 245 version 999 (which is full statistic) if file is missing it will skip
+ ./run_me.sh 245 245 0 1 will analyze run 245 version 0 an 1 and will create individual files
+ ./run_me.sh 245  will analyze run 245 version 0 (which is full statistic)
+
+Merging Raw files
+./merge_raw.sh first_run last_run (merge_raw.sh can be found in ~/onlineAnalysis/tools)
+it will produce from files run248_23_PuppEx.root -> run248_999_PuppEx.root (it cointains all stat from all files 248_0 -> 248_xxx)
 
 Enjoy! 
+
+
+LUT_CONF.dat
+#------------------------------------
+#coinc_name coinc_id gate_ps
+#------------------------------------
+#hpge_hpge 	11 	100000    [coinc HPGe vs HPGe, 11 - coincID and 100000 - coinc gate in ps, in our case 100 ns]
+#hpge_seg 	12 	100000 
+#hpge_bgo  	15 	20000     [anti-coinc HPGe vs ACS, 15 - coincID and 20000 - coinc gate in ps, in our case 20 ns]
+#labr_labr 	33 	4000      [coinc LaBr vs LaBr, 33 - coincID and 4000 - coinc gate in ps, in our case 100 ns]
+#labr_bgo  	35 	40000     [anti-coinc LaBr vs ACS, 35 - coincID and 40000 - coinc gate in ps, in our case 40 ns]
+#dee		177     1.5e5       [coinc de-e 177 - coincID and 1.5e5 - coinc gate in ps, in our case 150 ns]
+#labr_hpge 	13 	1.5e5     [coinc HPPGe vs LaBr, 13 - coincID and 1.5e5 - coinc gate in ps, in our case 150 ns]
+#labr_elissa 	37 	1.5e5   [coinc de-e vs LaBr, 37 - coincID and 1.5e5 - coinc gate in ps, in our case 150 ns]
+#labr_elissa 	17 	1.5e5   [coinc de-e vs HPGe, 17 - coincID and 1.5e5 - coinc gate in ps, in our case 150 ns]
+#------------------------------------
+#builder_parameters index value_ps
+#------------------------------------
+trg_det_type	9998	99      [trigger on a detetctor type, any of 99 or 3 or 1; for calibration put -1]
+#trg_domain 	9999 	900    [trigger on domain, inthis case trg_det_type should be -1]
+window_length 	1000 	1.5e5
+pre_window	1002	0
+rf_time	9995    4e5
+#------------------------------------
+#Extra procedures: 1-yes; 0-no
+#------------------------------------
+Time_Alignement 00	1
+reference_dom  9996    900
+UseFineTS	01     1
+Fold		02     0  
+#------------------------------------
+#reaction param
+#------------------------------------
+#beta      	1111 	0.024
+#------------------------------------
+#det_present 9997 1 3 5 7 17 99
+det_present 9997 3 99
+#------------------------------------
