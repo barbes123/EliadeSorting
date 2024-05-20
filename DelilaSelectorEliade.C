@@ -45,15 +45,16 @@ bool blOutTree              = false;
 // bool blTimeAlignement       = true;
 bool blFillAmaxEnergyDom    = false;
 bool blFillSingleSpectra    = true;
-bool blLong                 = true;
+bool blLong                 = false;//for Oliver
 bool blDeeSector            = true;
 bool blDeeRing              = true;
+bool blEliade               = false; //some features valid only for ELIADE
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 bool blIsTrigger            = false; //the SimpleTrigger is open
 bool blIsWindow             = false; //the preTrigger is open
 bool blFirstTrigger         = false;    
 bool blAddTriggerToQueue    = false;
-bool blCheckBunching        = true;
+bool blCheckBunching        = false;//for Oliver;
 // bool blCS                   = false;
 bool debug                  = false;
 bool blDebugElissa          = false;
@@ -1103,15 +1104,15 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                     if (LUT_ELIADE[it_lut_->first].detType == 7){
                         int dee_dom = LUT_ELIADE[it_lut_->first].cs_dom;           
                         mDee_Sector[dee_dom] = new TH2F(Form("mDee_Sector_dom%i",dee_dom), Form("mDee_Sector_dom%i",dee_dom), 4096,0, 8192, 4096, 0,8192);
-                        mDee_Sector[dee_dom] ->GetXaxis()->SetTitle("Energy dE, a.u.");
-                        mDee_Sector[dee_dom] ->GetYaxis()->SetTitle("Energy E, a.u.");
+                        mDee_Sector[dee_dom] ->GetXaxis()->SetTitle("Energy E, a.u.");
+                        mDee_Sector[dee_dom] ->GetYaxis()->SetTitle("Energy dE, a.u.");
                         fOutput->Add(mDee_Sector[dee_dom]);
                     };
                     if (LUT_ELIADE[it_lut_->first].detType == 17){
                         int dee_dom1 = LUT_ELIADE[it_lut_->first].dom;           
                         mDee_Ring[dee_dom1] = new TH2F(Form("mDee_Ring_dom%i",dee_dom1), Form("mDee_Ring_dom%i",dee_dom1),  4096,0, 8192, 4096, 0,8192);
-                        mDee_Ring[dee_dom1] ->GetXaxis()->SetTitle("Energy dE, a.u.");
-                        mDee_Ring[dee_dom1] ->GetYaxis()->SetTitle("Energy E, a.u.");
+                        mDee_Ring[dee_dom1] ->GetXaxis()->SetTitle("Energy E, a.u.");
+                        mDee_Ring[dee_dom1] ->GetYaxis()->SetTitle("Energy dE, a.u.");
                         fOutput->Add(mDee_Ring[dee_dom1]);
                     };
             };
@@ -1120,7 +1121,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             mDee_Sector_TimeDiff ->GetYaxis()->SetTitle("counts");
             fOutput->Add(mDee_Sector_TimeDiff); 
             
-            mDee_Ring_TimeDiff = new TH2F("mDee_Ring_TimeDiff", "mDee_Ring_TimeDiff", 500,499.5,500.5, 5e3, -1e5, 4e5);
+            mDee_Ring_TimeDiff = new TH2F("mDee_Ring_TimeDiff", "mDee_Ring_TimeDiff", 500, 0.5, 499.5, 5e3, -1e5, 4e5);
             mDee_Ring_TimeDiff ->GetXaxis()->SetTitle("time, ps");
             mDee_Ring_TimeDiff ->GetYaxis()->SetTitle("counts");
             fOutput->Add(mDee_Ring_TimeDiff); 
@@ -1128,13 +1129,13 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             
             
             mDee_SectorAll = new TH2F("mDee_SectorAll", "mDee_SectorAll",  4096,0, 8192, 4096, 0,8192);
-            mDee_SectorAll ->GetXaxis()->SetTitle("Energy dE, a.u.");
-            mDee_SectorAll ->GetYaxis()->SetTitle("Energy E, a.u.");
+            mDee_SectorAll ->GetXaxis()->SetTitle("Energy E, a.u.");
+            mDee_SectorAll ->GetYaxis()->SetTitle("Energy dE, a.u.");
             fOutput->Add(mDee_SectorAll);
             
             mDee_RingAll = new TH2F("mDee_RingAll", "mDee_RingAll",  4096,0, 8192, 4096, 0,8192);
-            mDee_RingAll ->GetXaxis()->SetTitle("Energy dE, a.u.");
-            mDee_RingAll ->GetYaxis()->SetTitle("Energy E, a.u.");
+            mDee_RingAll ->GetXaxis()->SetTitle("Energy E, a.u.");
+            mDee_RingAll ->GetYaxis()->SetTitle("Energy dE, a.u.");
             fOutput->Add(mDee_RingAll);
             
             hDee_SectorAll_TimeDiff = new TH1F("hDee_SectorAll_TimeDiff", "hDee_SectorAll_TimeDiff", 10e3, -10e6, 10e6);
@@ -2832,7 +2833,7 @@ void DelilaSelectorEliade::EventBuilderForOliver()
         }else{
             
             if (DelilaEvent_.TimeBunch >=rf_time){
-                if (blCS)                   cs_simple(35);
+                if (blCS)                   cs_in_bunch(35);
                 if (blGammaGamma)           TreatGammaGammaCoinc();
                 if (blFold)                 TreatFold(3);
                 if (blDeeSector)		    ViewDeESector();
@@ -2916,7 +2917,7 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
            if (blDeeSector)		ViewDeESector();
-           //if (blDeeRing)		ViewDeERings();
+           if (blDeeRing)		ViewDeERings();
            if (has_detector["neutron"]) TreatNeutronNeutron();
            
            if (blFillSingleSpectra)     FillSingleSpectra();
@@ -3986,19 +3987,31 @@ void DelilaSelectorEliade::SimpleRun()
 
 void DelilaSelectorEliade::ViewDeESector()
 {
+  
+  std::deque<DelilaEvent>::iterator it_1_= delilaQu.begin();
+  std::deque<DelilaEvent>::iterator it_2_= delilaQu.begin();
   std::deque<DelilaEvent>::iterator it_de_= delilaQu.begin();
   std::deque<DelilaEvent>::iterator it_e_= delilaQu.begin();
+  
+  
+    for (; it_1_!= delilaQu.end();++it_1_){
+        
+      bool bl_dee = false;
+      if ((*it_1_).domain > 116) continue; //not dEs-Es
+      if ((*it_1_).det_def == 17){bl_dee = true; it_de_ = it_1_;}
+      else if ((*it_1_).det_def == 7){it_e_ = it_1_;};
 
-  for (; it_de_!= delilaQu.end();++it_de_){
-//               if ((*it_de_).det_def == 7) std::cout<<"!!!!!!!!!!!!!!!!!!!" << (*it_de_).det_def << " \n";
 
       if ((*it_de_).det_def != 17) continue;
       it_e_ = delilaQu.begin();
-      for (; it_e_  != delilaQu.end();++it_e_){   
-          if ((*it_e_).det_def != 7) continue;
-          if (it_de_ == it_e_) continue;
-          if ((*it_de_).cs_domain != (*it_e_).cs_domain) continue;
-//                              std::cout<<"333 " << (*it_e_).det_def << " \n";
+      
+      for (; it_2_  != delilaQu.end();++it_2_){   
+          if ((*it_2_).det_def > 116)               continue;
+          if ((*it_1_).det_def != (*it_2_).det_def) continue;
+          if ((*it_1_).cs_domain != (*it_2_).cs_domain) continue;
+          
+          if (bl_dee && ((*it_2_).det_def == 7)){it_e_ = it_2_;}
+          else if ((!bl_dee) && ((*it_2_).det_def == 17)){it_de_ = it_2_;}
    
           double time_diff;
           if (blExtTrigger) 
@@ -4007,40 +4020,114 @@ void DelilaSelectorEliade::ViewDeESector()
 //               std::cout<<"1111111111111 \n";
           }else time_diff = abs((*it_de_).Time - (*it_e_).Time);
           
+          mDee_Sector_TimeDiff -> Fill((*it_de_).domain, time_diff);
+          hDee_SectorAll_TimeDiff->Fill(time_diff);
+          
           if (abs(time_diff) > coinc_gates[177]) continue;
           
-          mDee_Sector_TimeDiff -> Fill((*it_de_).domain, time_diff);
-          mDee_Sector[(*it_de_).cs_domain]->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
+//           mDee_Sector[(*it_de_).cs_domain]->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
           mDee_SectorAll->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
-          hDee_SectorAll_TimeDiff->Fill(time_diff);
+          
       }
   }
+  
+  
+  
+
+//   for (; it_de_!= delilaQu.end();++it_de_){
+// //               if ((*it_de_).det_def == 7) std::cout<<"!!!!!!!!!!!!!!!!!!!" << (*it_de_).det_def << " \n";
+// 
+//       if ((*it_de_).det_def != 17) continue;
+//       it_e_ = delilaQu.begin();
+//       for (; it_e_  != delilaQu.end();++it_e_){   
+//           if ((*it_e_).det_def != 7) continue;
+//           if (it_de_ == it_e_) continue;
+//           if ((*it_de_).cs_domain != (*it_e_).cs_domain) continue;
+// //                              std::cout<<"333 " << (*it_e_).det_def << " \n";
+//    
+//           double time_diff;
+//           if (blExtTrigger) 
+//           {
+//               time_diff = abs ((*it_de_).TimeBunch - (*it_e_).TimeBunch);
+// //               std::cout<<"1111111111111 \n";
+//           }else time_diff = abs((*it_de_).Time - (*it_e_).Time);
+//           
+//           mDee_Sector_TimeDiff -> Fill((*it_de_).domain, time_diff);
+//           hDee_SectorAll_TimeDiff->Fill(time_diff);
+//           
+//           if (abs(time_diff) > coinc_gates[177]) continue;
+//           
+//           mDee_Sector[(*it_de_).cs_domain]->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
+//           mDee_SectorAll->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
+//           
+//       }
+//   }
  return;
 }
 
 void DelilaSelectorEliade::ViewDeERings()
 {
+  std::deque<DelilaEvent>::iterator it_1_= delilaQu.begin();
+  std::deque<DelilaEvent>::iterator it_2_= delilaQu.begin();
   std::deque<DelilaEvent>::iterator it_de_= delilaQu.begin();
   std::deque<DelilaEvent>::iterator it_e_= delilaQu.begin();
   
-  for (; it_de_!= delilaQu.end();++it_de_){
-      if ( ((*it_de_).det_def != 17) && ((*it_de_).domain <= 200))continue;//dEi = 200; dEm = 300; dEo = 400
-      it_e_ = delilaQu.begin();
+  
+  for (; it_1_!= delilaQu.end();++it_1_){
       
-      for (; it_e_  != delilaQu.end();++it_e_){   //any if E sector is okay
-          if ((*it_e_).det_def != 7) continue;
-          if ( abs((*it_de_).Time - (*it_e_).Time ) > coinc_gates[177]) continue;
-                         
-          double time_diff = (*it_de_).Time - (*it_e_).Time;
+      if (((*it_1_).det_def != 17) && ((*it_1_).det_def != 7))continue;
+      it_2_ = delilaQu.begin();
+      bool bl_dee = false;
+      if ((*it_1_).det_def == 17){it_de_ = it_1_; bl_dee = true;}
+        else {it_e_ = it_1_;}
+         
+         
+      
+      for (; it_2_  != delilaQu.end();++it_2_){   //any if E sector is okay
+          if (((*it_2_).det_def != 17) && ((*it_2_).det_def != 7))  continue;
+          if ((*it_1_).det_def  == (*it_2_).det_def)                continue;
+
+//           if (bl_dee && ((*it_2_).det_def == 17)                    continue;
+//           if (!bl_dee && ((*it_2_).det_def == 7)                    continue;
           
+          if (bl_dee && ((*it_2_).det_def == 7 )) {it_e_ = it_2_;}
+          else if (!bl_dee && ((*it_2_).det_def == 17 )) {it_de_ = it_2_;}
+          else {std::cout<<"ViewDeERings, problems in de-e contructing \n";};
+          
+          if (it_de_ == it_e_) std::cout<<"ViewDeERings, problems in de-e contructing, de=e \n";
+          
+          double time_diff = (*it_de_).Time - (*it_e_).Time;
           mDee_Ring_TimeDiff -> Fill((*it_de_).domain, time_diff);
-         // mDee_Ring[(*it_de_).domain]->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
-          mDee_Ring[(*it_de_).domain]->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
-          mDee_RingAll->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
           hDee_RingAll_TimeDiff ->Fill(time_diff);
+          
+          
+          if ( abs((*it_de_).Time - (*it_e_).Time ) > coinc_gates[177]) continue;
+//           mDee_Ring[(*it_de_).domain]->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
+          mDee_RingAll->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
+
       }
   }
  return;
+  
+  
+//   for (; it_de_!= delilaQu.end();++it_de_){
+//       if ( ((*it_de_).det_def != 17) && ((*it_de_).domain <= 200))continue;//dEi = 200; dEm = 300; dEo = 400
+//       it_e_ = delilaQu.begin();
+//       
+//       for (; it_e_  != delilaQu.end();++it_e_){   //any if E sector is okay
+//           if ((*it_e_).det_def != 7) continue;
+//           if ( abs((*it_de_).Time - (*it_e_).Time ) > coinc_gates[177]) continue;
+//                          
+//           double time_diff = (*it_de_).Time - (*it_e_).Time;
+//           
+//           mDee_Ring_TimeDiff -> Fill((*it_de_).domain, time_diff);
+//          // mDee_Ring[(*it_de_).domain]->Fill((*it_de_).fEnergy, (*it_e_).fEnergy);
+//           mDee_Ring[(*it_de_).domain]->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
+//           mDee_RingAll->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
+//           hDee_RingAll_TimeDiff ->Fill(time_diff);
+//       }
+//   }
+//  return;
 }
 
 
@@ -4082,7 +4169,7 @@ void DelilaSelectorEliade::EventBuilder()
 // };
 
 
-void DelilaSelectorEliade::cs_simple(int coinc_id)
+void DelilaSelectorEliade::cs_in_bunch(int coinc_id)
 {//see cs(), should work
     if (delilaQu.empty()) return;
     
@@ -4229,8 +4316,64 @@ void DelilaSelectorEliade::cs_simple(int coinc_id)
     
 };
 
+void DelilaSelectorEliade::cs_simple(int coinc_id)
+{//see cs(), should work
+    if (delilaQu.empty()) return;
+    
+   
+    double time_diff_bgo = -1;
+    std::deque<DelilaEvent>  ::iterator it_ev1__ = delilaQu.begin();
+    
+    int current_coinc_id = 0;
+    double time_diff= 0;
+    
+   
+     for (; it_ev1__ != delilaQu.end(); ++it_ev1__){
+         if ((*it_ev1__).Time < 0) continue;
+         if ((*it_ev1__).det_def > 6)   continue; //not bgo (4,5,6) or gamma (1,2,3)
+//          if ((*it_ev1__).CS == 1 )      continue; 
+         std::deque<DelilaEvent>  ::iterator it_ev2__ = delilaQu.begin();
+         
+         bool bgo1 = EventIsBGO((*it_ev1__));
+         
+ //                     std::cout<<"current_coinc_id x "<<current_coinc_id<<"\n";
+ 
+        for (; it_ev2__ != delilaQu.end(); ++it_ev2__){
+             if (it_ev1__ == it_ev2__)                           continue;
+             if ((*it_ev2__).Time < 0)                           continue;
+             if ((*it_ev2__).det_def > 6)                        continue;
+             if ((*it_ev2__).CS == 1)                            continue;              
+             if ((*it_ev1__).det_def == (*it_ev2__).det_def)     continue;
+             if ((*it_ev1__).cs_domain != (*it_ev2__).cs_domain) continue;
+             
+             bool bgo2 = EventIsBGO((*it_ev2__));
+             if ((bgo1 && bgo2) || (!bgo1 && !bgo2)) continue;
+             
+             
+             if ((*it_ev1__).det_def < (*it_ev2__).det_def){current_coinc_id = (*it_ev1__).det_def*10+(*it_ev2__).det_def ;}
+                 else current_coinc_id = (*it_ev2__).det_def*10+(*it_ev1__).det_def;
+// //             std::cout<<"current_coinc_id "<<current_coinc_id<<"\n";
+ 
+             if (current_coinc_id != coinc_id) continue;            
+             
+             
+             time_diff =  ((*it_ev1__).Time - (*it_ev2__).Time);
+             mTimeDiffCS ->Fill((*it_ev1__).cs_domain, time_diff);
+             
+             if (abs(time_diff) < coinc_gates[current_coinc_id]) 
+//                  if ((abs(time_diff) < 250e3) && (abs(time_diff) > 150e3) )
+                 {
+                     if ((*it_ev1__).det_def <= 3) {(*it_ev1__).CS = 1;}
+                        else if ((*it_ev2__).det_def <= 3) (*it_ev2__).CS = 1;
+                 };
+         };
+    };
+};
 
-
+bool DelilaSelectorEliade::EventIsBGO(DelilaEvent ev_)
+{
+    return ((ev_.det_def == 4)||(ev_.det_def == 5)||(ev_.det_def == 6));
+}
 
 
 

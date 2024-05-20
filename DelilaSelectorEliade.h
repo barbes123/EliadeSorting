@@ -494,6 +494,9 @@ public :
    virtual void ViewDeERings();
    
    virtual void cs_simple(int coin_id);
+   virtual void cs_in_bunch(int coin_id);
+   
+   virtual bool EventIsBGO(DelilaEvent ev_);
 
    
 //    virtual void GetNMultiplicity(TH1 *hh, int nn_max = 15);
