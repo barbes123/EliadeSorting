@@ -1200,10 +1200,10 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
       
        if ((itna->first == 37) && has_detector["Elissa"] && has_detector["LaBr"]){
            mGG[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 32767);
-           mGG[itna->first]->GetXaxis()->SetTitle("Elifant, keV"); 
-           mGG[itna->first]->GetYaxis()->SetTitle("Elissa, keV");
-           mGG[itna->first]->GetXaxis()->SetTitle("keV");
-           mGG[itna->first]->GetYaxis()->SetTitle("keV");
+           mGG[itna->first]->GetXaxis()->SetTitle("Elifant (LaBr), keV"); 
+           mGG[itna->first]->GetYaxis()->SetTitle("Elissa (Es), keV");
+//            mGG[itna->first]->GetXaxis()->SetTitle("keV");
+//            mGG[itna->first]->GetYaxis()->SetTitle("keV");
            fOutput->Add(mGG[itna->first]);
            
 //            mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 4e2, -2e6, 2e6);
@@ -4083,7 +4083,7 @@ void DelilaSelectorEliade::ViewDeERings()
   for (; it_de_!= delilaQu.end();++it_de_){
       
       if ((*it_de_).det_def != 17) continue;
-      if ((*it_de_).det_def <= 117) continue;//for sectors is separate proceedure
+      if (((*it_de_).det_def >=100) && ((*it_de_).det_def <= 115)) continue;//for sectors dEs there is separate proceedure
       it_e_ = delilaQu.begin();
       
       for (; it_e_  != delilaQu.end();++it_e_){   //any if E sector is okay
