@@ -4322,7 +4322,7 @@ void DelilaSelectorEliade::cs_simple(int coinc_id)
    
      for (; it_ev1__ != delilaQu.end(); ++it_ev1__){
          if ((*it_ev1__).Time < 0) continue;
-         if ((*it_ev1__).det_def > 6)   continue; //not bgo (4,5,6) or gamma (1,2,3)
+         if ((*it_ev1__).det_def > 3)   continue; //not bgo (4,5,6) or gamma (1,2,3)
 //          if ((*it_ev1__).CS == 1 )      continue; 
          std::deque<DelilaEvent>  ::iterator it_ev2__ = delilaQu.begin();
          
@@ -4333,17 +4333,18 @@ void DelilaSelectorEliade::cs_simple(int coinc_id)
         for (; it_ev2__ != delilaQu.end(); ++it_ev2__){
              if (it_ev1__ == it_ev2__)                           continue;
              if ((*it_ev2__).Time < 0)                           continue;
-             if ((*it_ev2__).det_def > 6)                        continue;
+             if (!EventIsBGO((*it_ev2__)))                        continue;
              if ((*it_ev2__).CS == 1)                            continue;              
              if ((*it_ev1__).det_def == (*it_ev2__).det_def)     continue;
              if ((*it_ev1__).cs_domain != (*it_ev2__).cs_domain) continue;
              
-             bool bgo2 = EventIsBGO((*it_ev2__));
-             if ((bgo1 && bgo2) || (!bgo1 && !bgo2)) continue;
+             //bool bgo2 = EventIsBGO((*it_ev2__));
+             //if ((bgo1 && bgo2) || (!bgo1 && !bgo2)) continue;
              
              
-             if ((*it_ev1__).det_def < (*it_ev2__).det_def){current_coinc_id = (*it_ev1__).det_def*10+(*it_ev2__).det_def ;}
-                 else current_coinc_id = (*it_ev2__).det_def*10+(*it_ev1__).det_def;
+             //if ((*it_ev1__).det_def < (*it_ev2__).det_def){current_coinc_id = (*it_ev1__).det_def*10+(*it_ev2__).det_def ;}
+             //    else current_coinc_id = (*it_ev2__).det_def*10+(*it_ev1__).det_def;
+             current_coinc_id = (*it_ev1__).det_def*10+(*it_ev2__).det_def;
 // //             std::cout<<"current_coinc_id "<<current_coinc_id<<"\n";
  
              if (current_coinc_id != coinc_id) continue;            
