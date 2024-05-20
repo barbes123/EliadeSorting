@@ -335,6 +335,7 @@ public :
   float rf_time;
   bool EVENT_BUILDER;
   std::vector<int> trigger_domains;
+  std::vector<int> trigger_det_defs;
   double TriggerTimeFlag;
   double lastDelilaTime;
   double RF_N;
@@ -626,7 +627,7 @@ void DelilaSelectorEliade::Init(TTree *tree)
 //   if (det_def_trg == -1){std::cout<<" No trigger \n";}
   if (!EVENT_BUILDER){std::cout<<" No trigger \n";}
 //   else if (det_def_trg == 0){std::cout<<" Domain: "<<detector_name[channel_trg]<< "\n";}//I am not sure one should comment, i will see how it goes
-  else if (det_def_trg == 0 && !trigger_domains.empty()){
+  else if (trigger_det_defs.empty() && !trigger_domains.empty()){
             std::cout<<" Domain(s): ";
             std::vector<int> ::iterator it_trg_dom_ = trigger_domains.begin();
             for (;it_trg_dom_!=trigger_domains.end(); ++it_trg_dom_)
@@ -634,9 +635,18 @@ void DelilaSelectorEliade::Init(TTree *tree)
                 std::cout<<*it_trg_dom_<<" "; 
              }
              std::cout<<"\n";
-      }
-  else if (det_def_trg > 0){std::cout<<" any of "<<" "<<detector_name[det_def_trg]<< " detectors ("<< det_def_trg<<") \n";}
-  else {std::cout<<" trigger is not set correctly \n";};
+  }else if (!trigger_det_defs.empty()){
+      
+        std::cout<<" Trigger on Detector Type (s): ";
+            std::vector<int> ::iterator it_trg_dom_ = trigger_det_defs.begin();
+            for (;it_trg_dom_!=trigger_det_defs.end(); ++it_trg_dom_)
+              {
+                std::cout<<*it_trg_dom_<<" "; 
+             }
+             std::cout<<"\n";
+  }
+//   else if (det_def_trg > 0){std::cout<<" any of "<<" "<<detector_name[det_def_trg]<< " detectors ("<< det_def_trg<<") \n";}
+//   else {std::cout<<" trigger is not set correctly \n";};
   
   std::cout<<" TA reference domaim: \t\t"<<ref_dom<<" \n";
   

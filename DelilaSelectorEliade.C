@@ -503,19 +503,28 @@ void DelilaSelectorEliade::Read_Confs() {
               break;
           }
           case 9998:{
-              if (value < 0) EVENT_BUILDER = false;
-              det_def_trg = value/1;              
-              if (det_def_trg == 99) blExtTrigger = true;
-              std::cout<<"trg_det_type "<<det_def_trg<<" \n";
+              if (value < 0) {EVENT_BUILDER = false;trigger_det_defs.push_back(-1);  break;}
+//               if (value == 0) {det_def_trg = 0; break;}
+              if (value/1 == 99) {blExtTrigger = true;trigger_det_defs.push_back(99);break;};
+
+              trigger_det_defs.push_back(value);
+              int next_trigger= -1;
+              
+              while (is >> next_trigger) trigger_det_defs.push_back(next_trigger/1);
+              
+              std::cout<<"Trigger of Detector Types: ";
+              std::vector<int> ::iterator it_trg_ = trigger_det_defs.begin();
+              for (;it_trg_!=trigger_det_defs.end(); ++it_trg_)
+              {
+                 std::cout<<*it_trg_<<" "; 
+              }
+              std::cout<<"\n";
               break;
           }
           case 9999:{
-//                if (det_def_trg > 1) break;
                int number_of_trigger_channels =  value/1;
                channel_trg = value/1;
                int next_trigger_domain = -1;
-//                is >> next_trigger_domain;
-//                std::cout << next_trigger_domain <<" dommmm \n";
                 for (int k = 0; k < number_of_trigger_channels; k++) {
                  if (is >> next_trigger_domain) trigger_domains.push_back(next_trigger_domain/1);
                 };
@@ -2747,23 +2756,30 @@ void DelilaSelectorEliade::TreatSolarLaBrCoinc()
 
 bool DelilaSelectorEliade::TriggerDecision()
 {
-   if (det_def_trg == -1) return false;
-//    if (channel_trg == -1) return false; 
+
    if (debug) std::cout<<" channel_trg "<< channel_trg <<" domain "<<DelilaEvent_.domain <<" det_def "<< DelilaEvent_.det_def<< " \n";
-   if (det_def_trg > 0) return (DelilaEvent_.det_def == det_def_trg/1);
    
-   std::vector<int>::iterator it_trg_ = trigger_domains.begin();
-   bool blTRG = false;
-   for (; it_trg_!=trigger_domains.end(); ++it_trg_){
-     if (DelilaEvent_.domain == *it_trg_){
-         blTRG = true;
-         break;
-     };
-   };
-   return blTRG;
-   
-   
-//    return (DelilaEvent_.domain == channel_trg/1);
+   if (!trigger_det_defs.empty()){
+       std::vector<int>::iterator it_trg_ = trigger_det_defs.begin();
+       bool blTRG = false;
+       for (; it_trg_!=trigger_det_defs.end(); ++it_trg_){
+            if (DelilaEvent_.det_def == *it_trg_){
+                blTRG = true;
+                break;
+            };
+        };
+        return blTRG;
+    } else if (!trigger_domains.empty()){
+        std::vector<int>::iterator it_trg_ = trigger_domains.begin();
+        bool blTRG = false;
+        for (; it_trg_!=trigger_domains.end(); ++it_trg_){
+            if (DelilaEvent_.domain == *it_trg_){
+                blTRG = true;
+                break;
+            };
+        };
+        return blTRG;
+    };
 };
 
 void DelilaSelectorEliade::CheckPreQu()
@@ -3988,37 +4004,30 @@ void DelilaSelectorEliade::SimpleRun()
 void DelilaSelectorEliade::ViewDeESector()
 {
   
-  std::deque<DelilaEvent>::iterator it_1_= delilaQu.begin();
-  std::deque<DelilaEvent>::iterator it_2_= delilaQu.begin();
   std::deque<DelilaEvent>::iterator it_de_= delilaQu.begin();
   std::deque<DelilaEvent>::iterator it_e_= delilaQu.begin();
   
   
-    for (; it_1_!= delilaQu.end();++it_1_){
+    for (; it_de_!= delilaQu.end();++it_de_){
         
       bool bl_dee = false;
-      if ((*it_1_).domain > 116) continue; //not dEs-Es
-      if ((*it_1_).det_def == 17){bl_dee = true; it_de_ = it_1_;}
-      else if ((*it_1_).det_def == 7){it_e_ = it_1_;};
-
-
+      if ((*it_de_).domain > 116)  continue; //not dEs-Es
       if ((*it_de_).det_def != 17) continue;
+
+
       it_e_ = delilaQu.begin();
       
-      for (; it_2_  != delilaQu.end();++it_2_){   
-          if ((*it_2_).det_def > 116)               continue;
-          if ((*it_1_).det_def != (*it_2_).det_def) continue;
-          if ((*it_1_).cs_domain != (*it_2_).cs_domain) continue;
+      for (; it_e_  != delilaQu.end();++it_e_){   
+          if ((*it_e_).det_def > 116) continue;
+          if ((*it_e_).det_def != 7)  continue;
+          if ((*it_de_).cs_domain != (*it_e_).cs_domain) continue;
           
-          if (bl_dee && ((*it_2_).det_def == 7)){it_e_ = it_2_;}
-          else if ((!bl_dee) && ((*it_2_).det_def == 17)){it_de_ = it_2_;}
-   
           double time_diff;
           if (blExtTrigger) 
           {
               time_diff = abs ((*it_de_).TimeBunch - (*it_e_).TimeBunch);
 //               std::cout<<"1111111111111 \n";
-          }else time_diff = abs((*it_de_).Time - (*it_e_).Time);
+          }else time_diff = (*it_de_).Time - (*it_e_).Time;
           
           mDee_Sector_TimeDiff -> Fill((*it_de_).domain, time_diff);
           hDee_SectorAll_TimeDiff->Fill(time_diff);
@@ -4067,41 +4076,24 @@ void DelilaSelectorEliade::ViewDeESector()
 
 void DelilaSelectorEliade::ViewDeERings()
 {
-  std::deque<DelilaEvent>::iterator it_1_= delilaQu.begin();
-  std::deque<DelilaEvent>::iterator it_2_= delilaQu.begin();
   std::deque<DelilaEvent>::iterator it_de_= delilaQu.begin();
   std::deque<DelilaEvent>::iterator it_e_= delilaQu.begin();
   
   
-  for (; it_1_!= delilaQu.end();++it_1_){
+  for (; it_de_!= delilaQu.end();++it_de_){
       
-      if (((*it_1_).det_def != 17) && ((*it_1_).det_def != 7))continue;
-      it_2_ = delilaQu.begin();
-      bool bl_dee = false;
-      if ((*it_1_).det_def == 17){it_de_ = it_1_; bl_dee = true;}
-        else {it_e_ = it_1_;}
-         
-         
+      if ((*it_de_).det_def != 17) continue;
+      if ((*it_de_).det_def <= 117) continue;//for sectors is separate proceedure
+      it_e_ = delilaQu.begin();
       
-      for (; it_2_  != delilaQu.end();++it_2_){   //any if E sector is okay
-          if (((*it_2_).det_def != 17) && ((*it_2_).det_def != 7))  continue;
-          if ((*it_1_).det_def  == (*it_2_).det_def)                continue;
-
-//           if (bl_dee && ((*it_2_).det_def == 17)                    continue;
-//           if (!bl_dee && ((*it_2_).det_def == 7)                    continue;
-          
-          if (bl_dee && ((*it_2_).det_def == 7 )) {it_e_ = it_2_;}
-          else if (!bl_dee && ((*it_2_).det_def == 17 )) {it_de_ = it_2_;}
-          else {std::cout<<"ViewDeERings, problems in de-e contructing \n";};
-          
-          if (it_de_ == it_e_) std::cout<<"ViewDeERings, problems in de-e contructing, de=e \n";
+      for (; it_e_  != delilaQu.end();++it_e_){   //any if E sector is okay
+          if ((*it_e_).det_def != 7)  continue;
           
           double time_diff = (*it_de_).Time - (*it_e_).Time;
           mDee_Ring_TimeDiff -> Fill((*it_de_).domain, time_diff);
           hDee_RingAll_TimeDiff ->Fill(time_diff);
           
-          
-          if ( abs((*it_de_).Time - (*it_e_).Time ) > coinc_gates[177]) continue;
+          if (abs(time_diff) > coinc_gates[177]) continue;
 //           mDee_Ring[(*it_de_).domain]->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
           mDee_RingAll->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
 
