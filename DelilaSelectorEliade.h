@@ -432,6 +432,7 @@ public :
    virtual void  Read_AcsTable();
    virtual void  Read_SeaTable();
    virtual void  Read_ELIADE_JSONLookUpTable();
+   virtual void  Read_CutFile();
    virtual void  Read_TimeAlignment_LookUpTable();
    virtual void  Read_CoincCoinc_TimeAlignment_LookUpTable();
    virtual void  Read_Confs();
@@ -452,12 +453,10 @@ public :
    
    virtual void FillOutputTree();
    virtual void FillSingleSpectra();
-   virtual void TimeAlignementTrigger();
+//    virtual void TimeAlignementTrigger();
    virtual void TimeAlignementInsideEvent();//
    virtual void TimeAlignementCoincCoinc();//based on pairs det-det coinc
    
-   
-   virtual void EventBuilderForOliver();
    virtual void EventBuilderPreTrigger();
    virtual void EventBuilder();//many conditions
    virtual bool TriggerDecision();
@@ -495,10 +494,13 @@ public :
    virtual void ViewDeERings();
    
    virtual void cs_simple(int coin_id);
-   virtual void cs_in_bunch(int coin_id);
    
-   virtual bool EventIsBGO(DelilaEvent ev_);
+//---------For Bunch Veriosn (Oliver)---------
+   virtual void EventBuilderForOliver();
+//    virtual void cs_in_bunch_bunch(int coin_id);
+//--------------------------------------------   
 
+   virtual bool EventIsBGO(DelilaEvent ev_);
    
 //    virtual void GetNMultiplicity(TH1 *hh, int nn_max = 15);
    virtual void GetNMultiplicity();
