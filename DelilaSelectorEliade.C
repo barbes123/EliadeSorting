@@ -506,6 +506,7 @@ void DelilaSelectorEliade::Read_Confs() {
               if (value < 0) {EVENT_BUILDER = false;trigger_det_defs.push_back(-1);  break;}
 //               if (value == 0) {det_def_trg = 0; break;}
               if (value/1 == 99) {blExtTrigger = true;trigger_det_defs.push_back(99);break;};
+              if (value/1 == 999) {det_def_trg = 999 ;break;};
 
               trigger_det_defs.push_back(value);
               int next_trigger= -1;
@@ -2699,15 +2700,12 @@ void DelilaSelectorEliade::TreatElissaSingle()
     
 }
 
-void DelilaSelectorEliade::TreatSolarLaBrCoinc()
-{
-    
-}
-
 bool DelilaSelectorEliade::TriggerDecision()
 {
 
    if (debug) std::cout<<" channel_trg "<< channel_trg <<" domain "<<DelilaEvent_.domain <<" det_def "<< DelilaEvent_.det_def<< " \n";
+   
+   if (det_def_trg == 999) return  true;
    
    if (!trigger_det_defs.empty()){
        std::vector<int>::iterator it_trg_ = trigger_det_defs.begin();
@@ -4133,7 +4131,7 @@ void DelilaSelectorEliade::cs_simple(int coinc_id)
 void DelilaSelectorEliade::Read_CutFile(){
     
     std::cout << "Reading Cut File... " ;
-//     std::map<UInt_t, string>::iterator p_name;
+    
     char* pLUT_Path;
     pLUT_Path = getenv ("ELIADE_LUT");
     if (pLUT_Path!=NULL)
@@ -4150,14 +4148,34 @@ void DelilaSelectorEliade::Read_CutFile(){
         std::cout << "Cut File  found" <<  CUTFile.str().c_str() << std::endl;
     }
     
-    TFile *file_cut_charged = TFile::Open(CUTFile.str().c_str());
+     particle_name_in_cut[1] = "proton";
+     std::map<UInt_t, string>::iterator p_name;
     
+     TFile *file_cut_charged = TFile::Open(CUTFile.str().c_str());
     
-    
-    return;
+     for (p_name = particle_name_in_cut.begin();
+ 	     p_name != particle_name_in_cut.end(); ++p_name) {
+        
+//          TCutG *cut_temp = (TCutG*) file_cut_charged->Get(Form("dom_%i_%s", 999, p_name->second.c_str()));
+//          particle_cut[ p_name->second] = (TCutG*) cut_temp->Clone();
+        
+	  if (debug)
+	    std::cout << std::endl << "Looking for cut name "
+		      << Form("dom_%i_%s", 999,
+			      p_name->second.c_str()) << " ... ";
+	  TCutG *cut_temp = (TCutG*) file_cut_charged->Get(Form("dom_%i_%s", 999, p_name->second.c_str()));
+	  if (cut_temp != 0x0) {
+	    if (debug)
+	      std::cout << " found it :)" << std::endl;
+	      particle_cut[p_name->second.c_str()] = (TCutG*) cut_temp->Clone();
+	      cut_temp->Delete();
+	  }
+ 	}
+
+	return;
 }
 
-#include "TriggerOliver.C"
+#include "src/TriggerOliver.C"
 
 bool DelilaSelectorEliade::EventIsBGO(DelilaEvent ev_)
 {

@@ -480,8 +480,7 @@ public :
    virtual void TreatACS();
    
    virtual void TreatGammaGammaCoinc();
-   virtual void TreatSolarLaBrCoinc();
-   
+  
    virtual void ViewAddBackCoreCore();
    virtual void ViewAddBackCrystal();
    virtual void ViewAddBackDetector();
@@ -489,16 +488,21 @@ public :
 //    virtual void ViewACS();//for cores old
    virtual void ViewACS_cores();//for cores
    virtual void ViewACS_segments(); //for segments
-   
-   virtual void ViewDeESector();
-   virtual void ViewDeERings();
-   
+
    virtual void cs_simple(int coin_id);
    
 //---------For Bunch Veriosn (Oliver)---------
    virtual void EventBuilderForOliver();
 //    virtual void cs_in_bunch_bunch(int coin_id);
 //--------------------------------------------   
+//---------Elissa / Si------------------------   
+   virtual void ViewDeESector();
+   virtual void ViewDeERings();
+   
+   std::map<UInt_t, string>  particle_name_in_cut;
+   std::map<string, TCutG*>  particle_cut ;
+//--------------------------------------------      
+   
 
    virtual bool EventIsBGO(DelilaEvent ev_);
    
@@ -629,6 +633,7 @@ void DelilaSelectorEliade::Init(TTree *tree)
 //   if (det_def_trg == -1){std::cout<<" No trigger \n";}
   if (!EVENT_BUILDER){std::cout<<" No trigger \n";}
 //   else if (det_def_trg == 0){std::cout<<" Domain: "<<detector_name[channel_trg]<< "\n";}//I am not sure one should comment, i will see how it goes
+  else if (det_def_trg == 999) { std::cout<<" Trigger on Any Detector Type(s) \n";}  
   else if (trigger_det_defs.empty() && !trigger_domains.empty()){
             std::cout<<" Domain(s): ";
             std::vector<int> ::iterator it_trg_dom_ = trigger_domains.begin();
