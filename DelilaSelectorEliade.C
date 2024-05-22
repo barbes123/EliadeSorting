@@ -227,6 +227,40 @@ void DelilaSelectorEliade::Read_AddBackTable() {
   }
   lookuptable.close();
   }
+
+  /*Crosstalk_matrix[30][30] = 1.;
+  Crosstalk_matrix[30][31] = 0.000981018;
+  Crosstalk_matrix[30][32] = 0.00242981;
+  Crosstalk_matrix[30][33] = 0.00081721;
+  Crosstalk_matrix[31][30] = 0.00386843;
+  Crosstalk_matrix[31][31] = 1.00001;
+  Crosstalk_matrix[31][32] = 0.00370099;
+  Crosstalk_matrix[31][33] = 0.00370737;
+  Crosstalk_matrix[32][30] = -0.000492519;
+  Crosstalk_matrix[32][31] = -0.000893299;
+  Crosstalk_matrix[32][32] = 0.999995;
+  Crosstalk_matrix[32][33] = -0.000243106;
+  Crosstalk_matrix[33][30] = 0.00203357;
+  Crosstalk_matrix[33][31] = 0.00151502;
+  Crosstalk_matrix[33][32] = 0.00156181;
+  Crosstalk_matrix[33][33] = 1.00001;*/
+  Crosstalk_matrix[30][30] = 1.;
+  Crosstalk_matrix[30][31] = 0.000712152;
+  Crosstalk_matrix[30][32] = 0.00183609;
+  Crosstalk_matrix[30][33] = 0.000503097;
+  Crosstalk_matrix[31][30] = 0.00394351;
+  Crosstalk_matrix[31][31] = 1.;
+  Crosstalk_matrix[31][32] = 0.00355964;
+  Crosstalk_matrix[31][33] = 0.00359332;
+  Crosstalk_matrix[32][30] = -0.000602925;
+  Crosstalk_matrix[32][31] = -0.00088183;
+  Crosstalk_matrix[32][32] = 0.999995;
+  Crosstalk_matrix[32][33] = -0.000593183;
+  Crosstalk_matrix[33][30] = 0.00211839;
+  Crosstalk_matrix[33][31] = 0.00138389;
+  Crosstalk_matrix[33][32] = 0.00162197;
+  Crosstalk_matrix[33][33] = 1.00001;
+
   std::cout << " done" << std::endl;
   //  std::exit(1);
 }
@@ -1609,8 +1643,7 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
    mTimeCalibTriggerCores->SetTitle(Form("TimeDiff domain%i vs domain", channel_trg));
    fOutput->Add(mTimeCalibTriggerCores);
    
-   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e3,-5e5, 5e5);
-   //mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e4,-5e5, 5e5);
+   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e4,-5e5, 5e5);
 //    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 2e3,-5e6, 15e6);
    mTimeCalibInsideEvent->GetXaxis()->SetTitle("domain");
    mTimeCalibInsideEvent->GetYaxis()->SetTitle("ps");
@@ -3483,8 +3516,10 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
          };
         
         std::deque<DelilaEvent>::iterator it3_= CoreQu.begin();
+        std::deque<DelilaEvent>::iterator it4_= CoreQu.begin();
         int nnfold = CoreQu.size();
         double foldsum = 0;
+        double foldE = 0;
         
         if (addback_tree>0){
           vDomain->clear();
@@ -3592,10 +3627,17 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
               } 
               for (; it3_!= CoreQu.end();++it3_){
                 //mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
-                foldsum+= (*it3_).Energy_kev;
+                foldE = 0.;
+                it4_= CoreQu.begin();
+                for (; it4_!= CoreQu.end();++it4_){
+                  foldE += (*it4_).Energy_kev*Crosstalk_matrix[(*it3_).coreID][(*it4_).coreID];
+                }
+                foldsum+= foldE;
+                //foldsum+= (*it3_).Energy_kev;
                 if (addback_tree>0){
                   vDomain->push_back((*it3_).domain);
-                  vEAddback->push_back((*it3_).Energy_kev);
+                  vEAddback->push_back(foldE);
+                  //vEAddback->push_back((*it3_).Energy_kev);
                   vTime->push_back((*it3_).Time);
                 }
               };

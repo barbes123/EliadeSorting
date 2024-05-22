@@ -257,6 +257,7 @@ public :
   std::map<UInt_t, std::string> gg_coinc_id;
   std::map<int, Float_t> coinc_gates;//in ps
   std::map<int, std::map<int, float>> AddBack_distances;
+  std::map<int, std::map<int, float>> Crosstalk_matrix;
   std::map<int, int> acs_distances;
   
   TTree* addbackTree;
