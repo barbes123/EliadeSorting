@@ -801,7 +801,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    fOutput->Add(hTimeDiffPulser);
    
  
-   int n_bins =  4096; double max_value = 16383.5;
+   int n_bins =  4096; double max_value = 16383.5; int kev_bin = 4;
    
    mDelila_raw = new TH2F("mDelila_raw", "mDelila_raw", max_domain, -0.5, max_domain-0.5, n_bins, -0.5, max_value);
    mDelila_raw->GetXaxis()->SetTitle("domain");
@@ -810,7 +810,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    
    mDelila = new TH2F("mDelila", "mDelila", max_domain, -0.5, max_domain-0.5, n_bins, -0.5, max_value);
    mDelila->GetXaxis()->SetTitle("domain");
-   mDelila->GetYaxis()->SetTitle("1 keV/bin ");
+   mDelila->GetYaxis()->SetTitle(Form("%i keV/bin ",kev_bin));
    fOutput->Add(mDelila);
    
    mDelilaDC = new TH2F("mDelilaDC", "mDelilaDC",  max_domain, -0.5, max_domain-0.5, n_bins, -0.5, max_value);
@@ -2482,10 +2482,12 @@ void DelilaSelectorEliade::TreatLaBrSingle()
     
     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
 
-    
-    double costheta = TMath::Cos(LUT_ELIADE[daq_ch].theta);
+    Double_t theta = (180 - LUT_ELIADE[daq_ch].theta) * TMath::DegToRad();
+    Double_t costheta = TMath::Cos(theta);
     if (beta >0) {
         DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
+//         if (LUT_ELIADE[daq_ch].theta == 90)
+//         std::cout<<DelilaEvent_.Energy_kev<<" "<<DelilaEvent_.EnergyDC<<" "<<DelilaEvent_.Energy_kev -DelilaEvent_.EnergyDC<<" "<<LUT_ELIADE[daq_ch].theta<<" "<<costheta<<"\n";
 //         mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
 //         hDelilaDC[DelilaEvent_.det_def]->Fill(DelilaEvent_.EnergyDC); 
 //         if (blLong){mDelilaDC_long ->Fill(domain,DelilaEvent_.EnergyDC);}//do need any more
