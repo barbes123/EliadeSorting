@@ -183,10 +183,10 @@ public :
   
   TH1F* hLaBrElissa;
   
-  std::map<int, TH1F*> hDelila_long;
-  std::map<int, TH1F*> hDelilaCS_long;
-  std::map<int, TH1F*> hDelilaDC_long;
-  std::map<int, TH1F*> hDelilaCS_DC_long;
+//   std::map<int, TH1F*> hDelila_long;
+//   std::map<int, TH1F*> hDelilaCS_long;
+//   std::map<int, TH1F*> hDelilaDC_long;
+//   std::map<int, TH1F*> hDelilaCS_DC_long;
   
   std::map<int, TH1F*> hAddBack;
 
@@ -224,11 +224,11 @@ public :
   TH2F* mDelilaDC;//keV
   TH2F* mDelilaCS_DC;//keV
   
-  TH2F* mDelila_long;
-  TH2F* mDelila_raw_long;
-  TH2F* mDelilaCS_long;
-  TH2F* mDelilaDC_long;//keV
-  TH2F* mDelilaCS_DC_long;//keV
+//   TH2F* mDelila_long;
+//   TH2F* mDelila_raw_long;
+//   TH2F* mDelilaCS_long;
+//   TH2F* mDelilaDC_long;//keV
+//   TH2F* mDelilaCS_DC_long;//keV
 
   TH2F* mGammaGammaDC;
 //   TH2F* mGammaGammaCS_DC;
@@ -445,7 +445,7 @@ public :
    virtual int GetCoincTimeCorrection(int dom1, int dom2);
    virtual void cs();
    
-   virtual void TreatDelilaEvent();
+//    virtual void TreatDelilaEvent();
    virtual void TreatFold(int det); 
    virtual int  GetCoincID(int dom1, int dom2);
    virtual int  GetCoinc_det_def(int det_def1, int det_def2);
