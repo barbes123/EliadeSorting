@@ -54,7 +54,7 @@ bool blIsTrigger            = false; //the SimpleTrigger is open
 bool blIsWindow             = false; //the preTrigger is open
 bool blFirstTrigger         = false;    
 bool blAddTriggerToQueue    = false;
-bool blCheckBunching        = false;//for Oliver;
+bool blCheckBunching        = true;//for Oliver;
 // bool blCS                   = false;
 bool debug                  = false;
 bool blDebugElissa          = false;
@@ -1643,7 +1643,8 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
    mTimeCalibTriggerCores->SetTitle(Form("TimeDiff domain%i vs domain", channel_trg));
    fOutput->Add(mTimeCalibTriggerCores);
    
-   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e4,-5e5, 5e5);
+   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e3,-5e5, 5e5);
+   //mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e4,-5e5, 5e5);
 //    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 2e3,-5e6, 15e6);
    mTimeCalibInsideEvent->GetXaxis()->SetTitle("domain");
    mTimeCalibInsideEvent->GetYaxis()->SetTitle("ps");
@@ -2762,6 +2763,8 @@ bool DelilaSelectorEliade::TriggerDecision()
         };
         return blTRG;
     };
+    std::cout<<"Warning: TriggerDecision returns false because the conditions were strange \n";
+    return false;
 };
 
 void DelilaSelectorEliade::CheckPreQu()
@@ -2816,35 +2819,19 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
     if (blIsWindow){//open
 
        double time_diff_trigger;
-//          std::cout<<" blTimeAlignement  "<<abs(time_diff_trigger)<<"\n";
-
-        //if (abs(time_diff_trigger) > event_length){//close event
-//        if (blTimeAlignement) mTimeCalibInsideEvent->Fill(DelilaEvent_.domain, DelilaEvent_.Time);
-//        std::cout<<"DelilaEvent_.TimeBunch "<<DelilaEvent_.TimeBunch<<" event_length "<< event_length << "\n";
-       
-       bool blCloseCondition = false;
+       bool   blCloseCondition = false;
        
        if (blExtTrigger){
            
            
            if (DelilaEvent_.det_def == external_trigger_det_def)           {blCloseCondition = true; blIsWindow = false;}
-//            else if (blNewBunch_Event_Length && blNewBunch) std::cout<<"DelilaEvent_.TimeBunch "<<DelilaEvent_.TimeBunch<<" event_length "<< event_length << "\n";
-//            else if (blNewBunch_Event_Length && blNewBunch)                {DelilaEvent_.TimeBunch = DelilaEvent_.TimeBunch - rf_time; blCloseCondition = true;}
-           else if (blNewBunch)                                           {blCloseCondition = true;}
-//             else if (blNewBunch_Event_Length)                              {return;}
-           
-           
-           
-//            blCloseCondition = ((DelilaEvent_.TimeBunch > event_length) || ( DelilaEvent_.det_def == 99));
-// // //            blCloseCondition = (blNewBunch || ( DelilaEvent_.det_def == 99));//was this
-//           blCloseCondition = DelilaEvent_.TimeBunch > event_length;
-//            blCloseCondition = (DelilaEvent_.det_def == 99);
+           else if (blNewBunch)                                            {blCloseCondition = true;}
 
        }
        else{
            time_diff_trigger = DelilaEvent_.Time - LastTriggerEvent.Time;
            blCloseCondition = (abs(time_diff_trigger) > event_length);
-           blIsWindow = false;
+           if (blCloseCondition) blIsWindow = false;
        };
        
 
