@@ -801,7 +801,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    fOutput->Add(hTimeDiffPulser);
    
  
-   int n_bins =  16384; double max_value = 16383.5;
+   int n_bins =  4096; double max_value = 16383.5;
    
    mDelila_raw = new TH2F("mDelila_raw", "mDelila_raw", max_domain, -0.5, max_domain-0.5, n_bins, -0.5, max_value);
    mDelila_raw->GetXaxis()->SetTitle("domain");
@@ -2518,12 +2518,12 @@ void DelilaSelectorEliade::TreatHpGeSingle()//clover
     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
 
     double costheta = TMath::Cos(LUT_ELIADE[daq_ch].theta);
-    if (beta >0) 
-    {
-        DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
-        mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
-        hDelilaDC[DelilaEvent_.det_def]->Fill(DelilaEvent_.EnergyDC); 
-    }
+    if (beta >0) DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
+//     {
+//         DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
+//         mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
+//         hDelilaDC[DelilaEvent_.det_def]->Fill(DelilaEvent_.EnergyDC); 
+//     }
     
     mDelila->Fill(domain,DelilaEvent_.Energy_kev);
     hDelila0[DelilaEvent_.det_def]->Fill(DelilaEvent_.Energy_kev); 
@@ -2544,10 +2544,8 @@ void DelilaSelectorEliade::TreatHPGeSegmentSingle()
     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
 
     double costheta = TMath::Cos(LUT_ELIADE[daq_ch].theta);
-    if (beta >0) 
-        { DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
-          mDelilaDC->Fill(domain,DelilaEvent_.EnergyDC);
-        };
+    if (beta >0) DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - beta*beta) * (1 - beta*costheta));
+          
     
     mDelila->Fill(domain,DelilaEvent_.Energy_kev);
     
