@@ -176,6 +176,8 @@ public :
   TH1F* hChannelHitNotDefined; // channels which are not defined in lut
   
   TH1F* hElasticEnergy;//just to check
+  TH1F* hMaskID; //to check
+
 
 
   std::map<int, TH1F*> hDelila0; //before event_builder

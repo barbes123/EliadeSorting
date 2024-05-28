@@ -778,8 +778,13 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    
    hElasticEnergy = new TH1F("hElasticEnergy", "hElasticEnergy", 1e3, 19000, 20000);
    hElasticEnergy->GetXaxis()->SetTitle("counts");
-   hElasticEnergy->GetYaxis()->SetTitle("Energy, 11 keV/bin");   
+   hElasticEnergy->GetYaxis()->SetTitle("Energy, 1 keV/bin");   
    fOutput->Add(hElasticEnergy);
+   
+   hMaskID = new TH1F("hMaskID", "hMaskID", 120, -0.5, 119.5);
+   hMaskID->GetXaxis()->SetTitle("counts");
+   hMaskID->GetYaxis()->SetTitle("MaskID");   
+   fOutput->Add(hMaskID);
     
    hChannelHit = new TH1F("hChannelHit", "hChannelHit",3400,-0.5,3399.5);
    fOutput->Add(hChannelHit);
@@ -3972,7 +3977,7 @@ void DelilaSelectorEliade::ViewDeeEx()
       
 //       if (((*it_de_).det_def != 17) && ((*it_de_).det_def != 7 ((*it_de_).det_def != 7))) continue;
 //       if (((*it_de_).det_def == 3) && ((*it_de_).CS != 0) ) continue;
-      if (((*it1_).domain>=100) && ((*it1_).domain<= 115)) continue;//for sectors dEs there is separate proceedure
+//       if (((*it1_).domain>=100) && ((*it1_).domain<= 115)) continue;//for sectors dEs there is separate proceedure
 
       DelilaEvent ev_tmp = (*it1_);
       ev_tmp.det_def = -999;
@@ -3987,31 +3992,31 @@ void DelilaSelectorEliade::ViewDeeEx()
       
       for (; it2_  != delilaQu.end();++it2_){   //any if E sector is okay
 
-          if (((*it2_).domain>=100) && ((*it2_).domain<= 115)) continue;//for sectors dEs there is separate proceedure
+//           if (((*it2_).domain>=100) && ((*it2_).domain<= 115)) continue;//for sectors dEs there is separate proceedure
           if (AddToMask((*it2_)) > 3) continue; 
  
           
           it3_ = delilaQu.begin();
           for (; it3_  != delilaQu.end();++it3_){   //any if E sector is okay
-//           if (AddToMask((*it3_)) < 0) continue; 
+              AddToMask((*it3_));
 
-          UShort_t maks = vMask[0]*100+vMask[1]*10+vMask[2];
+              UShort_t maks = vMask[0]*100+vMask[1]*10+vMask[2];
           
-           if (mask == 11){//de-e event
-               double time_diff = vMaskEvents[2].Time - vMaskEvents[1].Time;          
-            
-               mDee_Ring_TimeDiff -> Fill(vMaskEvents[2].domain, time_diff);
-               hDee_RingAll_TimeDiff ->Fill(time_diff);
+            if ((mask == 11)||(mask == 111)){//de-e event
+                double time_diff = vMaskEvents[2].Time - vMaskEvents[1].Time;          
                 
-               if (abs(time_diff) > coinc_gates[177]) continue;
-               mDee_Ring[vMaskEvents[2].domain]->Fill(vMaskEvents[1].fEnergy, vMaskEvents[2].fEnergy);
-               mDee_RingAll->Fill(vMaskEvents[1].fEnergy, vMaskEvents[2].fEnergy);
-               
-           };
-           if (mask == 111)
-           {
-            //g-e-de event   
-           }
+                mDee_Ring_TimeDiff -> Fill(vMaskEvents[2].domain, time_diff);
+                hDee_RingAll_TimeDiff ->Fill(time_diff);
+                    
+                if (abs(time_diff) > coinc_gates[177]) continue;
+                mDee_Ring[vMaskEvents[2].domain]->Fill(vMaskEvents[1].fEnergy, vMaskEvents[2].fEnergy);
+                mDee_RingAll->Fill(vMaskEvents[1].fEnergy, vMaskEvents[2].fEnergy);
+                
+            };
+            if (mask == 111)
+            {
+                //g-e-de event   
+            }
       
           /*
             double time_diff;          
