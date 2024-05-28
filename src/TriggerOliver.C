@@ -122,3 +122,43 @@ void DelilaSelectorEliade::FillSpectraForOliver(DelilaEvent event)
 //          };
 //     };
 // };
+
+
+UShort_t DelilaSelectorEliade::AddToMask(DelilaEvent ev)
+{
+      
+    vMask[0] = 0;
+    vMask[1] = 0;
+    vMask[2] = 0;
+    
+    UShort_t id = 10;
+     
+    switch (ev.det_def){
+          case 3:
+          {
+                id = 0;
+                break;
+          }
+          case 7:
+          {
+                id = 1;  
+                break;
+          }
+          case 17:
+          {
+              id = 2;  
+              break;
+          }
+          default:
+          {
+              break;
+            }
+      };
+      
+      if (id <3){
+          vMaskEvents[id] = ev;
+          vMask[id] = 1;
+      }
+     return id;
+}
+

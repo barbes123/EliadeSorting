@@ -245,6 +245,9 @@ public :
   TH2F* mDomainTimeDiff_trigger;
   TH2F* mDomainTimeDiff_bunch;
   
+  std::map<int, TH2F*> mGGEx; //for Asli
+
+  
   std::map<int, TH2F*> mGG;
   std::map<int, TH2F*> mGG_AddBack;
   std::map<int, TH2F*> mGG_theta;
@@ -504,7 +507,11 @@ public :
 //---------Elissa / Si------------------------   
    virtual void ViewDeESector();
    virtual void ViewDeERings();
-   
+   virtual void ViewDeeEx();
+   std::vector<DelilaEvent> vMaskEvents;
+   std::vector<UShort_t> vMask;
+   virtual UShort_t AddToMask(DelilaEvent ev);
+
    std::map<UInt_t, string>  particle_name_in_cut;
    std::map<string, TCutG*>  particle_cut ;
 //--------------------------------------------      

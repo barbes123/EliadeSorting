@@ -776,9 +776,9 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    hTimeZero->GetYaxis()->SetTitle("counts");   
    fOutput->Add(hTimeZero);
    
-   hElasticEnergy = new TH1F("hElasticEnergy", "EhElasticEnergy", 2e3, -0, 2e4);
+   hElasticEnergy = new TH1F("hElasticEnergy", "hElasticEnergy", 1e3, 19000, 20000);
    hElasticEnergy->GetXaxis()->SetTitle("counts");
-   hElasticEnergy->GetYaxis()->SetTitle("Energy, 10 keV/bin");   
+   hElasticEnergy->GetYaxis()->SetTitle("Energy, 11 keV/bin");   
    fOutput->Add(hElasticEnergy);
     
    hChannelHit = new TH1F("hChannelHit", "hChannelHit",3400,-0.5,3399.5);
@@ -1175,6 +1175,12 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 //            mGG[itna->first]->GetXaxis()->SetTitle("keV");
 //            mGG[itna->first]->GetYaxis()->SetTitle("keV");
            fOutput->Add(mGG[itna->first]);
+           
+           
+           mGGEx[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 32767);
+           mGGEx[itna->first]->GetXaxis()->SetTitle("Elifant (LaBr), keV"); 
+           mGGEx[itna->first]->GetYaxis()->SetTitle("Ex (Eel -(dE+E) , keV");
+           fOutput->Add(mGGEx[itna->first]);
            
 //            mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 4e2, -2e6, 2e6);
 // 20240413           mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 100e2, -1e8, 9e8);
@@ -1736,6 +1742,9 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
     delilaQu.clear();
     
     blFirst_event = false;
+    vMask.push_back(0);
+    vMask.push_back(0);
+    vMask.push_back(0);
     
 
  
@@ -2758,7 +2767,7 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
            if (blDeeSector)		ViewDeESector();
-           if (blDeeRing)		ViewDeERings();
+           if (blDeeRing)		ViewDeeEx();// ViewDeERings();
            if (has_detector["neutron"]) TreatNeutronNeutron();
            
            if (blFillSingleSpectra)     FillSingleSpectra();
@@ -3950,6 +3959,77 @@ void DelilaSelectorEliade::ViewDeERings()
 //   }
 //  return;
 }
+
+void DelilaSelectorEliade::ViewDeeEx()
+{
+  std::deque<DelilaEvent>::iterator it1_= delilaQu.begin();
+  std::deque<DelilaEvent>::iterator it2_= delilaQu.begin();
+  std::deque<DelilaEvent>::iterator it3_= delilaQu.begin();
+//   std::deque<DelilaEvent>::iterator it_temp_= delilaQu.begin();
+
+  
+  for (; it1_!= delilaQu.end();++it1_){
+      
+//       if (((*it_de_).det_def != 17) && ((*it_de_).det_def != 7 ((*it_de_).det_def != 7))) continue;
+//       if (((*it_de_).det_def == 3) && ((*it_de_).CS != 0) ) continue;
+      if (((*it1_).domain>=100) && ((*it1_).domain<= 115)) continue;//for sectors dEs there is separate proceedure
+
+      DelilaEvent ev_tmp = (*it1_);
+      ev_tmp.det_def = -999;
+      
+      vMaskEvents = {ev_tmp,ev_tmp,ev_tmp};
+      
+      UShort_t mask = 0;
+      if (AddToMask((*it1_)) > 3) continue; 
+      
+      
+      it2_ = delilaQu.begin();
+      
+      for (; it2_  != delilaQu.end();++it2_){   //any if E sector is okay
+
+          if (((*it2_).domain>=100) && ((*it2_).domain<= 115)) continue;//for sectors dEs there is separate proceedure
+          if (AddToMask((*it2_)) > 3) continue; 
+ 
+          
+          it3_ = delilaQu.begin();
+          for (; it3_  != delilaQu.end();++it3_){   //any if E sector is okay
+//           if (AddToMask((*it3_)) < 0) continue; 
+
+          UShort_t maks = vMask[0]*100+vMask[1]*10+vMask[2];
+          
+           if (mask == 11){//de-e event
+               double time_diff = vMaskEvents[2].Time - vMaskEvents[1].Time;          
+            
+               mDee_Ring_TimeDiff -> Fill(vMaskEvents[2].domain, time_diff);
+               hDee_RingAll_TimeDiff ->Fill(time_diff);
+                
+               if (abs(time_diff) > coinc_gates[177]) continue;
+               mDee_Ring[vMaskEvents[2].domain]->Fill(vMaskEvents[1].fEnergy, vMaskEvents[2].fEnergy);
+               mDee_RingAll->Fill(vMaskEvents[1].fEnergy, vMaskEvents[2].fEnergy);
+               
+           };
+           if (mask == 111)
+           {
+            //g-e-de event   
+           }
+      
+          /*
+            double time_diff;          
+            
+            mDee_Ring_TimeDiff -> Fill((*it_de_).domain, time_diff);
+            hDee_RingAll_TimeDiff ->Fill(time_diff);
+            
+            if (abs(time_diff) > coinc_gates[177]) continue;
+            mDee_Ring[(*it_de_).domain]->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
+            mDee_RingAll->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);*/
+          };
+
+      }
+  }
+ return;
+  
+ 
+};
 
 
 void DelilaSelectorEliade::EventBuilder()
