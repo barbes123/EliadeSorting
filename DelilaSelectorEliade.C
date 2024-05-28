@@ -3984,7 +3984,6 @@ void DelilaSelectorEliade::ViewDeeEx()
       
       vMaskEvents = {ev_tmp,ev_tmp,ev_tmp};
       
-      UShort_t mask = 0;
       if (AddToMask((*it1_)) > 3) continue; 
       
       
@@ -4000,9 +3999,10 @@ void DelilaSelectorEliade::ViewDeeEx()
           for (; it3_  != delilaQu.end();++it3_){   //any if E sector is okay
               AddToMask((*it3_));
 
-              UShort_t maks = vMask[0]*100+vMask[1]*10+vMask[2];
+            UShort_t maskID = vMask[0]*100+vMask[1]*10+vMask[2];
+            hMaskID->Fill(maskID);
           
-            if ((mask == 11)||(mask == 111)){//de-e event
+            if ((maskID == 11)||(maskID == 111)){//de-e event
                 double time_diff = vMaskEvents[2].Time - vMaskEvents[1].Time;          
                 
                 mDee_Ring_TimeDiff -> Fill(vMaskEvents[2].domain, time_diff);
@@ -4013,7 +4013,7 @@ void DelilaSelectorEliade::ViewDeeEx()
                 mDee_RingAll->Fill(vMaskEvents[1].fEnergy, vMaskEvents[2].fEnergy);
                 
             };
-            if (mask == 111)
+            if (maskID == 111)
             {
                 //g-e-de event   
             }
