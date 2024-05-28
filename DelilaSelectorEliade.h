@@ -103,6 +103,7 @@ public :
     Int_t	 pol_order;
     Int_t    cs_dom;
     int      enable;
+    float    ElasticEnergy; 
     std::vector<float> calibE;
     TDelilaDetector(): dom(-1),phi(-1),theta(-1),TimeOffset(0),calibE(0),threshold(-1),ch(-1),pol_order(-1),enable(1){};
  };
@@ -173,6 +174,9 @@ public :
   TH1F* hSegmentHit;
   TH1F* hDetTypeHit;
   TH1F* hChannelHitNotDefined; // channels which are not defined in lut
+  
+  TH1F* hElasticEnergy;//just to check
+
 
   std::map<int, TH1F*> hDelila0; //before event_builder
   std::map<int, TH1F*> hDelila_single; //after event builder
@@ -494,6 +498,7 @@ public :
    
 //---------For Bunch Veriosn (Oliver)---------
    virtual void EventBuilderForOliver();
+   virtual void FillSpectraForOliver(DelilaEvent event);
 //    virtual void cs_in_bunch_bunch(int coin_id);
 //--------------------------------------------   
 //---------Elissa / Si------------------------   

@@ -53,6 +53,26 @@ void DelilaSelectorEliade::EventBuilderForOliver()
 }
 
 
+void DelilaSelectorEliade::FillSpectraForOliver(DelilaEvent event)
+{
+    if (event.det_def == 5) {
+        mEnergyTimeDiff[event.det_def]->Fill(DelilaEvent_.Energy_kev, DelilaEvent_.TimeBunch);
+        return;
+    };
+    
+    if (event.det_def == 3){
+        mEnergyTimeDiff[event.det_def]->Fill(DelilaEvent_.Energy_kev, DelilaEvent_.TimeBunch);
+        if (event.CS == 0 )mEnergyTimeDiffCS[event.det_def]->Fill(DelilaEvent_.Energy_kev, DelilaEvent_.TimeBunch);
+        if (beta > 0) {
+            mEnergyTimeDiffDC[event.det_def]->Fill(DelilaEvent_.EnergyDC, DelilaEvent_.TimeBunch);
+            if (event.CS == 0 )mEnergyTimeDiffCS_DC[event.det_def]->Fill(DelilaEvent_.EnergyDC, DelilaEvent_.TimeBunch);
+        };
+     };    
+    return;
+        
+    
+}
+
 // void DelilaSelectorEliade::cs_in_bunch(int coinc_id)//for Oliver
 // {
 //     if (delilaQu.empty()) return;
