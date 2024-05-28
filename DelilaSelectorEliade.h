@@ -105,7 +105,7 @@ public :
     int      enable;
     float    ElasticEnergy; 
     std::vector<float> calibE;
-    TDelilaDetector(): dom(-1),phi(-1),theta(-1),TimeOffset(0),calibE(0),threshold(-1),ch(-1),pol_order(-1),enable(1){};
+    TDelilaDetector(): dom(-1),phi(-1),theta(-1),TimeOffset(0),calibE(0),threshold(-1),ch(-1),pol_order(-1),enable(1),ElasticEnergy(0){};
  };
  
 //   DelilaEvent     delila_tree_event;
@@ -248,6 +248,8 @@ public :
   TH2F* mDomainTimeDiff_bunch;
   
   std::map<int, TH2F*> mGGEx; //for Asli
+  std::map<int, TH2F*> mGGEx_time_diff; //for Asli
+
 
   
   std::map<int, TH2F*> mGG;

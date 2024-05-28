@@ -1173,19 +1173,13 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 
   for(;itna!=gg_coinc_id.end();++itna){
       
-       if ((itna->first == 37) && has_detector["Elissa"] && has_detector["LaBr"]){
+       if (((itna->first == 37)||(itna->first == 1773)) && has_detector["Elissa"] && has_detector["LaBr"]){
            mGG[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 32767);
            mGG[itna->first]->GetXaxis()->SetTitle("Elifant (LaBr), keV"); 
            mGG[itna->first]->GetYaxis()->SetTitle("Elissa (Es), keV");
 //            mGG[itna->first]->GetXaxis()->SetTitle("keV");
 //            mGG[itna->first]->GetYaxis()->SetTitle("keV");
            fOutput->Add(mGG[itna->first]);
-           
-           
-           mGGEx[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 32767);
-           mGGEx[itna->first]->GetXaxis()->SetTitle("Elifant (LaBr), keV"); 
-           mGGEx[itna->first]->GetYaxis()->SetTitle("Ex (Eel -(dE+E) , keV");
-           fOutput->Add(mGGEx[itna->first]);
            
 //            mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 4e2, -2e6, 2e6);
 // 20240413           mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 100e2, -1e8, 9e8);
@@ -1196,6 +1190,18 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
            hMult[itna->first]->GetXaxis()->SetTitle("Multiplicity");
            hMult[itna->first]->GetYaxis()->SetTitle("Counts");
            fOutput->Add(hMult[itna->first]);
+           
+           
+              
+           mGGEx[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 32767);
+           mGGEx[itna->first]->GetXaxis()->SetTitle("Elifant (LaBr), keV"); 
+           mGGEx[itna->first]->GetYaxis()->SetTitle("Ex (Eel -(dE+E) , keV");
+           fOutput->Add(mGGEx[itna->first]);
+           
+           mGGEx_time_diff[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), max_domain, -0.5, max_domain-0.5, 5e3, -1e5, 4e5);
+           mGGEx_time_diff[itna->first]->GetXaxis()->SetTitle("TimeDiff dE/E-LaBr, ps"); 
+           mGGEx_time_diff[itna->first]->GetYaxis()->SetTitle("counts");
+           fOutput->Add(mGGEx_time_diff[itna->first]);
 
            std::cout<<Form("%s",itna->second.c_str())           <<" Initialized \n";
            std::cout<<Form("%s_time_diff",itna->second.c_str()) <<" Initialized \n";
@@ -1850,6 +1856,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
     DelilaEvent_.cs_domain = LUT_ELIADE[daq_ch].cs_dom;
     DelilaEvent_.theta= LUT_ELIADE[daq_ch].theta;
     DelilaEvent_.phi= LUT_ELIADE[daq_ch].phi;
+    DelilaEvent_.ElasticEnergy = LUT_ELIADE[daq_ch].ElasticEnergy;
     
     
     hDomainHit->Fill(domain);
@@ -4011,11 +4018,15 @@ void DelilaSelectorEliade::ViewDeeEx()
                 if (abs(time_diff) > coinc_gates[177]) continue;
                 mDee_Ring[vMaskEvents[2].domain]->Fill(vMaskEvents[1].fEnergy, vMaskEvents[2].fEnergy);
                 mDee_RingAll->Fill(vMaskEvents[1].fEnergy, vMaskEvents[2].fEnergy);
-                
             };
             if (maskID == 111)
             {
                 //g-e-de event   
+                double time_diff = vMaskEvents[2].Time - vMaskEvents[0].Time;    //de_t - g_t      
+                mGGEx_time_diff[1773] -> Fill(vMaskEvents[2].domain, time_diff);
+                    
+                if (abs(time_diff) > coinc_gates[1773]) continue; //de-e-LaBr
+                mGGEx[1773]->Fill(vMaskEvents[0].Energy_kev, (vMaskEvents[2].ElasticEnergy -  vMaskEvents[1].Energy_kev - vMaskEvents[2].Energy_kev));//e,de
             }
       
           /*
