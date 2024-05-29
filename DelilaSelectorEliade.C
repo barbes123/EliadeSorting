@@ -112,7 +112,7 @@ void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
       if (debug) std::cout << is.str().c_str() << std::endl;
 //       is >> curDet.ch >> curDet.dom >> curDet.theta >> curDet.phi >> curDet.TimeOffset >> curDet.threshold;
       is >> curDet.ch >> curDet.dom >> curDet.detType >> curDet.serial >> curDet.time_offset>> curDet.theta >> curDet.phi >> curDet.threshold >> curDet.cs_dom >> curDet.ElasticEnergy;
-      std::cout<<" curDfalseet.ch  "<<curDet.ch <<" curDet.TimeOffset " <<curDet.TimeOffset<<" curDet.ElasticEnerg "<<curDet.ElasticEnergy<<std::endl;
+//       std::cout<<" curDfalseet.ch  "<<curDet.ch <<" curDet.TimeOffset " <<curDet.TimeOffset<<" curDet.ElasticEnerg "<<curDet.ElasticEnergy<<std::endl;
       
       if (curDet.ch >= 0) {
 //           curDet.theta *= TMath::DegToRad();
@@ -2779,7 +2779,7 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
            if (blDeeSector)		ViewDeESector();
-           if (blDeeRing)		ViewDeeEx();// ViewDeERings();
+           if (blDeeRing)		ViewDeERings(); //ViewDeeEx();
            if (has_detector["neutron"]) TreatNeutronNeutron();
            
            if (blFillSingleSpectra)     FillSingleSpectra();
@@ -4004,7 +4004,7 @@ void DelilaSelectorEliade::ViewDeeEx()
           
           it3_ = delilaQu.begin();
           for (; it3_  != delilaQu.end();++it3_){   //any if E sector is okay
-              AddToMask((*it3_));
+            AddToMask((*it3_));
 
             UShort_t maskID = vMask[0]*100+vMask[1]*10+vMask[2];
             hMaskID->Fill(maskID);
