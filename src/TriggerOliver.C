@@ -56,22 +56,50 @@ void DelilaSelectorEliade::EventBuilderForOliver()
 void DelilaSelectorEliade::FillSpectraForOliver(DelilaEvent event)
 {
     if (event.det_def == 5) {
-        mEnergyTimeDiff[event.det_def]->Fill(DelilaEvent_.Energy_kev, DelilaEvent_.TimeBunch);
+        mEnergyTimeDiff[event.det_def]->Fill(event.Energy_kev, event.TimeBunch);
         return;
     };
     
     if (event.det_def == 3){
-        mEnergyTimeDiff[event.det_def]->Fill(DelilaEvent_.Energy_kev, DelilaEvent_.TimeBunch);
-        if (event.CS == 0 )mEnergyTimeDiffCS[event.det_def]->Fill(DelilaEvent_.Energy_kev, DelilaEvent_.TimeBunch);
+        mEnergyTimeDiff[event.det_def]->Fill(event.Energy_kev, event.TimeBunch);
+        if ((event.CS == 0 && blCS)){
+            mEnergyTimeDiffCS[event.det_def]->Fill(event.Energy_kev, event.TimeBunch);
+            mDelilaCS->Fill(event.domain, event.Energy_kev);
+            hDelilaCS[event.det_def]->Fill(event.Energy_kev);
+        }
         if (beta > 0) {
-            mEnergyTimeDiffDC[event.det_def]->Fill(DelilaEvent_.EnergyDC, DelilaEvent_.TimeBunch);
-            if (event.CS == 0 )mEnergyTimeDiffCS_DC[event.det_def]->Fill(DelilaEvent_.EnergyDC, DelilaEvent_.TimeBunch);
+            mEnergyTimeDiffDC[event.det_def]->Fill(event.EnergyDC, event.TimeBunch);
+            mDelilaDC->Fill(event.domain, event.EnergyDC); 
+            hDelilaDC[event.det_def]->Fill(event.EnergyDC);
+            if ((event.CS == 0 ) && blCS){
+                mEnergyTimeDiffCS_DC[event.det_def]->Fill(event.EnergyDC, event.TimeBunch);
+                mDelilaCS_DC->Fill(event.domain, event.EnergyDC);
+                hDelilaCS_DC[event.det_def]->Fill(event.EnergyDC);
+            };
         };
      };    
     return;
-        
-    
 }
+
+void DelilaSelectorEliade::FillSpectraForElifant(DelilaEvent event)
+{
+    if ((event.det_def == 1)|| (event.det_def == 3)) {
+        if ((event.CS == 0) && blCS)  {
+            mDelilaCS->Fill(event.domain, event.Energy_kev);
+            hDelilaCS[event.det_def]->Fill(event.Energy_kev);
+        };
+        if (beta > 0) {
+            mDelilaDC->Fill(event.domain, event.EnergyDC); 
+            hDelilaDC[event.det_def]->Fill(event.EnergyDC);
+            if ((event.CS == 0) && blCS)  {
+                mDelilaCS_DC->Fill(event.domain, event.EnergyDC);
+                hDelilaCS_DC[event.det_def]->Fill(event.EnergyDC);
+            };
+        };
+         };  
+    return;
+}
+
 
 // void DelilaSelectorEliade::cs_in_bunch(int coinc_id)//for Oliver
 // {

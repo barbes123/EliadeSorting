@@ -60,6 +60,8 @@ bool debug                  = false;
 bool blDebugElissa          = false;
 bool blLUT_ELIADE           = false;
 bool blLUT_TA               = false; //if tru read TA from LUT_TA file
+bool blExpIsEliade          = true;
+bool blExpIsElifant         = false;
 
 ULong64_t trigger_cnt = 0;
 // ULong64_t trigger_events = 0;
@@ -119,7 +121,7 @@ void DelilaSelectorEliade::Read_ELIADE_LookUpTable() {
 //           curDet.phi *= TMath::DegToRad();
 	int pol_order = 0;
  	float offset_gate(0.),slope_gate(1.);
-    is >> offset_gate;
+//     is >> offset_gate;
 	is >> pol_order;
 	curDet.pol_order = pol_order;
     if (debug) std::cout << "Cal order " << pol_order << "  ";
@@ -402,7 +404,9 @@ void DelilaSelectorEliade::Read_Confs() {
 
       std::istringstream is(oneline);
       TString coinc_name;
+      TString expName;
       int coinc_id = 0; Float_t value = 0;
+
       is >> coinc_name>> coinc_id >> value;
 
       switch (coinc_id){
@@ -419,6 +423,21 @@ void DelilaSelectorEliade::Read_Confs() {
           case 2:
           {
               blFold = (value == 1);
+              break;
+          }      
+          case 3:
+          {
+//               blFold = (value == 1);
+              std::cout<<"expName "<<coinc_name<<"\n";
+              if (coinc_name.Contains("ELIADE")){
+                  blExpIsEliade = true;
+                  blExpIsElifant = false;                  
+                  std::cout<<"The experiment is set to ELIADE \n";
+              }else if (coinc_name.Contains("ELIFANT")){
+                  blExpIsEliade = false;
+                  blExpIsElifant = true;                  
+                  std::cout<<"The experiment is set to ELIFANT \n";
+              }
               break;
           }      
           case 1000: {
@@ -892,6 +911,11 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         mEliade_raw->GetYaxis()->SetTitle("a.u.");
         fOutput->Add(mEliade_raw);
         
+        mSingleCore = new TH2F("mSingleCore", "mSingleCore", 20, -0.5, 19.5, 4096, -0.5, 16383.5);
+        mSingleCore->GetXaxis()->SetTitle("CORE ID");
+        mSingleCore->GetYaxis()->SetTitle("keV");
+        fOutput->Add(mSingleCore);
+        
         if (ListOfCores.empty()) std::cout<<"ListOfCores is empty \n";
         std::vector<int > ::iterator it2_coreid_ = ListOfCores.begin();
         for (; it2_coreid_ != ListOfCores.end(); ++it2_coreid_) {
@@ -1010,18 +1034,15 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             fOutput->Add(mTimeDiffCoreCore[*it2_coreid_]);*/
             
 //             std::cout<<" core ID "<<*it2_coreid_<<" ACS hists Initialized \n";  
-       };
-       
+              
             mSingleCoreCS = new TH2F("mSingleCoreCS", "mSingleCoreCS", 20, -0.5, 19.5, 4096, -0.5, 16383.5);
             mSingleCoreCS->GetXaxis()->SetTitle("CORE ID");
             mSingleCoreCS->GetYaxis()->SetTitle("keV");
             fOutput->Add(mSingleCoreCS);
             
-            mSingleCore = new TH2F("mSingleCore", "mSingleCore", 20, -0.5, 19.5, 4096, -0.5, 16383.5);
-            mSingleCore->GetXaxis()->SetTitle("CORE ID");
-            mSingleCore->GetYaxis()->SetTitle("keV");
-            fOutput->Add(mSingleCore);
+     };
             
+               
             std::map<int, TDelilaDetector > ::iterator it_lut1_ = LUT_ELIADE.begin();
         
             for (; it_lut1_ != LUT_ELIADE.end(); ++it_lut1_) {
@@ -1193,15 +1214,15 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
            
            
               
-           mGGEx[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 32767);
-           mGGEx[itna->first]->GetXaxis()->SetTitle("Elifant (LaBr), keV"); 
-           mGGEx[itna->first]->GetYaxis()->SetTitle("Ex (Eel -(dE+E) , keV");
-           fOutput->Add(mGGEx[itna->first]);
-           
-           mGGEx_time_diff[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), max_domain, -0.5, max_domain-0.5, 5e3, -1e5, 4e5);
-           mGGEx_time_diff[itna->first]->GetXaxis()->SetTitle("TimeDiff dE/E-LaBr, ps"); 
-           mGGEx_time_diff[itna->first]->GetYaxis()->SetTitle("counts");
-           fOutput->Add(mGGEx_time_diff[itna->first]);
+//            mGGEx[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 32767);
+//            mGGEx[itna->first]->GetXaxis()->SetTitle("Elifant (LaBr), keV"); 
+//            mGGEx[itna->first]->GetYaxis()->SetTitle("Ex (Eel -(dE+E) , keV");
+//            fOutput->Add(mGGEx[itna->first]);
+//            
+//            mGGEx_time_diff[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), max_domain, -0.5, max_domain-0.5, 5e3, -1e5, 4e5);
+//            mGGEx_time_diff[itna->first]->GetXaxis()->SetTitle("TimeDiff dE/E-LaBr, ps"); 
+//            mGGEx_time_diff[itna->first]->GetYaxis()->SetTitle("counts");
+//            fOutput->Add(mGGEx_time_diff[itna->first]);
 
            std::cout<<Form("%s",itna->second.c_str())           <<" Initialized \n";
            std::cout<<Form("%s_time_diff",itna->second.c_str()) <<" Initialized \n";
@@ -2775,11 +2796,11 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
 //           if (blAddBack)               ViewAddBackDetector();//for segments
 //            if (blAddBack)               ViewAddBackDetectorCS();
 //            if (blAddBack)               ViewAddBackCrystal();
-            if (blAddBack)               ViewAddBackCoreCore();
+//             if (blAddBack)               ViewAddBackCoreCore();
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
-           if (blDeeSector)		ViewDeESector();
-           if (blDeeRing)		ViewDeERings(); //ViewDeeEx();
+//            if (blDeeSector)		ViewDeESector();
+//            if (blDeeRing)		ViewDeERings(); //ViewDeeEx();
            if (has_detector["neutron"]) TreatNeutronNeutron();
            
            if (blFillSingleSpectra)     FillSingleSpectra();
@@ -2984,13 +3005,13 @@ void DelilaSelectorEliade::FillSingleSpectra()
    
      for (; it_ev__!= delilaQu.end();++it_ev__){
          
-//         if ((*it_ev__).TimeBunch > event_length)  std::cout<<"DelilaEvent_.TimeBunch "<<DelilaEvent_.TimeBunch<<" event_length "<< event_length << "\n";
-        int domain = (*it_ev__).domain;
+         int domain = (*it_ev__).domain;
          
          hDelila_single[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
          
          
-         if (blExtTrigger) FillSpectraForOliver((*it_ev__));
+         if (blExtTrigger) {FillSpectraForOliver((*it_ev__));continue;}
+         if (blExpIsElifant) {FillSpectraForElifant((*it_ev__));continue;}
          
          
 //           if ((blExtTrigger) && ( ((*it_ev__).det_def == 3) 
@@ -3004,32 +3025,33 @@ void DelilaSelectorEliade::FillSingleSpectra()
          
 //          if (!blCS) continue;
          
+//          CheckIfObject(mSingleCoreCS);
+         
          if ((*it_ev__).det_def == 1) {
               
              int core_id = (*it_ev__).domain/100 * 10 +(*it_ev__).domain/10%10;
-             mSingleCore->Fill(core_id, (*it_ev__).Energy_kev);
+//              mSingleCore->Fill(core_id, (*it_ev__).Energy_kev);
              
-             if ((*it_ev__).CS == 0) {
-                 hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
-                 mSingleCoreCS->Fill(core_id, (*it_ev__).Energy_kev);
+             if (((*it_ev__).CS == 0) && blCS) {
+                   hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
+                   mSingleCoreCS->Fill(core_id, (*it_ev__).Energy_kev);
               }else {
-                 int acs_id = (*it_ev__).CS%10;
-                 mCoreSpecACS[core_id]->Fill(acs_id,(*it_ev__).Energy_kev);
+                 int acs_id = (*it_ev__).CS%10;//this to be checked//20240529
+//                   mCoreSpecACS[core_id]->Fill(acs_id,(*it_ev__).Energy_kev);
               };
          };
-         
+//          std::cout<<"here2 \n";
          if ((*it_ev__).det_def == 3) {
-             if ((*it_ev__).CS == 0) {
+             if (((*it_ev__).CS == 0) && blCS)  {
                  mDelilaCS->Fill(domain, DelilaEvent_.Energy_kev);
                  hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
              };
              if (beta > 0) {
                  mDelilaDC->Fill(domain, DelilaEvent_.EnergyDC); 
                  hDelilaDC[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC);
-                 if ((*it_ev__).CS == 0) {
+                 if (((*it_ev__).CS == 0) && blCS)  {
                      mDelilaCS_DC->Fill(domain, DelilaEvent_.EnergyDC);
                      hDelilaCS_DC[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC);
-
                  };
              };
          };
@@ -3052,6 +3074,17 @@ void DelilaSelectorEliade::FillSingleSpectra()
 //          if (((*it_ev__).CS == 0)&&((*it_ev__).det_def == 1)) {};
      };
 }
+
+bool DelilaSelectorEliade::CheckIfObject(TH2F *mm)
+{
+    //char name1 = "hname";
+    if (gDirectory->FindObject(mm->GetName())) printf ("%s exist \n", mm->GetName());
+        else  {printf("%s doesn't exist \n", mm->GetName());return false;};
+    return true;
+    
+}
+
+
 
 void DelilaSelectorEliade::ViewAddBackCrystal()
 {

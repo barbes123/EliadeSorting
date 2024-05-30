@@ -508,6 +508,8 @@ public :
    virtual void FillSpectraForOliver(DelilaEvent event);
 //    virtual void cs_in_bunch_bunch(int coin_id);
 //--------------------------------------------   
+   virtual void FillSpectraForElifant(DelilaEvent event);
+   
 //---------Elissa / Si------------------------   
    virtual void ViewDeESector();
    virtual void ViewDeERings();
@@ -515,6 +517,7 @@ public :
    std::vector<DelilaEvent> vMaskEvents;
    std::vector<UShort_t> vMask;
    virtual UShort_t AddToMask(DelilaEvent ev);
+   virtual bool CheckIfObject(TH2F *mm);
 
    std::map<UInt_t, string>  particle_name_in_cut;
    std::map<string, TCutG*>  particle_cut ;
