@@ -176,8 +176,6 @@ public :
   TH1F* hChannelHitNotDefined; // channels which are not defined in lut
   
   TH1F* hElasticEnergy;//just to check
-  TH1F* hMaskID; //to check
-
 
 
   std::map<int, TH1F*> hDelila0; //before event_builder
@@ -196,7 +194,8 @@ public :
   
   std::map<int, TH1F*> hAddBack;
 
-  std::map<UInt_t, std::string> detector_name;
+  std::map<UShort_t, std::string> detector_name;
+  std::map<std::string, UShort_t> dname;//detector name
 
   TH1F* hTriggerTrigger;
   TH1F* hBunchBunch;
@@ -514,10 +513,6 @@ public :
    virtual void ViewDeESector();
    virtual void ViewDeERings();
    virtual void ViewDeeEx();
-   std::vector<DelilaEvent> vMaskEvents;
-   std::vector<UShort_t> vMask;
-   virtual UShort_t AddToMask(DelilaEvent ev);
-   virtual bool CheckIfObject(TH2F *mm);
 
    std::map<UInt_t, string>  particle_name_in_cut;
    std::map<string, TCutG*>  particle_cut ;
