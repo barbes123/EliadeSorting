@@ -902,7 +902,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    fOutput->Add(hTimeDiffPulser);
    
  
-   int n_bins =  4096; double max_value = 16383.5; int kev_bin = 4;
+   int n_bins =  16384; double max_value = 16383.5; int kev_bin = 4;
    if (blExtTrigger){n_bins =  320; max_value = 31999.5; kev_bin = 100;};
    
    mDelila_raw = new TH2F("mDelila_raw", "mDelila_raw", max_domain, -0.5, max_domain-0.5, n_bins, -0.5, max_value);
