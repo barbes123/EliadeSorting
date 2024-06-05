@@ -46,10 +46,10 @@ bool blOutTree              = false;
 bool blFillAmaxEnergyDom    = false;
 bool blFillSingleSpectra    = true;
 bool blLong                 = false;//for Oliver
-bool blDeeSector            = true;
+bool blDeeSector            = false;
 bool blDeeRing              = true;
-bool blDeeEx                = true;
-bool blEliade               = false; //some features valid only for ELIADE
+bool blDeeEx                = false;
+
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 bool blIsTrigger            = false; //the SimpleTrigger is open
 bool blIsWindow             = false; //the preTrigger is open
@@ -61,8 +61,9 @@ bool debug                  = false;
 bool blDebugElissa          = false;
 bool blLUT_ELIADE           = false;
 bool blLUT_TA               = false; //if tru read TA from LUT_TA file
-bool blExpIsEliade          = true;
-bool blExpIsElifant         = false;
+bool blExpIsEliade          = false;
+bool blExpIsElifant         = true;
+bool blEliade               = false; //some features valid only for ELIADE
 
 ULong64_t trigger_cnt = 0;
 // ULong64_t trigger_events = 0;
@@ -755,7 +756,11 @@ void DelilaSelectorEliade::Begin(TTree * tree)
                break;
          };
            case 37: {
-               gg_coinc_id[it_c_gates_->first]="mgg_labr_elissa";
+               gg_coinc_id[it_c_gates_->first]="mgg_labr_elissa";//g-E
+               break;
+         };
+         case 17: {
+               gg_coinc_id[it_c_gates_->first]="mgg_hpge_elissa";//g-E
                break;
          };
            case 177: {
@@ -1106,13 +1111,13 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             fOutput->Add(mTimeDiffCoreCore[*it2_coreid_]);*/
             
 //             std::cout<<" core ID "<<*it2_coreid_<<" ACS hists Initialized \n";  
-              
+             }; 
             mSingleCoreCS = new TH2F("mSingleCoreCS", "mSingleCoreCS", 20, -0.5, 19.5, 4096, -0.5, 16383.5);
             mSingleCoreCS->GetXaxis()->SetTitle("CORE ID");
             mSingleCoreCS->GetYaxis()->SetTitle("keV");
             fOutput->Add(mSingleCoreCS);
             
-     };
+     
             
                
             std::map<int, TDelilaDetector > ::iterator it_lut1_ = LUT_ELIADE.begin();
@@ -1180,14 +1185,14 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             for (; it_lut_ != LUT_ELIADE.end(); ++it_lut_) {
                     if (LUT_ELIADE[it_lut_->first].detType == 7){
                         int dee_dom = LUT_ELIADE[it_lut_->first].cs_dom;           
-                        mDee_Sector[dee_dom] = new TH2F(Form("mDee_Sector_dom%i",dee_dom), Form("mDee_Sector_dom%i",dee_dom), 4096,0, 8192, 4096, 0,8192);
+                        mDee_Sector[dee_dom] = new TH2F(Form("mDee_Sector_dom%i",dee_dom), Form("mDee_Sector_dom%i",dee_dom), 4096, 0, 8192, 4096, 0,8192);
                         mDee_Sector[dee_dom] ->GetXaxis()->SetTitle("Energy E, a.u.");
                         mDee_Sector[dee_dom] ->GetYaxis()->SetTitle("Energy dE, a.u.");
                         fOutput->Add(mDee_Sector[dee_dom]);
                     };
                     if (LUT_ELIADE[it_lut_->first].detType == 17){
                         int dee_dom1 = LUT_ELIADE[it_lut_->first].dom;           
-                        mDee_Ring[dee_dom1] = new TH2F(Form("mDee_Ring_dom%i",dee_dom1), Form("mDee_Ring_dom%i",dee_dom1),  4096,0, 16384, 4096, 0,16384);
+                        mDee_Ring[dee_dom1] = new TH2F(Form("mDee_Ring_dom%i",dee_dom1), Form("mDee_Ring_dom%i",dee_dom1),  4096, 0, 16384, 4096, 0,16384);
                         mDee_Ring[dee_dom1] ->GetXaxis()->SetTitle("Energy E, a.u.");
                         mDee_Ring[dee_dom1] ->GetYaxis()->SetTitle("Energy dE, a.u.");
                         fOutput->Add(mDee_Ring[dee_dom1]);
@@ -1266,7 +1271,8 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 
   for(;itna!=gg_coinc_id.end();++itna){
       
-       if ((itna->first == 37) && has_detector["Elissa"] && has_detector["LaBr"]){
+       if ((itna->first == 37 || itna->first == 17) && 
+       has_detector["Elissa"] && has_detector["LaBr"]){
            mGG[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 32767);
            mGG[itna->first]->GetXaxis()->SetTitle("Elifant (LaBr), keV"); 
            mGG[itna->first]->GetYaxis()->SetTitle("Elissa (Es), keV");
@@ -2199,7 +2205,7 @@ void DelilaSelectorEliade::TreatGammaGammaCoinc()
    std::map<UInt_t, std::string>  ::iterator it_mult_ =  gg_coinc_id.begin();
 
    for(;it_mult_!=gg_coinc_id.end();++it_mult_) {
-        if ((it_mult_->first != 11 )&&(it_mult_->first != 13 )&&(it_mult_->first != 33   )&&(it_mult_->first != 37 )) continue;
+        if ((it_mult_->first != 11 )&&(it_mult_->first != 13 )&&(it_mult_->first != 33   )&&(it_mult_->first != 37 )&&(it_mult_->first != 17 )) continue;
         nmult[it_mult_->first] = 0;   
    };
    
@@ -2252,6 +2258,7 @@ void DelilaSelectorEliade::TreatGammaGammaCoinc()
                   mGG[coinc_id]->Fill(it_dom1_->Energy_kev, it_dom2_->Energy_kev);
                   nmult[coinc_id]++;
                   if (coinc_id == 37) it_dom1_->coincID = 7;
+                  if (coinc_id == 17) it_dom1_->coincID = 7;
               };
         };
      };
@@ -2259,7 +2266,7 @@ void DelilaSelectorEliade::TreatGammaGammaCoinc()
         
    it_mult_ =  gg_coinc_id.begin();
    for(;it_mult_!=gg_coinc_id.end();++it_mult_){
-       if ((it_mult_->first != 11 )&&(it_mult_->first != 13 )&&(it_mult_->first != 33   )&&(it_mult_->first != 37 )) continue;
+       if ((it_mult_->first != 11 )&&(it_mult_->first != 13 )&&(it_mult_->first != 33   )&&(it_mult_->first != 37 )&&(it_mult_->first != 17 )) continue;
        hMult[it_mult_->first]->Fill(nmult[it_mult_->first]);          
    };
 
@@ -2860,7 +2867,7 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
             
             if (blTimeAlignement && !blExtTrigger) TimeAlignementInsideEvent();
 //             if (blTimeAlignement)        TimeAlignementTrigger();//we do not use
-//             if (blCS)                cs();
+            if (blCS)                cs_simple(15);
             if (blCS)                cs_simple(35);
 //            if (blCS)                    ViewACS();
 //            if (blCS)                    ViewACS_segments();
@@ -2871,9 +2878,9 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
             if (blAddBack)               ViewAddBackCoreCore();
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
-//            if (blDeeSector)		ViewDeESector();
-           if (blDeeRing)		ViewDeERings(); //ViewDeeEx();
-           if (blDeeRing)		ViewDeeEx();
+           if (blDeeSector)		ViewDeESector();
+           if (blDeeRing)		ViewDeERings();
+           if (blDeeEx)			ViewDeeEx();
            if (has_detector["neutron"]) TreatNeutronNeutron();
            
            if (blFillSingleSpectra)     FillSingleSpectra();
@@ -3100,7 +3107,7 @@ void DelilaSelectorEliade::FillSingleSpectra()
          
 //          CheckIfObject(mSingleCoreCS);
          
-         if ((*it_ev__).det_def == 1) {
+        /* if ((*it_ev__).det_def == 1) {
               
              int core_id = (*it_ev__).domain/100 * 10 +(*it_ev__).domain/10%10;
 //              mSingleCore->Fill(core_id, (*it_ev__).Energy_kev);
@@ -3112,9 +3119,9 @@ void DelilaSelectorEliade::FillSingleSpectra()
                  int acs_id = (*it_ev__).CS%10;//this to be checked//20240529
 //                   mCoreSpecACS[core_id]->Fill(acs_id,(*it_ev__).Energy_kev);
               };
-         };
+         };*/
 //          std::cout<<"here2 \n";
-         if ((*it_ev__).det_def == 3) {
+         if ((*it_ev__).det_def == 3 || (*it_ev__).det_def == 1) {
              if (((*it_ev__).CS == 0) && blCS)  {
                  mDelilaCS->Fill(domain, DelilaEvent_.Energy_kev);
                  hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
