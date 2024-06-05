@@ -1187,7 +1187,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                     };
                     if (LUT_ELIADE[it_lut_->first].detType == 17){
                         int dee_dom1 = LUT_ELIADE[it_lut_->first].dom;           
-                        mDee_Ring[dee_dom1] = new TH2F(Form("mDee_Ring_dom%i",dee_dom1), Form("mDee_Ring_dom%i",dee_dom1),  4096,0, 8192, 4096, 0,8192);
+                        mDee_Ring[dee_dom1] = new TH2F(Form("mDee_Ring_dom%i",dee_dom1), Form("mDee_Ring_dom%i",dee_dom1),  4096,0, 16384, 4096, 0,16384);
                         mDee_Ring[dee_dom1] ->GetXaxis()->SetTitle("Energy E, a.u.");
                         mDee_Ring[dee_dom1] ->GetYaxis()->SetTitle("Energy dE, a.u.");
                         fOutput->Add(mDee_Ring[dee_dom1]);
@@ -1210,7 +1210,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             mDee_SectorAll ->GetYaxis()->SetTitle("Energy dE, a.u.");
             fOutput->Add(mDee_SectorAll);
             
-            mDee_RingAll = new TH2F("mDee_RingAll", "mDee_RingAll",  4096,0, 8192, 4096, 0,8192);
+            mDee_RingAll = new TH2F("mDee_RingAll", "mDee_RingAll",  4096,0, 16384, 4096, 0,16384);
             mDee_RingAll ->GetXaxis()->SetTitle("Energy E, a.u.");
             mDee_RingAll ->GetYaxis()->SetTitle("Energy dE, a.u.");
             fOutput->Add(mDee_RingAll);
@@ -2310,7 +2310,7 @@ void DelilaSelectorEliade::Terminate()
       if (blCS)                     foutFile->mkdir("CS","CS");
       if (has_detector["neutron"])  foutFile->mkdir("Neutron","Neutron");
       if (blExtTrigger)             foutFile->mkdir("CheckBunching","CheckBunching");
-//      if (blDeeSector)              foutFile->mkdir("GammaGamma","GammaGamma");
+      if (blDeeSector)              foutFile->mkdir("GammaGamma","GammaGamma");
       
       if (has_detector["Elissa"]) foutFile->mkdir("dee","dee");
       
