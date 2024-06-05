@@ -46,8 +46,8 @@ bool blOutTree              = false;
 bool blFillAmaxEnergyDom    = false;
 bool blFillSingleSpectra    = true;
 bool blLong                 = false;//for Oliver
-bool blDeeSector            = false;
-bool blDeeRing              = true;
+bool blDeeSector            = true;
+bool blDeeRing              = false;
 bool blDeeEx                = false;
 
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
@@ -63,7 +63,6 @@ bool blLUT_ELIADE           = false;
 bool blLUT_TA               = false; //if tru read TA from LUT_TA file
 bool blExpIsEliade          = false;
 bool blExpIsElifant         = true;
-bool blEliade               = false; //some features valid only for ELIADE
 
 ULong64_t trigger_cnt = 0;
 // ULong64_t trigger_events = 0;
@@ -1185,14 +1184,14 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             for (; it_lut_ != LUT_ELIADE.end(); ++it_lut_) {
                     if (LUT_ELIADE[it_lut_->first].detType == 7){
                         int dee_dom = LUT_ELIADE[it_lut_->first].cs_dom;           
-                        mDee_Sector[dee_dom] = new TH2F(Form("mDee_Sector_dom%i",dee_dom), Form("mDee_Sector_dom%i",dee_dom), 4096, 0, 8192, 4096, 0,8192);
+                        mDee_Sector[dee_dom] = new TH2F(Form("mDee_Sector_dom%i",dee_dom), Form("mDee_Sector_dom%i",dee_dom), 8192, 0, 8192, 8192, 0,8192);
                         mDee_Sector[dee_dom] ->GetXaxis()->SetTitle("Energy E, a.u.");
                         mDee_Sector[dee_dom] ->GetYaxis()->SetTitle("Energy dE, a.u.");
                         fOutput->Add(mDee_Sector[dee_dom]);
                     };
                     if (LUT_ELIADE[it_lut_->first].detType == 17){
                         int dee_dom1 = LUT_ELIADE[it_lut_->first].dom;           
-                        mDee_Ring[dee_dom1] = new TH2F(Form("mDee_Ring_dom%i",dee_dom1), Form("mDee_Ring_dom%i",dee_dom1),  4096, 0, 16384, 4096, 0,16384);
+                        mDee_Ring[dee_dom1] = new TH2F(Form("mDee_Ring_dom%i",dee_dom1), Form("mDee_Ring_dom%i",dee_dom1),  4096, 0, 32768, 4096, 0,32768);
                         mDee_Ring[dee_dom1] ->GetXaxis()->SetTitle("Energy E, a.u.");
                         mDee_Ring[dee_dom1] ->GetYaxis()->SetTitle("Energy dE, a.u.");
                         fOutput->Add(mDee_Ring[dee_dom1]);
@@ -1210,12 +1209,12 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             
             
             
-            mDee_SectorAll = new TH2F("mDee_SectorAll", "mDee_SectorAll",  4096,0, 8192, 4096, 0,8192);
+            mDee_SectorAll = new TH2F("mDee_SectorAll", "mDee_SectorAll",  8192,0, 8192, 8192, 0,8192);
             mDee_SectorAll ->GetXaxis()->SetTitle("Energy E, a.u.");
             mDee_SectorAll ->GetYaxis()->SetTitle("Energy dE, a.u.");
             fOutput->Add(mDee_SectorAll);
             
-            mDee_RingAll = new TH2F("mDee_RingAll", "mDee_RingAll",  4096,0, 16384, 4096, 0,16384);
+            mDee_RingAll = new TH2F("mDee_RingAll", "mDee_RingAll",  4096,0, 32768, 4096, 0,32768);
             mDee_RingAll ->GetXaxis()->SetTitle("Energy E, a.u.");
             mDee_RingAll ->GetYaxis()->SetTitle("Energy dE, a.u.");
             fOutput->Add(mDee_RingAll);
@@ -2246,8 +2245,11 @@ void DelilaSelectorEliade::TreatGammaGammaCoinc()
             double_t time_diff_gg = it_dom2_->Time - it_dom1_->Time;
             
             if (coinc_id == 11) {
-                int core_id1 =  (*it_dom1_).domain/100 * 10 +(*it_dom1_).domain/10%10;
-                mGG_time_diff[coinc_id]->Fill(core_id1,time_diff_gg);
+            	if (blExpIsEliade){
+	                int core_id1 =  (*it_dom1_).domain/100 * 10 +(*it_dom1_).domain/10%10;
+        	        mGG_time_diff[coinc_id]->Fill(core_id1,time_diff_gg);
+        	    };
+         	 mGG_time_diff[coinc_id]->Fill(it_dom1_->domain,time_diff_gg);   
             }else {
                 mGG_time_diff[coinc_id]->Fill(it_dom1_->domain,time_diff_gg);
             };
@@ -2317,8 +2319,7 @@ void DelilaSelectorEliade::Terminate()
       if (blCS)                     foutFile->mkdir("CS","CS");
       if (has_detector["neutron"])  foutFile->mkdir("Neutron","Neutron");
       if (blExtTrigger)             foutFile->mkdir("CheckBunching","CheckBunching");
-      if (blDeeSector)              foutFile->mkdir("GammaGamma","GammaGamma");
-      
+     
       if (has_detector["Elissa"]) foutFile->mkdir("dee","dee");
       
       outputTree->Write();
