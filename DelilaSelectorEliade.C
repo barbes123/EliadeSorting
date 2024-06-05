@@ -230,6 +230,76 @@ void DelilaSelectorEliade::Read_AddBackTable() {
   }
   lookuptable.close();
   }
+
+  //60Co run 19 poly2
+  /*Crosstalk_matrix[30][30] = 1.00001;
+  Crosstalk_matrix[30][31] = 0.0033635;
+  Crosstalk_matrix[30][32] = 0.00624205;
+  Crosstalk_matrix[30][33] = 0.00569536;
+  Crosstalk_matrix[31][30] = 0.0110337;
+  Crosstalk_matrix[31][31] = 0.999949;
+  Crosstalk_matrix[31][32] = 0.0125455;
+  Crosstalk_matrix[31][33] = 0.0118912;
+  Crosstalk_matrix[32][30] = -0.0043473;
+  Crosstalk_matrix[32][31] = -0.00547755;
+  Crosstalk_matrix[32][32] = 0.999902;
+  Crosstalk_matrix[32][33] = -0.00297115;
+  Crosstalk_matrix[33][30] = -0.000352647;
+  Crosstalk_matrix[33][31] = -0.00169757;
+  Crosstalk_matrix[33][32] = 0.00090722;
+  Crosstalk_matrix[33][33] = 0.999975;*/
+  //60Co run 19 linear
+  /*Crosstalk_matrix[30][30] = 1.;
+  Crosstalk_matrix[30][31] = 0.000196922;
+  Crosstalk_matrix[30][32] = 0.000317959;
+  Crosstalk_matrix[30][33] = 0.000163159;
+  Crosstalk_matrix[31][30] = 0.00371755;
+  Crosstalk_matrix[31][31] = 1.;
+  Crosstalk_matrix[31][32] = 0.00336885;
+  Crosstalk_matrix[31][33] = 0.00307501;
+  Crosstalk_matrix[32][30] = -0.000637918;
+  Crosstalk_matrix[32][31] = -0.0010794;
+  Crosstalk_matrix[32][32] = 0.999995;
+  Crosstalk_matrix[32][33] = -0.0006628;
+  Crosstalk_matrix[33][30] = 0.00204568;
+  Crosstalk_matrix[33][31] = 0.00136688;
+  Crosstalk_matrix[33][32] = 0.00155062;
+  Crosstalk_matrix[33][33] = 1.;*/
+  //152Eu run 20 poly2
+  /*Crosstalk_matrix[30][30] = 0.999994;
+  Crosstalk_matrix[30][31] = 0.00123696;
+  Crosstalk_matrix[30][32] = -0.000844153;
+  Crosstalk_matrix[30][33] = 0.000451283;
+  Crosstalk_matrix[31][30] = -0.00227777;
+  Crosstalk_matrix[31][31] = 0.99998;
+  Crosstalk_matrix[31][32] = -0.0031801;
+  Crosstalk_matrix[31][33] = -0.00233592;
+  Crosstalk_matrix[32][30] = 0.00431839;
+  Crosstalk_matrix[32][31] = 0.00462815;
+  Crosstalk_matrix[32][32] = 0.999978;
+  Crosstalk_matrix[32][33] = 0.00427928;
+  Crosstalk_matrix[33][30] = 0.000657621;
+  Crosstalk_matrix[33][31] = 0.00111413;
+  Crosstalk_matrix[33][32] = -0.000821712;
+  Crosstalk_matrix[33][33] = 0.999994;*/
+  //152Eu run 20 linear
+  /*Crosstalk_matrix[30][30] = 1.00001;
+  Crosstalk_matrix[30][31] = 0.00168809;
+  Crosstalk_matrix[30][32] = 0.00172696;
+  Crosstalk_matrix[30][33] = 0.00146297;
+  Crosstalk_matrix[31][30] = 0.00124378;
+  Crosstalk_matrix[31][31] = 1.;
+  Crosstalk_matrix[31][32] = 0.00139072;
+  Crosstalk_matrix[31][33] = 0.00129858;
+  Crosstalk_matrix[32][30] = 0.00144049;
+  Crosstalk_matrix[32][31] = 0.000988801;
+  Crosstalk_matrix[32][32] = 1.00001;
+  Crosstalk_matrix[32][33] = 0.00127115;
+  Crosstalk_matrix[33][30] = 0.00130832;
+  Crosstalk_matrix[33][31] = 0.000572351;
+  Crosstalk_matrix[33][32] = 0.00103709;
+  Crosstalk_matrix[33][33] = 1.;*/
+
   std::cout << " done" << std::endl;
   //  std::exit(1);
 }
@@ -1630,8 +1700,7 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
    mTimeCalibTriggerCores->SetTitle(Form("TimeDiff domain%i vs domain", channel_trg));
    fOutput->Add(mTimeCalibTriggerCores);
    
-   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e3,-5e5, 5e5);
-   //mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e4,-5e5, 5e5);
+   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e4,-5e5, 5e5);
 //    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 2e3,-5e6, 15e6);
    mTimeCalibInsideEvent->GetXaxis()->SetTitle("domain");
    mTimeCalibInsideEvent->GetYaxis()->SetTitle("ps");
@@ -1780,6 +1849,8 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
     delilaQu.clear();
     
     blFirst_event = false;
+    
+
  
     
     if (blTimeAlignement && blAddTriggerToQueue) {
@@ -2797,7 +2868,7 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
 //           if (blAddBack)               ViewAddBackDetector();//for segments
 //            if (blAddBack)               ViewAddBackDetectorCS();
 //            if (blAddBack)               ViewAddBackCrystal();
-//             if (blAddBack)               ViewAddBackCoreCore();
+            if (blAddBack)               ViewAddBackCoreCore();
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
 //            if (blDeeSector)		ViewDeESector();
@@ -3483,8 +3554,10 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
          };
         
         std::deque<DelilaEvent>::iterator it3_= CoreQu.begin();
+        std::deque<DelilaEvent>::iterator it4_= CoreQu.begin();
         int nnfold = CoreQu.size();
         double foldsum = 0;
+        double foldE = 0;
         
         if (addback_tree>0){
           vDomain->clear();
@@ -3589,12 +3662,19 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
                 else{
                   mFoldSpec[det_id1]->Fill((*(it3_+1)).coreID,(*it3_).coreID);
                 }
-              } 
+              }
               for (; it3_!= CoreQu.end();++it3_){
                 //mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
+                /*foldE = 0.;
+                it4_= CoreQu.begin();
+                for (; it4_!= CoreQu.end();++it4_){
+                  foldE += (*it4_).Energy_kev*Crosstalk_matrix[(*it3_).coreID][(*it4_).coreID];
+                }
+                foldsum+= foldE;*/
                 foldsum+= (*it3_).Energy_kev;
                 if (addback_tree>0){
                   vDomain->push_back((*it3_).domain);
+                  //vEAddback->push_back(foldE);
                   vEAddback->push_back((*it3_).Energy_kev);
                   vTime->push_back((*it3_).Time);
                 }
@@ -3644,6 +3724,7 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
 //             CoreQu.clear();
 //             mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
 //         };
+     it1_= delilaQu.end()-1;
      };
      
      
