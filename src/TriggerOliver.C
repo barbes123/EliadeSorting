@@ -2,79 +2,131 @@
 
 
 
+void DelilaSelectorEliade::AnalyseQuOliver(){
+    
+            if (blCS)                   cs_simple(35);
+            if (blGammaGamma)           TreatGammaGammaCoinc();
+            if (blFold)                 TreatFold(3);
+            if (blDeeSector)		    ViewDeESector();
+            if (blFillSingleSpectra)    FillSingleSpectra();
+//             std::cout<<"Warning  DelilaEvent.TimeBunch_ is more than rf_time \n";
+            hdelilaQu_size->Fill(delilaQu.size());
+            delilaQu.clear();
+//             MovePreQu2QuOliver();
+//             delilaPreQu.clear();
+            return;
+}
+
+
 void DelilaSelectorEliade::EventBuilderForOliver()
 {
-    if (blIsWindow){//open
+//     if (blIsWindow){//close the event when the real trigger signal arrives
 
-        if (DelilaEvent_.det_def == external_trigger_det_def){
-            if (blCS)                   cs_simple(35);
-            if (blFold)                 TreatFold(3);
-            if (blGammaGamma)           TreatGammaGammaCoinc();
-            if (blDeeSector)		    ViewDeESector();
-            if (blDeeRing)		        ViewDeERings();
-//             if (blDeeRing)		        ViewDeeEx();
-
-           
-           if (blFillSingleSpectra)     FillSingleSpectra();
-//            if (blOutTree)               FillOutputTree();
-           
-           hdelilaQu_size->Fill(delilaQu.size());          
-           delilaQu.clear();
-           delilaPreQu.clear();
-           
-           blIsWindow = false;  
-           return; 
-           
-        }else{
-            
-            if (DelilaEvent_.TimeBunch >=rf_time){
-                if (blCS)                   cs_simple(35);
-                if (blGammaGamma)           TreatGammaGammaCoinc();
-                if (blFold)                 TreatFold(3);
-                if (blDeeSector)		    ViewDeESector();
-                if (blFillSingleSpectra)    FillSingleSpectra();
-                std::cout<<"Warning  DelilaEvent.TimeBunch_ is more than rf_time \n";
-                hdelilaQu_size->Fill(delilaQu.size());
-                delilaQu.clear();
-                } else if (DelilaEvent_.TimeBunch < event_length){
-                    hTimeInBunch->Fill(DelilaEvent_.TimeBunch);         
-                    delilaQu.push_back(DelilaEvent_);
-              };
-       };
-       
-   }else if (DelilaEvent_.det_def == external_trigger_det_def){//window is closed
+    if (DelilaEvent_.det_def == external_trigger_det_def){ //as the next real trigger comes, close event
+        
+        
         hTriggerTrigger->Fill(DelilaEvent_.Time - LastTriggerEvent.Time);
         hTriggerDomain->Fill(DelilaEvent_.domain);
 
         LastTriggerEvent = DelilaEvent_;
-//         LastBunchEvent = DelilaEvent_;
         LastTriggerEvent = DelilaEvent_;
-        blIsWindow = true;
-   };
-   return;
+        
+        AnalyseQuOliver();
+        
+//         delilaPreQu.push_back(DelilaEvent_); // add the current event to be the first in the new queue
+        
+//         blIsWindow = false;  
+        return; 
+        
+    }else if (DelilaEvent_.TimeBunch >=rf_time){
+                   
+                AnalyseQuOliver();
+           
+    } else if (DelilaEvent_.TimeBunch <= event_length){
+                hTimeInBunch->Fill(DelilaEvent_.TimeBunch);         
+                delilaQu.push_back(DelilaEvent_);
+    }; /*else if (DelilaEvent_.TimeBunch > event_length) {
+                delilaPreQu.push_back(DelilaEvent_);   
+    };*/
+    
+    return;
+};
+       
+void DelilaSelectorEliade::MovePreQu2QuOliver()
+{
+    if (delilaPreQu.empty()) return;
+    if (pre_event_length == 0) return;
+    if (!delilaQu.empty()) {
+        std::cout<<"CheckPreQu delilaQu is not empty \n";
+        delilaQu.clear();
+    };
+    
+    std::deque<DelilaEvent>::iterator it_= delilaPreQu.begin();
+    double time_diff_temp;
+    
+    int nval = 0;
+    
+    for (; it_!= delilaPreQu.end();++it_){
+           time_diff_temp = it_->TimeBunch - DelilaEvent_.TimeBunch;
+           if (abs(time_diff_temp) < pre_event_length) {
+               (*it_).TimeBunch = it_->TimeBunch - DelilaEvent_.TimeBunch ;
+               delilaQu.push_back(*it_); nval++;
+        };
+    };
+    
+    hdelilaPreQu_size->Fill(nval);
+    
+//     std::cout<<"PreQueSize is "<< delilaPreQu.size() << " \n";
+//     std::cout<<"delilaQueSize is "<< delilaQu.size() << " \n";
+    
+    delilaPreQu.clear();
 }
 
+void DelilaSelectorEliade::FillSpectraFromPreQu()
+{
+    std::deque<DelilaEvent>::iterator it_ev__= delilaPreQu.begin();
+   
+     for (; it_ev__!= delilaPreQu.end();++it_ev__){
+         FillSpectraForOliver(*it_ev__);
+     }
+     delilaPreQu.clear();
+   
+};
 
 void DelilaSelectorEliade::FillSpectraForOliver(DelilaEvent event)
 {
+    
+    
+    if (event.TimeBunch > 3.5e5) {
+        event.TimeBunch-=4e5;
+        delilaPreQu.push_back(event);
+        return;
+    };
+        
+        
+        
+    double TimeBunchOliver = event.TimeBunch;
+//      if (event.TimeBunch > 3.5e5) TimeBunchOliver-= 4e5; 
+    
+    
     if (event.det_def == 5) {
-        mEnergyTimeDiff[event.det_def]->Fill(event.Energy_kev, event.TimeBunch);
+        mEnergyTimeDiff[event.det_def]->Fill(event.Energy_kev, TimeBunchOliver);
         return;
     };
     
     if (event.det_def == 3){
-        mEnergyTimeDiff[event.det_def]->Fill(event.Energy_kev, event.TimeBunch);
+        mEnergyTimeDiff[event.det_def]->Fill(event.Energy_kev, TimeBunchOliver);
         if ((event.CS == 0 && blCS)){
-            mEnergyTimeDiffCS[event.det_def]->Fill(event.Energy_kev, event.TimeBunch);
+            mEnergyTimeDiffCS[event.det_def]->Fill(event.Energy_kev, TimeBunchOliver);
             mDelilaCS->Fill(event.domain, event.Energy_kev);
             hDelilaCS[event.det_def]->Fill(event.Energy_kev);
         }
         if (beta > 0) {
-            mEnergyTimeDiffDC[event.det_def]->Fill(event.EnergyDC, event.TimeBunch);
+            mEnergyTimeDiffDC[event.det_def]->Fill(event.EnergyDC, TimeBunchOliver);
             mDelilaDC->Fill(event.domain, event.EnergyDC); 
             hDelilaDC[event.det_def]->Fill(event.EnergyDC);
             if ((event.CS == 0 ) && blCS){
-                mEnergyTimeDiffCS_DC[event.det_def]->Fill(event.EnergyDC, event.TimeBunch);
+                mEnergyTimeDiffCS_DC[event.det_def]->Fill(event.EnergyDC, TimeBunchOliver);
                 mDelilaCS_DC->Fill(event.domain, event.EnergyDC);
                 hDelilaCS_DC[event.det_def]->Fill(event.EnergyDC);
             };
@@ -152,4 +204,5 @@ void DelilaSelectorEliade::FillSpectraForElifant(DelilaEvent event)
 //          };
 //     };
 // };
+
 

@@ -252,6 +252,8 @@ public :
 
   
   std::map<int, TH2F*> mGG;
+  std::map<std::string, TH1F*> hGG_particle;
+  std::map<std::string, TH2F*> mGG_particle_time_diff;
   std::map<int, TH2F*> mGG_AddBack;
   std::map<int, TH2F*> mGG_theta;
   std::map<int, TH2F*> mGG_DC;
@@ -491,6 +493,7 @@ public :
    virtual void TreatACS();
    
    virtual void TreatGammaGammaCoinc();
+   virtual void TreatGammaPartCoinc(int coinc_id);
   
    virtual void ViewAddBackCoreCore();
    virtual void ViewAddBackCrystal();
@@ -504,7 +507,11 @@ public :
    
 //---------For Bunch Veriosn (Oliver)---------
    virtual void EventBuilderForOliver();
+   virtual void AnalyseQuOliver();
    virtual void FillSpectraForOliver(DelilaEvent event);
+   virtual void FillSpectraFromPreQu();
+   virtual void MovePreQu2QuOliver();
+
 //    virtual void cs_in_bunch_bunch(int coin_id);
 //--------------------------------------------   
    virtual void FillSpectraForElifant(DelilaEvent event);

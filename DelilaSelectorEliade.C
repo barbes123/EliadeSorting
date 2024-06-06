@@ -49,6 +49,7 @@ bool blLong                 = false;//for Oliver
 bool blDeeSector            = true;
 bool blDeeRing              = false;
 bool blDeeEx                = false;
+bool blParticleCutGate      = true;
 
 ////////////////////////////////Please, DO NOT modify ////////////////////////////////////////////
 bool blIsTrigger            = false; //the SimpleTrigger is open
@@ -733,6 +734,14 @@ void DelilaSelectorEliade::Begin(TTree * tree)
   for(;it_det_name_!=detector_name.end();++it_det_name_) dname[it_det_name_->second]=it_det_name_->first;
 
   Read_Confs();
+  
+  
+  
+//    particle_name_in_cut[1] = "proton";
+   particle_name_in_cut[10] = "deuteron";
+   particle_name_in_cut[100] = "alpha";
+
+  
 
   std::map<int, Float_t>::iterator it_c_gates_ =  coinc_gates.begin();
   for(;it_c_gates_!=coinc_gates.end();++it_c_gates_){
@@ -1257,26 +1266,46 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         mElissa->GetYaxis()->SetTitle("keV");
         fOutput->Add(mElissa);
         
-//         mDelila_raw = new TH2F("mDelila_raw", "mDelila_raw", max_domain, -0.5, max_domain-0.5, 16384, -0.5, 16383.5);
-//         mDelila_raw->GetXaxis()->SetTitle("domain");
-//         mDelila_raw->GetYaxis()->SetTitle("ADC channels");   
-//         fOutput->Add(mDelila_raw);
         
-       
+        int nbins = 16384; float bin_max = 16383.5; kev_bin = 1;
+        std::map<UInt_t, string>::iterator it_pid_=particle_name_in_cut.begin();
+        for (;it_pid_!=particle_name_in_cut.end();++it_pid_){
+            hGG_particle[it_pid_->second] = new TH1F(Form("%s",it_pid_->second.c_str()), Form("%s",it_pid_->second.c_str()), nbins, -0.5, bin_max);
+            hGG_particle[it_pid_->second]->GetXaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
+            hGG_particle[it_pid_->second]->GetYaxis()->SetTitle("counts");
+            fOutput->Add(hGG_particle[it_pid_->second]);
+            std::cout<<"hGG_particle_"<<it_pid_->second<<" created \n";
+            
+            mGG_particle_time_diff[it_pid_->second] = new TH2F(Form("%s_time_diff",it_pid_->second.c_str()), Form("%s_time_diff",it_pid_->second.c_str()),  500, 0.5, 499.5,1e4,-5e5, 5e5);
+            mGG_particle_time_diff[it_pid_->second]->GetXaxis()->SetTitle("domain");
+            mGG_particle_time_diff[it_pid_->second]->GetYaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
+            fOutput->Add(mGG_particle_time_diff[it_pid_->second]);
+            std::cout<<"mGG_particle_time_diff_"<<it_pid_->second<<" created \n";
+            
+            
+        }
    };
+   
+   
+      
+
    
 
    std::map<UInt_t,std::string>::iterator itna =  gg_coinc_id.begin();
+   
+
+  
 
   for(;itna!=gg_coinc_id.end();++itna){
       
        if ((itna->first == 37 || itna->first == 17) && 
        has_detector["Elissa"] && has_detector["LaBr"]){
-           mGG[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), 4096, -0.5, 16383.5, 4096, -0.5, 32767);
-           mGG[itna->first]->GetXaxis()->SetTitle("Elifant (LaBr), keV"); 
-           mGG[itna->first]->GetYaxis()->SetTitle("Elissa (Es), keV");
-//            mGG[itna->first]->GetXaxis()->SetTitle("keV");
-//            mGG[itna->first]->GetYaxis()->SetTitle("keV");
+           
+           int nbins = 16384; float bin_max = 16383.5; kev_bin = 1;
+           
+           mGG[itna->first] = new TH2F(Form("%s",itna->second.c_str()), Form("%s",itna->second.c_str()), nbins, -0.5, bin_max, nbins, -0.5, bin_max);
+           mGG[itna->first]->GetXaxis()->SetTitle(Form("Elifant (LaBr), %i keV", kev_bin)); 
+           mGG[itna->first]->GetYaxis()->SetTitle(Form("Elissa (Es), %i keV", kev_bin));
            fOutput->Add(mGG[itna->first]);
            
 //            mGG_time_diff[itna->first] = new TH2F(Form("%s_time_diff",itna->second.c_str()), Form("%s_time_diff",itna->second.c_str()), max_domain, 0, max_domain, 4e2, -2e6, 2e6);
@@ -1288,6 +1317,12 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
            hMult[itna->first]->GetXaxis()->SetTitle("Multiplicity");
            hMult[itna->first]->GetYaxis()->SetTitle("Counts");
            fOutput->Add(hMult[itna->first]);
+           
+           
+           
+     
+           
+           
 
 
            std::cout<<Form("%s",itna->second.c_str())           <<" Initialized \n";
@@ -1705,8 +1740,8 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
    mTimeCalibTriggerCores->SetTitle(Form("TimeDiff domain%i vs domain", channel_trg));
    fOutput->Add(mTimeCalibTriggerCores);
    
-   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e4,-5e5, 5e5);
-//    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 2e3,-5e6, 15e6);
+//    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e4,-5e5, 5e5);
+   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 4e3,-2e6, 2e6);
    mTimeCalibInsideEvent->GetXaxis()->SetTitle("domain");
    mTimeCalibInsideEvent->GetYaxis()->SetTitle("ps");
 //    mTimeCalibInsideEvent->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));
@@ -2873,15 +2908,20 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
 //            if (blCS)                    ViewACS();
 //            if (blCS)                    ViewACS_segments();
             if (blFold)                  TreatFold(3);
+            
 //           if (blAddBack)               ViewAddBackDetector();//for segments
 //            if (blAddBack)               ViewAddBackDetectorCS();
 //            if (blAddBack)               ViewAddBackCrystal();
             if (blAddBack)               ViewAddBackCoreCore();
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
-           if (blDeeSector)		ViewDeESector();
-           if (blDeeRing)		ViewDeERings();
-           if (blDeeEx)			ViewDeeEx();
+           
+           if (blDeeSector)		           ViewDeESector();
+           if (blDeeRing)		           ViewDeERings();
+           if (blDeeEx)			           ViewDeeEx();
+           if (blParticleCutGate)          TreatGammaPartCoinc(1771);
+           
+           
            if (has_detector["neutron"]) TreatNeutronNeutron();
            
            if (blFillSingleSpectra)     FillSingleSpectra();
@@ -4025,7 +4065,7 @@ void DelilaSelectorEliade::ViewDeESector()
           
           mDee_Sector[(*it_de_).cs_domain]->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
           mDee_SectorAll->Fill((*it_e_).fEnergy, (*it_de_).fEnergy);
-          
+          (*it_de_).dee_e_energy = (*it_e_).Energy_kev;
       }
   }
  return;
@@ -4124,34 +4164,6 @@ void DelilaSelectorEliade::EventBuilder()
     return;
 }
 
-
-// void DelilaSelectorEliade::TimeAlignementCoincCoinc()
-// {//To produce matrix for to Check Time Alignment
-//     
-//     if (delilaQu.empty()) return;
-//     
-//     std::deque<DelilaEvent>  ::iterator it1__ = delilaQu.begin();
-//     std::deque<DelilaEvent>  ::iterator it2__ = delilaQu.begin();
-//     for (; it1__ != delilaQu.end(); ++it1__){
-//         if (((*it1__).det_def != 4) && ((*it1__).det_def != 5) && ((*it1__).det_def != 6)) continue;         
-//         it2__ = delilaQu.begin();
-//         for (; it2__ != delilaQu.end(); ++it2__){
-//             if (it1__ == it2__) continue;
-//             if (((*it2__).det_def != 1)&&((*it2__).det_def != 2)) continue;
-// 
-//             int coincID = it2__->domain%100+it1__->domain%10*100;//acs_id*100+core_id
-//             int time_corr = 0;
-//             std::map<int, double_t >::iterator it = LUT_TA_COINC.find(coincID);
-//             if(it != LUT_TA_COINC.end()){time_corr = LUT_TA_COINC[coincID];};
-//             
-//             double time_diff = it1__->Time - it2__->Time - time_corr;
-//             
-//             mTimeCalib->Fill(coincID, time_diff); 
-//         };
-//     };
-// };
-
-
 void DelilaSelectorEliade::cs_simple(int coinc_id)
 {//see cs(), should work
     if (delilaQu.empty()) return;
@@ -4232,7 +4244,6 @@ void DelilaSelectorEliade::Read_CutFile(){
         std::cout << "Cut File  found" <<  CUTFile.str().c_str() << std::endl;
     }
     
-     particle_name_in_cut[1] = "proton";
      std::map<UInt_t, string>::iterator p_name;
     
      TFile *file_cut_charged = TFile::Open(CUTFile.str().c_str());
@@ -4249,8 +4260,9 @@ void DelilaSelectorEliade::Read_CutFile(){
 			      p_name->second.c_str()) << " ... ";
 	  TCutG *cut_temp = (TCutG*) file_cut_charged->Get(Form("dom_%i_%s", 999, p_name->second.c_str()));
 	  if (cut_temp != 0x0) {
-	    if (debug)
+// 	    if (debug)
 	      std::cout << " found it :)" << std::endl;
+          std::cout<<Form("dom_%i_%s", 999, p_name->second.c_str())<<std::endl;
 	      particle_cut[p_name->second.c_str()] = (TCutG*) cut_temp->Clone();
 	      cut_temp->Delete();
 	  }
@@ -4265,3 +4277,70 @@ bool DelilaSelectorEliade::EventIsBGO(DelilaEvent ev_)
 {
     return ((ev_.det_def == 4)||(ev_.det_def == 5)||(ev_.det_def == 6));
 }
+
+void DelilaSelectorEliade::TreatGammaPartCoinc(int coinc_id)//1773 - de-e-LaBr; 1771 de-e-HPge
+{
+    
+   if (coinc_id != 1771 && coinc_id != 1773) {
+       std::cout<<"TreatGammaPartCoinc wrong coinc_id \n";
+       return;
+   }
+    
+   std::deque<DelilaEvent>::iterator it1_= delilaQu.begin();
+   std::deque<DelilaEvent>::iterator it_g_= delilaQu.begin();
+   
+   int id_gamma_det=coinc_id%10;
+//    std::cout<<"id_gamma_det "<<id_gamma_det<<" \n";
+    
+    
+    for (; it1_  != delilaQu.end();++it1_){
+        
+        
+        if ((*it1_).det_def != 17) continue;
+        
+//         std::cout<<"(*it1_).det_def "<<(*it1_).det_def<<" (*it1_).dee_e_energy "<<(*it1_).dee_e_energy<<" \n";
+
+        
+        if ((*it1_).dee_e_energy == 0)           continue;
+        
+        it_g_= delilaQu.begin();
+        
+        for (; it_g_  != delilaQu.end();++it_g_){
+          
+            
+//             if ((*it2_).det_def != dname["LaBr"]) continue;
+            if ((*it_g_).det_def != id_gamma_det) continue;
+            if ((*it_g_).CS != 0) continue;
+            
+            double time_diff ;
+            
+            if (blExtTrigger) 
+            {
+                time_diff = (*it1_).TimeBunch - (*it_g_).TimeBunch;
+            }else time_diff = (*it1_).Time - (*it_g_).Time; 
+            
+            
+//             std::cout<<"coinc_id "<<coinc_gates[coinc_id]<<" time_diff "<<time_diff<<" \n";
+//             mGG_particle_time_diff["deuteron"]->Fill((*it1_).domain,time_diff);
+            
+            std::map<UInt_t, string>::iterator it_pid_=particle_name_in_cut.begin();
+            
+            for(;it_pid_!=particle_name_in_cut.end();++it_pid_){
+                mGG_particle_time_diff[it_pid_->second]->Fill((*it1_).domain,time_diff);
+                if (particle_cut[it_pid_->second]->IsInside(it1_->dee_e_energy, it1_->Energy_kev))//Energy_kev is E energy
+                {
+                    it1_->particleID+= it_pid_->first;
+//                     mGG_particle_time_diff[it_pid_->second]->Fill((*it1_).domain,time_diff);
+                    hGG_particle[it_pid_->second]->Fill((*it_g_).Energy_kev);
+                }
+            }
+            
+//             if (abs(time_diff) > coinc_gates[coinc_id]) continue;
+
+        }
+    }
+    
+    
+    return;  
+
+};

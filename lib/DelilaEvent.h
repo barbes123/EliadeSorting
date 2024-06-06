@@ -19,6 +19,7 @@
 //     UShort_t        domain;
     int             domain;
     int             core_id;
+    int             particleID;
     UShort_t        cs_domain;
     int             channel;//ch daq
     UShort_t        CS;//0 - no; 1 - yes
@@ -40,7 +41,7 @@
     float           ElasticEnergy; 
     float	        dee_e_energy;
 
-    DelilaEvent(): domain(-1),channel(-1),fEnergy(-1),CS(0),cs_domain(0),Time(0),trg(0),Amax(0),coincID(0),coreID(0),segmentID(0),TimeBunch(0),TimeTrg(0),dee_e_energy(0){};
+    DelilaEvent(): domain(-1),channel(-1),fEnergy(-1),CS(0),cs_domain(0),Time(0),trg(0),Amax(0),coincID(0),coreID(0),segmentID(0),TimeBunch(0),TimeTrg(0),dee_e_energy(0),particleID(0){};
  };
 
 
