@@ -749,9 +749,10 @@ void DelilaSelectorEliade::Begin(TTree * tree)
   
   
   
-//    particle_name_in_cut[1] = "proton";
+   particle_name_in_cut[1] = "proton";
    particle_name_in_cut[10] = "deuteron";
    particle_name_in_cut[100] = "alpha";
+   particle_name_in_cut[1000] = "6Li";
 
   
 
@@ -1268,6 +1269,11 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             }
         }
         
+//         mdee_gate_check[0] = new TH2F("mdee_gate_check_zero", "mdee_gate_check_everything_else",  8192,0, 8192, 8192, 0,8192);
+//         mdee_gate_check[0] ->GetXaxis()->SetTitle("Energy E, a.u.");
+//         mdee_gate_check[0] ->GetYaxis()->SetTitle("Energy dE, a.u.");
+//         fOutput->Add(mdee_gate_check[0]);
+        
         
         mDeeTimeDiff = new TH2F("mDeeTimeDiff", "mDeeTimeDiff_dom%i", 4096,0, 32768, 10e3, 0, 10e6);
         mDeeTimeDiff ->GetXaxis()->SetTitle("time, ps");
@@ -1308,6 +1314,19 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             
             
         }
+/*        
+        hGG_particle["zero"] = new TH1F("pid_gamma_0", "pid_gamma_0_everything_else", nbins, -0.5, bin_max);
+        hGG_particle["zero"] ->GetXaxis()->SetTitle("Energy E, a.u.");
+        hGG_particle["zero"] ->GetYaxis()->SetTitle("Energy dE, a.u.");
+        fOutput->Add(hGG_particle["zero"]);
+        
+        mGG_particle_time_diff["zero"] = new TH2F("pid_gamma_0_zero_time_diff", "pid_0_#gamma_zero_time_diff",  500, 0.5, 499.5,1e2,-5e5, 5e5);
+        mGG_particle_time_diff["zero"]->GetXaxis()->SetTitle("domain");
+        mGG_particle_time_diff["zero"]->GetYaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
+        fOutput->Add(mGG_particle_time_diff["zero"]);*/
+        
+        
+        
    };
    
    
@@ -4287,6 +4306,8 @@ void DelilaSelectorEliade::TreatGammaPartCoinc(int coinc_id)//1773 - de-e-LaBr; 
             
              std::map<UInt_t, string>::iterator it_pid_=particle_name_in_cut.begin();
             
+//              bool blInsideCut = false;
+             
              for(;it_pid_!=particle_name_in_cut.end();++it_pid_){
                  mGG_particle_time_diff[it_pid_->second]->Fill((*it1_).domain,time_diff);
                  if (particle_cut[it_pid_->second]->IsInside(it1_->e_energy, it1_->Energy_kev))//Energy_kev is E energy
@@ -4296,8 +4317,15 @@ void DelilaSelectorEliade::TreatGammaPartCoinc(int coinc_id)//1773 - de-e-LaBr; 
  //                     mGG_particle_time_diff[it_pid_->second]->Fill((*it1_).domain,time_diff);
                      mdee_gate_check[it_pid_->first]->Fill(it1_->e_energy, it1_->Energy_kev);
                      hGG_particle[it_pid_->second]->Fill((*it_g_).Energy_kev);
+//                      blInsideCut = true;
+//                      break;
                  }
              }
+             
+//              if (!blInsideCut){
+//                     mdee_gate_check[0]->Fill(it1_->e_energy, it1_->Energy_kev);
+//                     hGG_particle[0]->Fill((*it_g_).Energy_kev);   
+//              }
              
 //              if (abs(time_diff) > coinc_gates[coinc_id]) continue;
 
