@@ -1031,7 +1031,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
     };
    
    
-   if (has_detector["HPGe"] && has_detector["SEG"] && blAddBack){
+   if ((has_detector["HPGe"] || has_detector["SEG"]) && blAddBack){
        
        if (ListOfCores.empty()) std::cout<<"ListOfCores is empty \n";
        
