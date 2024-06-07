@@ -4263,8 +4263,8 @@ void DelilaSelectorEliade::TreatGammaPartCoinc(int coinc_id)//1773 - de-e-LaBr; 
         
         
         std::map<UInt_t, string>::iterator it_pid_=particle_name_in_cut.begin();
-        for(;it_pid_!=particle_name_in_cut.end();++it_pid_){
-                if (particle_cut[it_pid_->second]->IsInside(it1_->e_energy, it1_->fEnergy))  mdee_gate_check[it_pid_->first]->Fill(it1_->e_energy, it1_->fEnergy);};
+//         for(;it_pid_!=particle_name_in_cut.end();++it_pid_){
+//                 if (particle_cut[it_pid_->second]->IsInside(it1_->e_energy, it1_->fEnergy))  mdee_gate_check[it_pid_->first]->Fill(it1_->e_energy, it1_->fEnergy);};
         
         it_g_= delilaQu.begin();
         
@@ -4291,6 +4291,7 @@ void DelilaSelectorEliade::TreatGammaPartCoinc(int coinc_id)//1773 - de-e-LaBr; 
                  mGG_particle_time_diff[it_pid_->second]->Fill((*it1_).domain,time_diff);
                  if (particle_cut[it_pid_->second]->IsInside(it1_->e_energy, it1_->Energy_kev))//Energy_kev is E energy
                  {
+                     if (abs(time_diff) > coinc_gates[coinc_id]) continue;
                      it1_->particleID+= it_pid_->first;
  //                     mGG_particle_time_diff[it_pid_->second]->Fill((*it1_).domain,time_diff);
                      mdee_gate_check[it_pid_->first]->Fill(it1_->e_energy, it1_->Energy_kev);
