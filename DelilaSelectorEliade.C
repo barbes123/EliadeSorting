@@ -3571,13 +3571,21 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
          int det_id1  =  (*it1_).cloverID;
          int core_id1 =  (*it1_).coreID;
          
-         it2_= delilaQu.begin();
-         
          std::deque<DelilaEvent> CoreQu;
          CoreQu.clear();
          CoreQu.push_back(*it1_);
          
-         it2_= delilaQu.begin();
+         bool added{false};
+         it2_ = delilaQuAddedBack.begin();
+         for (; it2_!= delilaQuAddedBack.end();++it2_){
+             if ((*it2_).coreID/10 == core_id1/10){
+                 added = true;
+                 break;
+             }
+         }
+         if (added) continue;
+         
+         it2_= it1_;
          for (; it2_!= delilaQu.end();++it2_){           
            if (it1_ == it2_) continue; 
            if ((*it2_).det_def != 1) continue;
@@ -3585,6 +3593,7 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
            int det_id2 =  (*it2_).cloverID;
            int core_id2 = (*it2_).coreID;
            if (det_id1 != det_id2) continue;
+           if (core_id1/10 != core_id2/10) continue;
 //             std::cout<<core_id1<<" "<<core_id2<<" "<<" \n";           
            
            double time_diff_core_core = (*it1_).Time - (*it2_).Time;
@@ -3634,72 +3643,6 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
 
               break ;  
             };
-            /*case 2:{
-//              std::cout<<"nnfold "<<" "<<nnfold<<" "<<" \n";  
-              // don't work because CoreQu[x].coreID == 10/11/12/13
-              if (CoreQu[0].coreID + CoreQu[1].coreID == 20 || CoreQu[0].coreID + CoreQu[1].coreID == 40)   
-              {
-                if (CoreQu[1].coreID>CoreQu[0].coreID){
-                  mFoldSpec[det_id1]->Fill(CoreQu[0].coreID, CoreQu[1].coreID);
-                }
-                else{
-                  mFoldSpec[det_id1]->Fill(CoreQu[0].Energy_kev, CoreQu[1].Energy_kev);
-                }
-                //mFoldSpec[det_id1]->Fill(nnfold, CoreQu[0].Energy_kev);
-                mFoldSpecSum[det_id1]->Fill(nnfold, CoreQu[0].Energy_kev);   
-                //mFoldSpec[det_id1]->Fill(nnfold, CoreQu[1].Energy_kev);
-                mFoldSpecSum[det_id1]->Fill(nnfold, CoreQu[1].Energy_kev);
-                if (addback_tree>0){
-                  vDomain->push_back(CoreQu[0].domain);
-                  vEAddback->push_back(CoreQu[0].Energy_kev);
-                  vTime->push_back(CoreQu[0].Time);
-                  nfoldAddback = 1;
-                  EAddback = CoreQu[0].Energy_kev;
-                  addbackTree->Fill();
-                  vDomain->clear();
-                  vEAddback->clear();
-                  vTime->clear();
-
-                  vDomain->push_back(CoreQu[1].domain);
-                  vEAddback->push_back(CoreQu[1].Energy_kev);
-                  vTime->push_back(CoreQu[1].Time);
-                  EAddback = CoreQu[1].Energy_kev;
-                  addbackTree->Fill();
-                  vDomain->clear();
-                  vEAddback->clear();
-                  vTime->clear();
-                }
-              }
-              else{
-                it3_= CoreQu.begin();
-                foldsum = 0;
-                for (; it3_!= CoreQu.end();++it3_){
-                  //mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
-                  foldsum+= (*it3_).Energy_kev;
-                  if (addback_tree>0){
-                    vDomain->push_back((*it3_).domain);
-                    vEAddback->push_back((*it3_).Energy_kev);
-                    vTime->push_back((*it3_).Time);
-                  }
-                };
-              mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
-
-                if (addback_tree>0){
-                  nfoldAddback = nnfold;
-                  EAddback = foldsum;
-                  addbackTree->Fill();
-                  vDomain->clear();
-                  vEAddback->clear();
-                  vTime->clear();
-                }
-
-              };
-             
-              delilaQuAddedBack.push_back(CoreQu[0]);
-              delilaQuAddedBack.push_back(CoreQu[1]);
-            
-              break ;  
-            }*/
             default :{
               it3_= CoreQu.begin();
               foldsum = 0;
@@ -3743,36 +3686,6 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
 
             };
         };
-        
-//         for (; it3_!= CoreQu.end();++it3_){
-//                  mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
-//                  foldsum+= (*it3_).Energy_kev;
-//              };
-//              CoreQu.clear();
-//              mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
-        
-// //         if ((nnfold == 2)&&((core_id1+core_id2)==20)||(core_id1+core_id2)==20)))
-//         if (nnfold == 1){
-//             mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
-//             mFoldSpecSum[det_id1]->Fill(nnfold, (*it3_).Energy_kev);
-//         }else if (nnfold == 2)
-//           {
-//               int corecoreid = CoreQu[0].domain/100 * 10 +CoreQu[0].domain/10%10 + CoreQu[1].domain/100 * 10 +CoreQu[1].domain/10%10;
-//               if (corecoreid == 20 || corecoreid  == 40)
-//               for (; it3_!= CoreQu.end();++it3_){
-//                 mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
-//                 mFoldSpecSum[det_id1]->Fill(nnfold, (*it3_).Energy_kev); 
-//             };
-//         }else
-//         {    
-//             for (; it3_!= CoreQu.end();++it3_){
-//                 mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
-//                 foldsum+= (*it3_).Energy_kev;
-//             };
-//             CoreQu.clear();
-//             mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
-//         };
-     it1_= delilaQu.end()-1;
      };
      
      
