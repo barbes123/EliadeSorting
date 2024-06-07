@@ -360,6 +360,8 @@ public :
   bool blAddBack;
   bool blFold;
   bool blExtTrigger;
+  bool blDeeSector;
+  bool blDeeRing;
 
   double beta;
 
@@ -523,6 +525,7 @@ public :
 
    std::map<UInt_t, string>  particle_name_in_cut;
    std::map<string, TCutG*>  particle_cut ;
+   std::map<UInt_t, TH2F*>  mdee_gate_check;
 //--------------------------------------------      
    
 
@@ -677,7 +680,13 @@ void DelilaSelectorEliade::Init(TTree *tree)
 //   else if (det_def_trg > 0){std::cout<<" any of "<<" "<<detector_name[det_def_trg]<< " detectors ("<< det_def_trg<<") \n";}
 //   else {std::cout<<" trigger is not set correctly \n";};
   
-  std::cout<<" TA reference domaim: \t\t"<<ref_dom<<" \n";
+  
+  if (blTimeAlignement) {std::cout<<" Time Alignement matrix: \t enabled \n";  
+                         std::cout<<" TA reference domaim:  \t\t"<<ref_dom<<" \n";
+  };
+  
+  if (has_detector["Elissa"] && blDeeRing) std::cout<<" dEring-Esector matrix is: \t enabled \n";
+  if (has_detector["Elissa"] && blDeeSector) std::cout<<" dEsector-Esector matrix is: \t enabled \n";
   
   blCS = false;
   if (coinc_gates.find(15) != coinc_gates.end()){blCS = true;};
@@ -696,12 +705,12 @@ void DelilaSelectorEliade::Init(TTree *tree)
   if (blGammaGamma) {cout<<" GammaGamma:\t \t \t enabled \n";}
   else {cout<<" GammaGamma: \t \t \t disabled \n";};
   
-  if (blTimeAlignement) {cout<<" Time Alignement matrix: \t enabled \n";}  
+  
   
   
   if (blFineTimeStamp){cout<<" Time: \t\t\t\t FineTimeStamp\n";} else{cout<<" Time: \t\\tt\t TimeStamp\n";}
   
-  if (blFold){cout<<" Fold: \t\t\t\t enabled\n";} else{cout<<" Fold:\t\t\t\t disabled\n";}
+  if (blFold){cout<<" Fold: \t\t\t\t enabled\n";};
   
   std::cout<<" === Time settings ps === \n";
   std::map<int, Float_t> ::iterator itcc_ = coinc_gates.begin();

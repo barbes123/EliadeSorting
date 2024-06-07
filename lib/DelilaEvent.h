@@ -39,9 +39,9 @@
     UShort_t        segmentID;//only for ELIADE
     UShort_t        cloverID;//only for ELIADE
     float           ElasticEnergy; 
-    float	        dee_e_energy;
+    float	        e_energy;
 
-    DelilaEvent(): domain(-1),channel(-1),fEnergy(-1),CS(0),cs_domain(0),Time(0),trg(0),Amax(0),coincID(0),coreID(0),segmentID(0),TimeBunch(0),TimeTrg(0),dee_e_energy(0),particleID(0){};
+    DelilaEvent(): domain(-1),channel(-1),fEnergy(-1),CS(0),cs_domain(0),Time(0),trg(0),Amax(0),coincID(0),coreID(0),segmentID(0),TimeBunch(0),TimeTrg(0),e_energy(0),particleID(0){};
  };
 
 
