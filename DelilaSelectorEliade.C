@@ -4361,6 +4361,17 @@ void DelilaSelectorEliade::TreatGammaPartCoinc(int coinc_id)//1773 - de-e-LaBr; 
             
             if (particle_name_in_cut.find(it_g_->particleID) != particle_name_in_cut.end()) hGG_particle[particle_name_in_cut[it_g_->particleID]]->Fill(it_g_->Energy_kev);
             if (particle_name_without_cut.find(it_g_->particleID) != particle_name_without_cut.end()) hGG_particle[particle_name_without_cut[it_g_->particleID]]->Fill(it_g_->Energy_kev);
+            
+            std::string h_name = Form("%ip%id%ia%iLi",(it_g_->particleID)%10,(it_g_->particleID/10)%10,(it_g_->particleID/100)%10,(it_g_->particleID/1000)%10);
+            int nbins = 16384; float bin_max = 16383.5; int kev_bin = 1;
+            if (hGG_particle.find(h_name) == hGG_particle.end()){
+                hGG_particle[h_name] = new TH1F(Form("pid_gamma_%i_%s",it_g_->particleID, h_name.c_str()), Form("pid_%i_#gamma_%s",it_g_->particleID, h_name.c_str()), nbins, -0.5, bin_max);
+                hGG_particle[h_name]->GetXaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
+                hGG_particle[h_name]->GetYaxis()->SetTitle("counts");
+                fOutput->Add(hGG_particle[h_name]);
+                std::cout<<" hGG_particle_"<<h_name<<" created \n";
+            }
+            hGG_particle[h_name]->Fill(it_g_->Energy_kev);
 
             
 //             std::string hh_name =  particle_name_in_cut[it_pname_->second] ;
