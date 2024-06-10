@@ -254,6 +254,7 @@ public :
   std::map<int, TH2F*> mGG;
   std::map<std::string, TH1F*> hGG_particle;
   std::map<std::string, TH2F*> mGG_particle_time_diff;
+  std::map<std::string, TH2F*> mGG_particle;
   std::map<int, TH2F*> mGG_AddBack;
   std::map<int, TH2F*> mGG_theta;
   std::map<int, TH2F*> mGG_DC;

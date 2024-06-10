@@ -1326,6 +1326,12 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             fOutput->Add(mGG_particle_time_diff[it_pid_->second]);
             std::cout<<"mGG_particle_time_diff_"<<it_pid_->second<<" created \n";
             
+             mGG_particle[it_pid_->second] = new TH2F(Form("m_pid_gamma_%i_%s",it_pid_->first, it_pid_->second.c_str()), Form("m_pid_%i_#gamma#gamma_%s",it_pid_->first, it_pid_->second.c_str()), nbins, -0.5, bin_max,  nbins, -0.5, bin_max);
+            mGG_particle[it_pid_->second]->GetXaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
+            mGG_particle[it_pid_->second]->GetYaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin));
+            fOutput->Add(mGG_particle[it_pid_->second]);
+            std::cout<<"mGG_particle"<<it_pid_->second<<" created \n";
+            
             
         }
         it_pid_=particle_name_without_cut.begin();
@@ -1335,6 +1341,12 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             hGG_particle[it_pid_->second]->GetYaxis()->SetTitle("counts");
             fOutput->Add(hGG_particle[it_pid_->second]);
             std::cout<<"hGG_particle_"<<it_pid_->second<<" created \n";
+            
+            mGG_particle[it_pid_->second] = new TH2F(Form("m_pid_gamma_%i_%s",it_pid_->first, it_pid_->second.c_str()), Form("m_pid_%i_#gamma#gamma_%s",it_pid_->first, it_pid_->second.c_str()), nbins, -0.5, bin_max,  nbins, -0.5, bin_max);
+            mGG_particle[it_pid_->second]->GetXaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
+            mGG_particle[it_pid_->second]->GetYaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin));
+            fOutput->Add(mGG_particle[it_pid_->second]);
+            std::cout<<"mGG_particle"<<it_pid_->second<<" created \n";
             
             mGG_particle_time_diff[it_pid_->second] = new TH2F(Form("pid_gamma_%i_%s_time_diff",it_pid_->first, it_pid_->second.c_str()), Form("pid_%i_#gamma_%s_time_diff",it_pid_->first, it_pid_->second.c_str()),  500, 0.5, 499.5,1e2,-5e5, 5e5);
             mGG_particle_time_diff[it_pid_->second]->GetXaxis()->SetTitle("domain");
@@ -2402,7 +2414,8 @@ void DelilaSelectorEliade::Terminate()
   std::cout << std::endl << "Finished after " << round(duration / 60) << ":"
 	    << std::setw(2) << round(((int) duration) % 60) << std::setw(8)
 	    << ". Write spectra to file \n" 
-        << " A box of valpolicella can be sent to \n"
+//         << " A box of valpolicella can be sent to \n"
+        << " 2 plates of tikka masala can be sent to \n"
         << " Strada Reactorului 30, Magurele 077125 \n"
         << " office 420 \n" << std::endl;
 
@@ -4362,16 +4375,59 @@ void DelilaSelectorEliade::TreatGammaPartCoinc(int coinc_id)//1773 - de-e-LaBr; 
             if (particle_name_in_cut.find(it_g_->particleID) != particle_name_in_cut.end()) hGG_particle[particle_name_in_cut[it_g_->particleID]]->Fill(it_g_->Energy_kev);
             if (particle_name_without_cut.find(it_g_->particleID) != particle_name_without_cut.end()) hGG_particle[particle_name_without_cut[it_g_->particleID]]->Fill(it_g_->Energy_kev);
             
-            std::string h_name = Form("%ip%id%ia%iLi",(it_g_->particleID)%10,(it_g_->particleID/10)%10,(it_g_->particleID/100)%10,(it_g_->particleID/1000)%10);
-            int nbins = 16384; float bin_max = 16383.5; int kev_bin = 1;
-            if (hGG_particle.find(h_name) == hGG_particle.end()){
-                hGG_particle[h_name] = new TH1F(Form("pid_gamma_%i_%s",it_g_->particleID, h_name.c_str()), Form("pid_%i_#gamma_%s",it_g_->particleID, h_name.c_str()), nbins, -0.5, bin_max);
+//             std::string h_name = Form("%ip%id%ia%iLi",(it_g_->particleID)%10,(it_g_->particleID/10)%10,(it_g_->particleID/100)%10,(it_g_->particleID/1000)%10);
+   
+
+            
+
+
+            
+            
+        //    if (hGG_particle.find(h_name) == hGG_particle.end()){
+                            std::string h_name;
+
+             if (particle_name_without_cut.find(it_g_->particleID) == particle_name_without_cut.end()) {
+                
+                int nbins = 16384; float bin_max = 16383.5; int kev_bin = 1;
+                std::map<string, int> map_hist_name;
+                if ((it_g_->particleID)%10 >0) map_hist_name["p"] = (it_g_->particleID)%10;
+                if ((it_g_->particleID/10)%10 >0) map_hist_name["d"] = (it_g_->particleID/10)%10;
+                if ((it_g_->particleID/100)%10 >0) map_hist_name["a"] = (it_g_->particleID/100)%10;
+                if ((it_g_->particleID/1000)%10 >0) map_hist_name["Li"] = (it_g_->particleID/1000)%10;
+                std::map<string, int>::iterator it_hname_=map_hist_name.begin();
+                for (;it_hname_!= map_hist_name.end();++it_hname_) h_name.append(Form("%i%s", it_hname_->second, it_hname_->first.c_str()));
+                
+                
+                hGG_particle[h_name] = new TH1F(Form("pid_gamma_%i_%s",it_g_->particleID, h_name.c_str()), Form("pid_%i_#gamma_%s",it_g_->particleID, h_name.c_str()), 16384, -0.5, bin_max);
                 hGG_particle[h_name]->GetXaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
                 hGG_particle[h_name]->GetYaxis()->SetTitle("counts");
                 fOutput->Add(hGG_particle[h_name]);
+                particle_name_without_cut[it_g_->particleID]=h_name;
                 std::cout<<" hGG_particle_"<<h_name<<" created \n";
             }
             hGG_particle[h_name]->Fill(it_g_->Energy_kev);
+            
+           // continue; //uncomment to allow gamma-gamma-particle coinc
+            std::deque<DelilaEvent>::iterator it2_g_= delilaQu.begin();
+              for (; it2_g_  != delilaQu.end();++it2_g_){
+                  if (it2_g_->det_def != id_gamma_det) continue;
+                  if (it_g_ == it2_g_) continue;
+                  if (it_g_->particleID != it2_g_->particleID) continue;
+                    
+                  double time_diff;
+                  if (blExtTrigger){
+                        time_diff = (*it_g_).TimeBunch - (*it2_g_).TimeBunch;
+                    }else time_diff = (*it_g_).Time - (*it2_g_).Time; 
+                    
+                    
+                    if (abs(time_diff) > coinc_gates[11]) continue;//coing HpGe-Hpge
+                    
+                    if (particle_name_in_cut.find(it_g_->particleID) != particle_name_in_cut.end()) mGG_particle[particle_name_in_cut[it_g_->particleID]]->Fill(it_g_->Energy_kev, it2_g_->Energy_kev);
+//                     if (particle_name_without_cut.find(it_g_->particleID) != particle_name_without_cut.end()) mGG_particle[particle_name_without_cut[it_g_->particleID]]->Fill(it_g_->Energy_kev, it2_g_->Energy_kev);
+                        
+                    
+            };
+
 
             
 //             std::string hh_name =  particle_name_in_cut[it_pname_->second] ;
