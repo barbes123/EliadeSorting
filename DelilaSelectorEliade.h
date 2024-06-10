@@ -403,6 +403,9 @@ public :
   TH2F* mDee_Sector_TimeDiff;
   TH2F* mDee_SectorAll;
   TH1F* hDee_SectorAll_TimeDiff;
+  TH1F* hPID;
+  TH1F* hPID_dee;
+  TH1F* hMult_dee;
   
   std::map<int, TH2F*> mDee_Ring; //dEs-E-S
   TH2F* mDee_Ring_TimeDiff;
@@ -524,6 +527,8 @@ public :
    virtual void ViewDeeEx();
 
    std::map<UInt_t, string>  particle_name_in_cut;
+   std::map<UInt_t, string>  particle_name_without_cut;
+
    std::map<string, TCutG*>  particle_cut ;
    std::map<UInt_t, TH2F*>  mdee_gate_check;
 //--------------------------------------------      
