@@ -137,6 +137,9 @@ public :
   std::map<int, TDelilaDetector >       LUT_ELIADE;    
   std::map<int, int >                   LUT_TA;
   std::map<int, double_t >              LUT_TA_COINC;
+  std::map<TString, bool >              my_confs; // enable/disable
+  std::map<TString, float >             my_params; // timing
+  std::map<TString, std::deque<Int_t>>  my_hists;
 
   DelilaEvent DelilaEvent_;  
 //   DelilaEvent DelilaEventTreated ;
@@ -159,7 +162,7 @@ public :
   
   Long64_t nb_entries;
   
-  Long64_t event_length;
+//   Long64_t event_length;
   Long64_t pre_event_length;
   Long64_t bunch_reset;
   
@@ -345,7 +348,7 @@ public :
 
   int det_def_trg;
   int channel_trg;
-  int ref_dom; //for time Allignement
+//   int ref_dom; //for time Allignement
   float rf_time;
   bool EVENT_BUILDER;
   std::vector<int> trigger_domains;
@@ -356,15 +359,17 @@ public :
   
   bool blCS;
   bool blGammaGamma;
-  bool blTimeAlignement;
-  bool blFineTimeStamp;
+//   bool blTimeAlignement;
+//   bool blFineTimeStamp;
   bool blAddBack;
-  bool blFold;
+//   bool blFold;
   bool blExtTrigger;
-  bool blDeeSector;
-  bool blDeeRing;
+//   bool blDeeSector;
+//   bool blDeeRing;
+//   bool blDeeEx;
+//   bool blParticleCutGate;
 
-  double beta;
+//   double beta;
 
   //options of the selector
   int addBackMode;
@@ -451,6 +456,7 @@ public :
    virtual void  Read_AcsTable();
    virtual void  Read_SeaTable();
    virtual void  Read_ELIADE_JSONLookUpTable();
+//    virtual void  Read_Conf_json();
    virtual void  Read_CutFile();
    virtual void  Read_TimeAlignment_LookUpTable();
    virtual void  Read_CoincCoinc_TimeAlignment_LookUpTable();
@@ -639,7 +645,7 @@ void DelilaSelectorEliade::Init(TTree *tree)
   std::cout<<" === Settings === \n";
   
   std::cout<<" AddBack option: "<< addBackMode <<" \n";
-  std::cout<<" Beta: "<< beta <<" \n";
+  std::cout<<" Beta: "<< my_params["beta"] <<" \n";
   
   
   if (blExtTrigger) {std::cout<<" External trigger: enabled. Expected to be every "<< rf_time<<" ps" <<"\n";}
@@ -687,12 +693,12 @@ void DelilaSelectorEliade::Init(TTree *tree)
 //   else {std::cout<<" trigger is not set correctly \n";};
   
   
-  if (blTimeAlignement) {std::cout<<" Time Alignement matrix: \t enabled \n";  
-                         std::cout<<" TA reference domaim:  \t\t"<<ref_dom<<" \n";
+  if (my_confs["Time_Alignement"]) {std::cout<<" Time Alignement matrix: \t enabled \n";  
+                         std::cout<<" TA reference domaim:  \t\t"<<my_params["reference_dom"]<<" \n";
   };
   
-  if (has_detector["Elissa"] && blDeeRing) std::cout<<" dEring-Esector matrix is: \t enabled \n";
-  if (has_detector["Elissa"] && blDeeSector) std::cout<<" dEsector-Esector matrix is: \t enabled \n";
+  if (has_detector["Elissa"] && my_confs["DeeRing"]) std::cout<<" dEring-Esector matrix is: \t enabled \n";
+  if (has_detector["Elissa"] && my_confs["DeeSector"]) std::cout<<" dEsector-Esector matrix is: \t enabled \n";
   
   blCS = false;
   if (coinc_gates.find(15) != coinc_gates.end()){blCS = true;};
@@ -714,16 +720,16 @@ void DelilaSelectorEliade::Init(TTree *tree)
   
   
   
-  if (blFineTimeStamp){cout<<" Time: \t\t\t\t FineTimeStamp\n";} else{cout<<" Time: \t\\tt\t TimeStamp\n";}
+  if (my_confs["FineTimeStamp"]){cout<<" Time: \t\t\t\t FineTimeStamp\n";} else{cout<<" Time: \t\t\t\t TimeStamp\n";}
   
-  if (blFold){cout<<" Fold: \t\t\t\t enabled\n";};
+  if (my_confs["Fold"]){cout<<" Fold: \t\t\t\t enabled\n";};
   
   std::cout<<" === Time settings ps === \n";
   std::map<int, Float_t> ::iterator itcc_ = coinc_gates.begin();
   for (; itcc_ != coinc_gates.end(); ++itcc_) {
      std::cout<<" coin_id " << itcc_->first <<" "<< itcc_->second <<" ps \n";
   }
-  std::cout<<" Event Length  \t\t\t    " << event_length      <<" ps \n";
+  std::cout<<" Event Length  \t\t\t    " << my_params["window_length"]       <<" ps \n";
   std::cout<<" Pre Event Length \t\t " << pre_event_length  <<" ps \n";
   
   

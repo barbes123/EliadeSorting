@@ -6,8 +6,8 @@ void DelilaSelectorEliade::AnalyseQuOliver(){
     
             if (blCS)                   cs_simple(35);
             if (blGammaGamma)           TreatGammaGammaCoinc();
-            if (blFold)                 TreatFold(3);
-            if (blDeeSector)		    ViewDeESector();
+            if (my_confs["Fold"])                 TreatFold(3);
+            if (my_confs["DeeSector"])		    ViewDeESector();
             if (blFillSingleSpectra)    FillSingleSpectra();
 //             std::cout<<"Warning  DelilaEvent.TimeBunch_ is more than rf_time \n";
             hdelilaQu_size->Fill(delilaQu.size());
@@ -42,7 +42,7 @@ void DelilaSelectorEliade::EventBuilderForOliver()
                    
                 AnalyseQuOliver();
            
-    } else if (DelilaEvent_.TimeBunch <= event_length){
+    } else if (DelilaEvent_.TimeBunch <= my_params["window_length"] ){
                 hTimeInBunch->Fill(DelilaEvent_.TimeBunch);         
                 delilaQu.push_back(DelilaEvent_);
     }; /*else if (DelilaEvent_.TimeBunch > event_length) {
@@ -121,7 +121,7 @@ void DelilaSelectorEliade::FillSpectraForOliver(DelilaEvent event)
             mDelilaCS->Fill(event.domain, event.Energy_kev);
             hDelilaCS[event.det_def]->Fill(event.Energy_kev);
         }
-        if (beta > 0) {
+        if (my_params["beta"] > 0) {
             mEnergyTimeDiffDC[event.det_def]->Fill(event.EnergyDC, TimeBunchOliver);
             mDelilaDC->Fill(event.domain, event.EnergyDC); 
             hDelilaDC[event.det_def]->Fill(event.EnergyDC);
@@ -142,7 +142,7 @@ void DelilaSelectorEliade::FillSpectraForElifant(DelilaEvent event)
             mDelilaCS->Fill(event.domain, event.Energy_kev);
             hDelilaCS[event.det_def]->Fill(event.Energy_kev);
         };
-        if (beta > 0) {
+        if (my_params["beta"] > 0) {
             mDelilaDC->Fill(event.domain, event.EnergyDC); 
             hDelilaDC[event.det_def]->Fill(event.EnergyDC);
             if ((event.CS == 0) && blCS)  {
