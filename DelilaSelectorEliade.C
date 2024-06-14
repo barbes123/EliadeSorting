@@ -482,6 +482,8 @@ void DelilaSelectorEliade::Read_Confs() {
   //my_hists["mDee_Sector"] = {8192, 0, 8192, 8192, 0,8192};
   my_hists["mDee_Sector"] = {8192, 0, 32768, 8192, 0,32768};
   my_hists["mDee_Ring"] = {4096, 0, 32768, 4096, 0,32768};
+  my_hists["mTimeCalibInsideEvent"] = {1000, 0, 1000, 4e3,-2e6, 2e6};      
+
 
   
 //   std::cout<<"!!!!!!!!!!!! " << my_hists["mDelila_raw"][5];
@@ -939,22 +941,22 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    
    mDelila = new TH2F("mDelila", "mDelila", my_hists["mDelila"][0], my_hists["mDelila"][1]-0.5, my_hists["mDelila"][2]-0.5, my_hists["mDelila"][3],my_hists["mDelila"][4]-0.5,my_hists["mDelila"][5]-0.5);
    mDelila->GetXaxis()->SetTitle("domain");
-   mDelila->GetYaxis()->SetTitle(Form("%i keV/bin ",my_hists["mDelila"][3]/my_hists["mDelila"][5]));
+   mDelila->GetYaxis()->SetTitle(Form("%i keV/bin ",int(my_hists["mDelila"][3]/my_hists["mDelila"][5])));
    fOutput->Add(mDelila);
    
    mDelilaDC = new TH2F("mDelilaDC", "mDelilaDC", my_hists["mDelila"][0], my_hists["mDelila"][1]-0.5, my_hists["mDelila"][2]-0.5, my_hists["mDelila"][3],my_hists["mDelila"][4]-0.5,my_hists["mDelila"][5]-0.5);
    mDelilaDC->GetXaxis()->SetTitle("domain");
-   mDelilaDC->GetYaxis()->SetTitle(Form("%i keV/bin ",my_hists["mDelila"][3]/my_hists["mDelila"][5]));
+   mDelilaDC->GetYaxis()->SetTitle(Form("%i keV/bin ",int(my_hists["mDelila"][3]/my_hists["mDelila"][5])));
    fOutput->Add(mDelilaDC); 
    
    mDelilaCS = new TH2F("mDelilaCS", "mDelilaCS",my_hists["mDelila"][0], my_hists["mDelila"][1]-0.5, my_hists["mDelila"][2]-0.5, my_hists["mDelila"][3],my_hists["mDelila"][4]-0.5,my_hists["mDelila"][5]-0.5);
    mDelilaCS->GetYaxis()->SetTitle("1 keV/bin ");
-   mDelilaCS->GetYaxis()->SetTitle(Form("%i keV/bin ",my_hists["mDelila"][3]/my_hists["mDelila"][5]));
+   mDelilaCS->GetYaxis()->SetTitle(Form("%i keV/bin ",int(my_hists["mDelila"][3]/my_hists["mDelila"][5])));
    fOutput->Add(mDelilaCS);
    
    mDelilaCS_DC = new TH2F("mDelilaCS_DC", "mDelilaCS_DC", my_hists["mDelila"][0], my_hists["mDelila"][1]-0.5, my_hists["mDelila"][2]-0.5, my_hists["mDelila"][3],my_hists["mDelila"][4]-0.5,my_hists["mDelila"][5]-0.5);
    mDelilaCS_DC->GetXaxis()->SetTitle("domain");
-   mDelilaCS_DC->GetYaxis()->SetTitle(Form("%i keV/bin ",my_hists["mDelila"][3]/my_hists["mDelila"][5]));
+   mDelilaCS_DC->GetYaxis()->SetTitle(Form("%i keV/bin ",int(my_hists["mDelila"][3]/my_hists["mDelila"][5])));
    fOutput->Add(mDelilaCS_DC);
    
    hdelilaQu_size = new TH1F("hdelilaQu_size", "hdelilaQu_size", 100,0,100);
@@ -1567,8 +1569,6 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         hDelila_single[itna1->first]->GetXaxis()->SetTitle("keV");
         fOutput->Add(hDelila_single[itna1->first]);
         
-    
-        
         
         if (blExtTrigger){
         
@@ -1638,63 +1638,40 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
          
     
          
-        double max_e = 16383.5; int n_bin_e = 4096; int kev_per_bin = max_e / n_bin_e;
-        if (blExtTrigger){ max_e = 32768; n_bin_e = 8192; kev_per_bin = 4;}
-        hDelila0[itna1->first] = new TH1F(Form("%s",itna1->second.c_str()), Form("%s before EventB",itna1->second.c_str()), n_bin_e, -0.5, max_e-0.5);
-        hDelila0[itna1->first]->GetYaxis()->SetTitle("counts");
-        hDelila0[itna1->first]->GetXaxis()->SetTitle("4 keV/bin ");
+//         double max_e = 16383.5; int n_bin_e = 4096; int kev_per_bin = max_e / n_bin_e;
+//         if (blExtTrigger){ max_e = 32768; n_bin_e = 8192; kev_per_bin = 4;}
+            
+        hDelila0[itna1->first] = new TH1F(Form("%s",itna1->second.c_str()), Form("%s before EventB",itna1->second.c_str()),my_hists["mDelila"][3], my_hists["mDelila"][4]-0.5, my_hists["mDelila"][5]-0.5);
+        hDelila0[itna1->first]->GetYaxis()->SetTitle(Form("%i keV/bin ",int(my_hists["mDelila"][5]/my_hists["mDelila"][3])));
+        hDelila0[itna1->first]->GetXaxis()->SetTitle("keV");
         fOutput->Add(hDelila0[itna1->first]);
         
-        hDelila_single[itna1->first] = new TH1F(Form("%s_single",itna1->second.c_str()), Form("%s_single",itna1->second.c_str()), n_bin_e, -0.5, max_e-0.5);
-        hDelila_single[itna1->first]->GetYaxis()->SetTitle("counts");
-        hDelila_single[itna1->first]->GetXaxis()->SetTitle("4 keV/bin");
+        hDelila_single[itna1->first] = new TH1F(Form("%s_single",itna1->second.c_str()), Form("%s_single",itna1->second.c_str()), my_hists["mDelila"][3], my_hists["mDelila"][4]-0.5, my_hists["mDelila"][5]-0.5);
+        hDelila_single[itna1->first]->SetTitle(Form("%i keV/bin ",int(my_hists["mDelila"][5]/my_hists["mDelila"][3])));
+        hDelila_single[itna1->first]->GetXaxis()->SetTitle("keV");
         fOutput->Add(hDelila_single[itna1->first]);
    
-        hDelilaCS[itna1->first] = new TH1F(Form("%s_CS",itna1->second.c_str()), Form("%s_CS",itna1->second.c_str()),n_bin_e, -0.5, max_e-0.5);
-        hDelilaCS[itna1->first]->GetYaxis()->SetTitle("counts");
-        hDelilaCS[itna1->first]->GetXaxis()->SetTitle("4 keV/bin");
+        hDelilaCS[itna1->first] = new TH1F(Form("%s_CS",itna1->second.c_str()), Form("%s_CS",itna1->second.c_str()),my_hists["mDelila"][3], my_hists["mDelila"][4]-0.5, my_hists["mDelila"][5]-0.5);
+        hDelilaCS[itna1->first]->GetYaxis()->SetTitle(Form("%i keV/bin ",int(my_hists["mDelila"][5]/my_hists["mDelila"][3])));
+        hDelilaCS[itna1->first]->GetXaxis()->SetTitle("keV");
         hDelilaCS[itna1->first]->SetLineColor(2);
         fOutput->Add(hDelilaCS[itna1->first]);
         
-        hDelilaDC[itna1->first] = new TH1F(Form("%s_DC",itna1->second.c_str()), Form("%s_DC",itna1->second.c_str()), n_bin_e, -0.5, max_e-0.5);
-        hDelilaDC[itna1->first]->GetYaxis()->SetTitle("counts");
-        hDelilaDC[itna1->first]->GetXaxis()->SetTitle("4 keV/bin");
+        hDelilaDC[itna1->first] = new TH1F(Form("%s_DC",itna1->second.c_str()), Form("%s_DC",itna1->second.c_str()), my_hists["mDelila"][3], my_hists["mDelila"][4]-0.5, my_hists["mDelila"][5]-0.5);
+        hDelilaDC[itna1->first]->GetYaxis()->SetTitle(Form("%i keV/bin ",int(my_hists["mDelila"][5]/my_hists["mDelila"][3])));
+        hDelilaDC[itna1->first]->GetXaxis()->SetTitle("keV");
         hDelilaDC[itna1->first]->SetLineColor(kBlack);
         fOutput->Add(hDelilaDC[itna1->first]);
         
-        hDelilaCS_DC[itna1->first] = new TH1F(Form("%s_CS_DC",itna1->second.c_str()), Form("%s_CS_DC",itna1->second.c_str()),n_bin_e, -0.5, max_e-0.5);
-        hDelilaCS_DC[itna1->first]->GetYaxis()->SetTitle("counts");
-        hDelilaCS_DC[itna1->first]->GetXaxis()->SetTitle("4 keV/bin");
+        hDelilaCS_DC[itna1->first] = new TH1F(Form("%s_CS_DC",itna1->second.c_str()), Form("%s_CS_DC",itna1->second.c_str()),my_hists["mDelila"][3], my_hists["mDelila"][4]-0.5, my_hists["mDelila"][5]-0.5);
+        hDelilaCS_DC[itna1->first]->GetYaxis()->SetTitle(Form("%i keV/bin ",int(my_hists["mDelila"][5]/my_hists["mDelila"][3])));
+        hDelilaCS_DC[itna1->first]->GetXaxis()->SetTitle("keV");
         fOutput->Add(hDelilaCS_DC[itna1->first]);
      
   };
   
   
   itna1 =  detector_name.begin();
-
-//   for(;itna1!=detector_name.end();++itna1){
-//    hDelila_long[itna1->first] = new TH1F(Form("%s_long",itna1->second.c_str()), Form("%s_long",itna1->second.c_str()), 4096, -0.5, 32767.5);
-//    hDelila_long[itna1->first]->GetYaxis()->SetTitle("counts");
-//    hDelila_long[itna1->first]->GetXaxis()->SetTitle("8 keV/bin ");
-//    fOutput->Add(hDelila_long[itna1->first]);
-//    
-//    hDelilaCS_long[itna1->first] = new TH1F(Form("%s_CS_long",itna1->second.c_str()), Form("%s_CS_long",itna1->second.c_str()), 4096, -0.5, 32767.5);
-//    hDelilaCS_long[itna1->first]->GetYaxis()->SetTitle("counts");
-//    hDelilaCS_long[itna1->first]->GetXaxis()->SetTitle("8 keV/bin");
-//    fOutput->Add(hDelilaCS_long[itna1->first]);
-//    
-//    hDelilaDC_long[itna1->first] = new TH1F(Form("%s_DC_long",itna1->second.c_str()), Form("%s_DC_long",itna1->second.c_str()), 4096, -0.5, 32767.5);
-//    hDelilaDC_long[itna1->first]->GetYaxis()->SetTitle("counts");
-//    hDelilaDC_long[itna1->first]->GetXaxis()->SetTitle("8 keV/bin");
-//    fOutput->Add(hDelilaDC_long[itna1->first]);
-//    
-//    hDelilaCS_DC_long[itna1->first] = new TH1F(Form("%s_CS_DC_long",itna1->second.c_str()), Form("%s_CS_DC_long",itna1->second.c_str()), 4096, -0.5, 32767.5);
-//    hDelilaCS_DC_long[itna1->first]->GetYaxis()->SetTitle("counts");
-//    hDelilaCS_DC_long[itna1->first]->GetXaxis()->SetTitle("8 keV/bin");
-//    fOutput->Add(hDelilaCS_DC_long[itna1->first]);
-//       
-//   };
-   
 
    hTimeMinusTriggerLaBr = new TH1F("hTimeMinusTriggerLaBr", "hTimeMinusTriggerLaBr", 14000, -2e5, 5e5);
    fOutput->Add(hTimeMinusTriggerLaBr);
@@ -1815,7 +1792,8 @@ if (has_detector["neutron"]) {mTimeCalibTrigger = new TH2F("mTimeCalibTrigger", 
    fOutput->Add(mTimeCalibTriggerCores);
    
 //    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 1e4,-5e5, 5e5);
-   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 4e3,-2e6, 2e6);
+//    mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", max_domain, -0.5, max_domain-0.5, 4e3,-2e6, 2e6);
+   mTimeCalibInsideEvent = new TH2F("mTimeCalibInsideEvent", "mTimeCalibInsideEvent", my_hists["mTimeCalibInsideEvent"][0], my_hists["mTimeCalibInsideEvent"][1]-0.5,  my_hists["mTimeCalibInsideEvent"][2]-0.5,  my_hists["mTimeCalibInsideEvent"][3], my_hists["mTimeCalibInsideEvent"][4],  my_hists["mTimeCalibInsideEvent"][5]);
    mTimeCalibInsideEvent->GetXaxis()->SetTitle("domain");
    mTimeCalibInsideEvent->GetYaxis()->SetTitle("ps");
 //    mTimeCalibInsideEvent->SetTitle(Form("TimeDiff domain%i vs domain", trigger_domains.front()));

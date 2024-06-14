@@ -139,7 +139,7 @@ public :
   std::map<int, double_t >              LUT_TA_COINC;
   std::map<TString, bool >              my_confs; // enable/disable
   std::map<TString, float >             my_params; // timing
-  std::map<TString, std::deque<Int_t>>  my_hists;
+  std::map<TString, std::deque<Float_t>>  my_hists;
 
   DelilaEvent DelilaEvent_;  
 //   DelilaEvent DelilaEventTreated ;
@@ -189,12 +189,7 @@ public :
   std::map<int, TH1F*> hDelilaCS_DC;
   
   TH1F* hLaBrElissa;
-  
-//   std::map<int, TH1F*> hDelila_long;
-//   std::map<int, TH1F*> hDelilaCS_long;
-//   std::map<int, TH1F*> hDelilaDC_long;
-//   std::map<int, TH1F*> hDelilaCS_DC_long;
-  
+
   std::map<int, TH1F*> hAddBack;
 
   std::map<UShort_t, std::string> detector_name;
