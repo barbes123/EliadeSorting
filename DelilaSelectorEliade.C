@@ -3237,7 +3237,7 @@ void DelilaSelectorEliade::FillSingleSpectra()
          
 //          CheckIfObject(mSingleCoreCS);
          
-        /* if ((*it_ev__).det_def == 1) {
+        if ((*it_ev__).det_def == 1 && my_confs["IsEliade"]) {
               
              int core_id = (*it_ev__).domain/100 * 10 +(*it_ev__).domain/10%10;
 //              mSingleCore->Fill(core_id, (*it_ev__).Energy_kev);
@@ -3249,7 +3249,7 @@ void DelilaSelectorEliade::FillSingleSpectra()
                  int acs_id = (*it_ev__).CS%10;//this to be checked//20240529
 //                   mCoreSpecACS[core_id]->Fill(acs_id,(*it_ev__).Energy_kev);
               };
-         };*/
+         };
 //          std::cout<<"here2 \n";
          if ((*it_ev__).det_def == 3 || (*it_ev__).det_def == 1) {
              if (((*it_ev__).CS == 0) && blCS)  {
