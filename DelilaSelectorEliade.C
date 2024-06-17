@@ -63,7 +63,7 @@ bool blDebugElissa          = false;
 bool blLUT_ELIADE           = false;
 bool blLUT_TA               = false; //if tru read TA from LUT_TA file
 bool blExpIsEliade          = false;
-bool blExpIsElifant         = true;
+bool blExpIsElifant         = false;
 
 ULong64_t trigger_cnt = 0;
 // ULong64_t trigger_events = 0;
@@ -467,8 +467,8 @@ void DelilaSelectorEliade::Read_Confs() {
   my_confs["IsEliade"]             = false;
   my_confs["IsElifant"]            = false; //not implemented
   my_confs["IsTrigger"]            = false; //not implemented for Oliver
-  my_confs["Time_Alignement"]      = false; 
-  my_confs["UseFineTS"]            = false;
+  my_confs["Time_Alignement"]      = true; 
+  my_confs["UseFineTS"]            = true;
   my_confs["Fold"]                 = false;
   
   my_params["window_length"]       = 1;
@@ -758,6 +758,7 @@ void DelilaSelectorEliade::Begin(TTree * tree)
    particle_name_without_cut[11] = "1d1p";
    particle_name_without_cut[101] = "1a1d";
 
+  
 
   std::map<int, Float_t>::iterator it_c_gates_ =  coinc_gates.begin();
   for(;it_c_gates_!=coinc_gates.end();++it_c_gates_){
@@ -2976,10 +2977,10 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
 //            if (blCS)                    ViewACS_segments();
             if (my_confs["Fold"])                  TreatFold(3);
             
-//           if (blAddBack)               ViewAddBackDetector();//for segments
+           if (blAddBack)               ViewAddBackDetector();//for segments
 //            if (blAddBack)               ViewAddBackDetectorCS();
 //            if (blAddBack)               ViewAddBackCrystal();
-            if (blAddBack)               ViewAddBackCoreCore();
+//            if (blAddBack)               ViewAddBackCoreCore();
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
            
@@ -3317,7 +3318,92 @@ void DelilaSelectorEliade::ViewAddBackCrystal()
 
 void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
 {
-     std::deque<DelilaEvent>::iterator it1_= delilaQu.begin();
+     std::deque<DelilaEvent>::iterator itd_= delilaQu.begin();
+     
+     delilaQuAddedBack.clear();//safe event for later g-g, similar to delilaQu back with addback
+     
+     std::deque<DelilaEvent> SegQu;
+     SegQu.clear();
+
+     for (; itd_!= delilaQu.end();++itd_){
+         
+         if ((*itd_).det_def != 2) continue;
+         if ((*itd_).CS != 0) continue;
+         
+         SegQu.push_back(*itd_);
+     }
+
+     std::deque<DelilaEvent>::iterator it1_= SegQu.begin();
+     std::deque<DelilaEvent>::iterator it2_= SegQu.begin();
+     
+     for (; it1_!= SegQu.end();++it1_){
+         if ((*it1_).det_def != 2) {SegQu.erase(it1_); continue;}
+         if ((*it1_).CS != 0) {SegQu.erase(it1_); continue;}
+         int det_id1  =  (*it1_).cloverID;
+         int core_id1 =  (*it1_).coreID;
+
+         int nnfold = 1;
+         double foldsum = (*it1_).Energy_kev;
+         if (addback_tree>0){
+           vDomain->clear();
+           vEAddback->clear();
+           vTime->clear();
+           vDomain->push_back((*it1_).domain);
+           vEAddback->push_back((*it1_).Energy_kev);
+           vTime->push_back((*it1_).Time);
+         }
+
+         it2_= it1_;
+         for (; it2_!= SegQu.end();++it2_){           
+           if (it1_ == it2_) continue; 
+           if ((*it2_).det_def != 2) continue;
+           if ((*it2_).CS != 0) continue;  
+           int det_id2 =  (*it2_).cloverID;
+           int core_id2 = (*it2_).coreID;
+           if (det_id1 != det_id2) continue;
+           if (core_id1/10 != core_id2/10) continue;
+//             std::cout<<core_id1<<" "<<core_id2<<" "<<" \n";           
+           
+           double time_diff_seg_seg = (*it1_).Time - (*it2_).Time;
+           
+           int id1 = core_id1;
+           int id2 = core_id2;
+           //mTimeDiffCoreSegments[id1]->Fill(id2,time_diff_seg_seg);
+           
+           if (time_diff_seg_seg < coinc_gates[12]) {
+               nnfold++;
+               foldsum += (*it2_).Energy_kev;
+
+               if (addback_tree>0){
+                 vDomain->push_back((*it2_).domain);
+                 vEAddback->push_back((*it2_).Energy_kev);
+                 vTime->push_back((*it2_).Time);
+               }
+
+               SegQu.erase(it2_);
+               it1_ = SegQu.begin();
+               it2_ = SegQu.begin();
+           }
+         };
+
+         mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
+
+         (*it1_).Energy_kev = foldsum;
+         delilaQuAddedBack.push_back((*it1_));
+
+         if (addback_tree>0){
+             nfoldAddback = nnfold;
+             EAddback = foldsum;
+             addbackTree->Fill();
+             vDomain->clear();
+             vEAddback->clear();
+             vTime->clear();
+         }
+
+         SegQu.erase(it1_);
+         it1_ = SegQu.begin() - 1;
+    }
+     /*std::deque<DelilaEvent>::iterator it1_= delilaQu.begin();
      std::deque<DelilaEvent>::iterator it2_= delilaQu.begin();
 
      for (; it1_!= delilaQu.end();++it1_){
@@ -3447,10 +3533,10 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
             vEAddback->clear();
             vTime->clear();
             it3_= SegQu.begin();
-          }*/
+          }
         }
         SegQu.clear();
-     };
+     };*/
 }
 
 void DelilaSelectorEliade::ViewAddBackDetectorCS()
@@ -3625,35 +3711,43 @@ void DelilaSelectorEliade::TimeAlignementCoincCoinc()
 
 void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
 {
-     std::deque<DelilaEvent>::iterator it1_= delilaQu.begin();
-     std::deque<DelilaEvent>::iterator it2_= delilaQu.begin();
+     std::deque<DelilaEvent>::iterator itd_= delilaQu.begin();
      
      delilaQuAddedBack.clear();//safe event for later g-g, similar to delilaQu back with addback
      
-     
-     for (; it1_!= delilaQu.end();++it1_){
+     std::deque<DelilaEvent> CoreQu;
+     CoreQu.clear();
+
+     for (; itd_!= delilaQu.end();++itd_){
          
-         if ((*it1_).det_def != 1) continue;
-         if ((*it1_).CS != 0) continue;
+         if ((*itd_).det_def != 1) continue;
+         if ((*itd_).CS != 0) continue;
+         
+         CoreQu.push_back(*itd_);
+     }
+
+     std::deque<DelilaEvent>::iterator it1_= CoreQu.begin();
+     std::deque<DelilaEvent>::iterator it2_= CoreQu.begin();
+     
+     for (; it1_!= CoreQu.end();++it1_){
+         if ((*it1_).det_def != 1) {CoreQu.erase(it1_); continue;}
+         if ((*it1_).CS != 0) {CoreQu.erase(it1_); continue;}
          int det_id1  =  (*it1_).cloverID;
          int core_id1 =  (*it1_).coreID;
-         
-         std::deque<DelilaEvent> CoreQu;
-         CoreQu.clear();
-         CoreQu.push_back(*it1_);
-         
-         bool added{false};
-         it2_ = delilaQuAddedBack.begin();
-         for (; it2_!= delilaQuAddedBack.end();++it2_){
-             if ((*it2_).coreID/10 == core_id1/10){
-                 added = true;
-                 break;
-             }
+
+         int nnfold = 1;
+         double foldsum = (*it1_).Energy_kev;
+         if (addback_tree>0){
+           vDomain->clear();
+           vEAddback->clear();
+           vTime->clear();
+           vDomain->push_back((*it1_).domain);
+           vEAddback->push_back((*it1_).Energy_kev);
+           vTime->push_back((*it1_).Time);
          }
-         if (added) continue;
-         
+
          it2_= it1_;
-         for (; it2_!= delilaQu.end();++it2_){           
+         for (; it2_!= CoreQu.end();++it2_){           
            if (it1_ == it2_) continue; 
            if ((*it2_).det_def != 1) continue;
            if ((*it2_).CS != 0) continue;  
@@ -3667,17 +3761,47 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
            
            int id1 = core_id1;
            int id2 = core_id2;
-           mTimeDiffCoreCore[id1]->Fill(id2,time_diff_core_core);
-           
-           if (time_diff_core_core < coinc_gates[12]) {
-//                mCoreSegments[det_id1]->Fill(seg_id,(*it2_).Energy_kev);
-//                mGGCoreSegments[det_id1]->Fill((*it1_).Energy_kev,(*it2_).Energy_kev);
-//                hCoreFold[det_id1]->SetBinContent(seg_id, hCoreFold[det_id1]->GetBinContent(seg_id)+1);
-               CoreQu.push_back(*it2_);
-           };
+           if (id1 < id2){
+             mTimeDiffCoreCore[id1]->Fill(id2,time_diff_core_core);
+           }else{
+             mTimeDiffCoreCore[id2]->Fill(id1,-time_diff_core_core);
+           }
+
+           if (abs(time_diff_core_core) < coinc_gates[11]) {
+               nnfold++;
+               foldsum += (*it2_).Energy_kev;
+
+               if (addback_tree>0){
+                 vDomain->push_back((*it2_).domain);
+                 vEAddback->push_back((*it2_).Energy_kev);
+                 vTime->push_back((*it2_).Time);
+               }
+
+               CoreQu.erase(it2_);
+               it1_= CoreQu.begin();
+               it2_= CoreQu.begin();
+           }
          };
+
+         mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
+
+         (*it1_).Energy_kev = foldsum;
+         delilaQuAddedBack.push_back((*it1_));
+
+         if (addback_tree>0){
+             nfoldAddback = nnfold;
+             EAddback = foldsum;
+             addbackTree->Fill();
+             vDomain->clear();
+             vEAddback->clear();
+             vTime->clear();
+         }
+
+         CoreQu.erase(it1_);
+         it1_= CoreQu.begin()-1;
+    }
         
-        std::deque<DelilaEvent>::iterator it3_= CoreQu.begin();
+/*        std::deque<DelilaEvent>::iterator it3_= CoreQu.begin();
         std::deque<DelilaEvent>::iterator it4_= CoreQu.begin();
         int nnfold = CoreQu.size();
         double foldsum = 0;
@@ -3729,7 +3853,7 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
                   foldE += (*it4_).Energy_kev*Crosstalk_matrix[(*it3_).coreID][(*it4_).coreID];
                 }
                 foldsum+= foldE;*/
-                foldsum+= (*it3_).Energy_kev;
+                /*foldsum+= (*it3_).Energy_kev;
                 if (addback_tree>0){
                   vDomain->push_back((*it3_).domain);
                   //vEAddback->push_back(foldE);
@@ -3753,7 +3877,7 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
 
             };
         };
-     };
+     };*/
      
      
      std::deque<DelilaEvent>::iterator it_gg1_= delilaQuAddedBack.begin();
