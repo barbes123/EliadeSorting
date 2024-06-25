@@ -1313,6 +1313,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
         mElissa->GetYaxis()->SetTitle("keV");
         fOutput->Add(mElissa);
         
+        if (my_confs["ParticleCutGate"] ){
         
         int nbins = 16384; float bin_max = 16383.5; kev_bin = 1;
         std::map<UInt_t, string>::iterator it_pid_=particle_name_in_cut.begin();
@@ -1359,6 +1360,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             
             
         }
+        };
         
         
    };
