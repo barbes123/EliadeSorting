@@ -521,26 +521,30 @@ void DelilaSelectorEliade::Read_Confs() {
           my_confs[conf_name] = (value == 1);
           continue;         
       }
+      
+      std::map<TString, std::deque<Float_t>> ::iterator it_hist_= my_hists.begin();
+      if (my_hists.find(conf_name) != my_hists.end()) {
+          
+        bool bl_last = true;
+        
+        std::cout<<" nn "<<conf_name<<" ";
+        int i =0;
+        while (bl_last){
+             my_hists[conf_name][i] = value;
+//              std::cout<<value<<" ";
+             std::cout<< my_hists[conf_name][i]<<" ";
+            
+            if (!(is >> value)) bl_last = false;  
+            i++;
+        };
+          continue;         
+      };
+
 
       
       
 
       switch (coinc_id){
-/*          case 3:
-          {
-//               blFold = (value == 1);
-              std::cout<<"expName "<<conf_name<<"\n";
-              if (conf_name.Contains("ELIADE")){
-                  blExpIsEliade = true;
-                  blExpIsElifant = false;                  
-                  std::cout<<"The experiment is set to ELIADE \n";
-              }else if (conf_name.Contains("ELIFANT")){
-                  blExpIsEliade = false;
-                  blExpIsElifant = true;                  
-                  std::cout<<"The experiment is set to ELIFANT \n";
-              }
-              break;
-          }  */  
           case 1001:
               {
               bunch_reset = value;
@@ -586,14 +590,6 @@ void DelilaSelectorEliade::Read_Confs() {
                   }
                   
               };
-//                int number_of_detectors = value/1;
-//                std::cout<<" Enabled "<<number_of_detectors <<" detectors \n";
-//                int next_detector = -1;
-//                 for (int k = 0; k < number_of_detectors; k++) {
-//                  if (is >> next_detector) has_detector[detector_name[next_detector]] = true;
-//                  std::cout<<" id " << next_detector <<" det " << detector_name[next_detector] << " is "<<has_detector[detector_name[next_detector]]<<"\n";
-// 
-//                 };
               break;
           }
           case 9998:{
@@ -620,10 +616,12 @@ void DelilaSelectorEliade::Read_Confs() {
                int number_of_trigger_channels =  value/1;
                channel_trg = value/1;
                int next_trigger_domain = -1;
-                for (int k = 0; k < number_of_trigger_channels; k++) {
-                 if (is >> next_trigger_domain) trigger_domains.push_back(next_trigger_domain/1);
-                };
-               if (trigger_domains.empty()) trigger_domains.push_back(number_of_trigger_channels);
+                while (is >> next_trigger_domain) trigger_domains.push_back(next_trigger_domain/1);//this line replaces 4 below; to be checked
+//                  for (int k = 0; k < number_of_trigger_channels; k++) {
+//                   if (is >> next_trigger_domain) trigger_domains.push_back(next_trigger_domain/1);
+//                  };
+//                if (trigger_domains.empty()) trigger_domains.push_back(number_of_trigger_channels);
+//                if (!trigger_domains.empty()) EVENT_BUILDER = true;
                std::cout<<"channel_trg  "<<channel_trg<<" \n";
                std::cout<<"trigger_domains: ";
                std::vector<int> ::iterator it_trg_dom_ = trigger_domains.begin();
@@ -818,7 +816,8 @@ void DelilaSelectorEliade::Begin(TTree * tree)
    Read_TimeAlignment_LookUpTable();
    Read_AddBackTable();
    Read_AcsTable();
-   if (!my_confs["IsEliade"]) Read_CutFile();
+//    if (!my_confs["IsEliade"]) Read_CutFile();
+   if (my_confs["ParticleCutGate"]) Read_CutFile();
 //    Read_CoincCoinc_TimeAlignment_LookUpTable();//for fine coinc-coinc time allignement 
 //    Print_CoincCoinc_TimeAlignment_LookUpTable();
    //Print_TimeAlignment_LookUpTable();
@@ -934,6 +933,8 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
  
    int n_bins =  16384; double max_value = 16383.5; int kev_bin = 4;
    if (blExtTrigger){n_bins =  320; max_value = 31999.5; kev_bin = 100;};
+   
+   std::cout<<" mDelila_raw "<< my_hists["mDelila_raw"][0] <<" "<< my_hists["mDelila_raw"][1]<<" "<< my_hists["mDelila_raw"][2]<<" "<< my_hists["mDelila_raw"][3]<<" "<< my_hists["mDelila_raw"][4]<<" "<< my_hists["mDelila_raw"][5]<<std::endl;
    
    mDelila_raw = new TH2F("mDelila_raw", "mDelila_raw", my_hists["mDelila_raw"][0], my_hists["mDelila_raw"][1]-0.5, my_hists["mDelila_raw"][2]-0.5, my_hists["mDelila_raw"][3],my_hists["mDelila_raw"][4]-0.5,my_hists["mDelila_raw"][5]-0.5);
    mDelila_raw->GetXaxis()->SetTitle("domain");

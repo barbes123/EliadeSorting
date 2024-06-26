@@ -689,7 +689,7 @@ void DelilaSelectorEliade::Init(TTree *tree)
   
   
   if (my_confs["Time_Alignement"]) {std::cout<<" Time Alignement matrix: \t enabled \n";  
-                         std::cout<<" TA reference domaim:  \t\t"<<my_params["reference_dom"]<<" \n";
+                         std::cout<<" TA reference domain:  \t\t\t"<<my_params["reference_dom"]<<" \n";
   };
   
   if (has_detector["Elissa"] && my_confs["DeeRing"]) std::cout<<" dEring-Esector matrix is: \t enabled \n";
