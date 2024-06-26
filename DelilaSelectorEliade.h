@@ -310,15 +310,14 @@ public :
   TH1F* hTimeZero;
   TH1F* hTimeSort;
     
-//   TH2F* mTimeCalibDomain0;
   TH2F* mTimeCalibTrigger;
   TH2F* mTimeCalibTriggerCores;
   TH2F* mTimeCalibInsideEvent;
   TH2F* mTimeCalibInsideEventCores;
-  TH2F* mTimeCalibCoincCoinc;
+//   TH2F* mTimeCalibCoincCoinc;
   
 //   TH2F* mTimeCalib;
-  TH2F* mTimeCalibBGO;
+//   TH2F* mTimeCalibBGO;
   TH2F* mTimeCalibBGO_cs_dom;
   
   TH2F* mNeutron;
@@ -336,8 +335,6 @@ public :
   
   std::map<int, std::vector<Float_t>> mapSeaTable;
 
-//   TH2F* mTimeCalibDomain0;
-  
   TH1F *hAmax;
   TH2F *mAmaxEnergy;
 
@@ -451,7 +448,7 @@ public :
    virtual void  Read_AcsTable();
    virtual void  Read_SeaTable();
    virtual void  Read_ELIADE_JSONLookUpTable();
-//    virtual void  Read_Conf_json();
+
    virtual void  Read_CutFile();
    virtual void  Read_TimeAlignment_LookUpTable();
    virtual void  Read_CoincCoinc_TimeAlignment_LookUpTable();
@@ -464,7 +461,6 @@ public :
    virtual int GetCoincTimeCorrection(int dom1, int dom2);
    virtual void cs();
    
-//    virtual void TreatDelilaEvent();
    virtual void TreatFold(int det); 
    virtual int  GetCoincID(int dom1, int dom2);
    virtual int  GetCoinc_det_def(int det_def1, int det_def2);
@@ -473,9 +469,7 @@ public :
    
    virtual void FillOutputTree();
    virtual void FillSingleSpectra();
-//    virtual void TimeAlignementTrigger();
    virtual void TimeAlignementInsideEvent();//
-   virtual void TimeAlignementCoincCoinc();//based on pairs det-det coinc
    
    virtual void EventBuilderPreTrigger();
    virtual void EventBuilder();//many conditions
@@ -625,18 +619,6 @@ void DelilaSelectorEliade::Init(TTree *tree)
        if (has_detector[it_has_->first]) std::cout<< it_has_->first<< "\t enabled  \n";
   };
 
-  
-  
-//    std::cout<<" HPGe     " << has_detector["HPGe"] <<"  \n";
-//    std::cout<<" HPGeSeg  " << has_detector["SEG"] <<"  \n";
-//    std::cout<<" LaBr     " << has_detector["LaBr"] <<"  \n";
-//    std::cout<<" CsI      " << has_detector["CsI"] <<"  \n";
-//    std::cout<<" BGOs     " << has_detector["BGOs"] <<"  \n";
-//    std::cout<<" BGOf     " << has_detector["BGOf"] <<"  \n";
-//    std::cout<<" Elissa   " << has_detector["Elissa"] <<" \n";
-//    std::cout<<" neutron   " << has_detector["neutron"] <<" \n";
-//    std::cout<<" neutronTN   " << has_detector["neutronTN"] <<" \n";
-  
   std::cout<<" === Settings === \n";
   
   std::cout<<" AddBack option: "<< addBackMode <<" \n";
