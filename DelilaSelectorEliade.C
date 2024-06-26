@@ -46,6 +46,7 @@ bool blOutTree              = false;
 bool blFillAmaxEnergyDom    = false;
 bool blFillSingleSpectra    = true;
 bool blLong                 = false;//for Oliver
+bool blParticleGammaGamma   = false;
 // bool blDeeSector            = true;
 // bool blDeeRing              = false;
 // bool blDeeEx                = false;
@@ -1331,18 +1332,21 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             fOutput->Add(hGG_particle[it_pid_->second]);
             std::cout<<"hGG_particle_"<<it_pid_->second<<" created \n";
             
-            mGG_particle_time_diff[it_pid_->second] = new TH2F(Form("pid_gamma_%i_%s_time_diff",it_pid_->first, it_pid_->second.c_str()), Form("pid_%i_g_%s_time_diff",it_pid_->first, it_pid_->second.c_str()),  500, 0.5, 499.5,1e2,-5e5, 5e5);
-            mGG_particle_time_diff[it_pid_->second]->GetXaxis()->SetTitle("domain");
-            mGG_particle_time_diff[it_pid_->second]->GetYaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
-            fOutput->Add(mGG_particle_time_diff[it_pid_->second]);
-            std::cout<<"mGG_particle_time_diff_"<<it_pid_->second<<" created \n";
             
-             mGG_particle[it_pid_->second] = new TH2F(Form("m_pid_gamma_%i_%s",it_pid_->first, it_pid_->second.c_str()), Form("m_pid_%i_gg_%s",it_pid_->first, it_pid_->second.c_str()), nbins, -0.5, bin_max,  nbins, -0.5, bin_max);
-            mGG_particle[it_pid_->second]->GetXaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
-            mGG_particle[it_pid_->second]->GetYaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin));
-            fOutput->Add(mGG_particle[it_pid_->second]);
-            std::cout<<"mGG_particle"<<it_pid_->second<<" created \n";
+            if (blParticleGammaGamma){
             
+                mGG_particle_time_diff[it_pid_->second] = new TH2F(Form("pid_gamma_%i_%s_time_diff",it_pid_->first, it_pid_->second.c_str()), Form("pid_%i_g_%s_time_diff",it_pid_->first, it_pid_->second.c_str()),  500, 0.5, 499.5,1e2,-5e5, 5e5);
+                mGG_particle_time_diff[it_pid_->second]->GetXaxis()->SetTitle("domain");
+                mGG_particle_time_diff[it_pid_->second]->GetYaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
+                fOutput->Add(mGG_particle_time_diff[it_pid_->second]);
+                std::cout<<"mGG_particle_time_diff_"<<it_pid_->second<<" created \n";
+                
+                mGG_particle[it_pid_->second] = new TH2F(Form("m_pid_gamma_%i_%s",it_pid_->first, it_pid_->second.c_str()), Form("m_pid_%i_gg_%s",it_pid_->first, it_pid_->second.c_str()), nbins, -0.5, bin_max,  nbins, -0.5, bin_max);
+                mGG_particle[it_pid_->second]->GetXaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
+                mGG_particle[it_pid_->second]->GetYaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin));
+                fOutput->Add(mGG_particle[it_pid_->second]);
+                std::cout<<"mGG_particle"<<it_pid_->second<<" created \n";
+            };
             
         }
         it_pid_=particle_name_without_cut.begin();
@@ -1352,19 +1356,19 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             hGG_particle[it_pid_->second]->GetYaxis()->SetTitle("counts");
             fOutput->Add(hGG_particle[it_pid_->second]);
             std::cout<<"hGG_particle_"<<it_pid_->second<<" created \n";
-            
-            mGG_particle[it_pid_->second] = new TH2F(Form("m_pid_gamma_%i_%s",it_pid_->first, it_pid_->second.c_str()), Form("m_pid_%i_gg_%s",it_pid_->first, it_pid_->second.c_str()), nbins, -0.5, bin_max,  nbins, -0.5, bin_max);
-            mGG_particle[it_pid_->second]->GetXaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
-            mGG_particle[it_pid_->second]->GetYaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin));
-            fOutput->Add(mGG_particle[it_pid_->second]);
-            std::cout<<"mGG_particle"<<it_pid_->second<<" created \n";
-            
-            mGG_particle_time_diff[it_pid_->second] = new TH2F(Form("pid_gamma_%i_%s_time_diff",it_pid_->first, it_pid_->second.c_str()), Form("pid_%i_g_%s_time_diff",it_pid_->first, it_pid_->second.c_str()),  500, 0.5, 499.5,1e2,-5e5, 5e5);
-            mGG_particle_time_diff[it_pid_->second]->GetXaxis()->SetTitle("domain");
-            mGG_particle_time_diff[it_pid_->second]->GetYaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
-            fOutput->Add(mGG_particle_time_diff[it_pid_->second]);
-            std::cout<<"mGG_particle_time_diff_"<<it_pid_->second<<" created \n";
-            
+            if (blParticleGammaGamma){
+                mGG_particle[it_pid_->second] = new TH2F(Form("m_pid_gamma_%i_%s",it_pid_->first, it_pid_->second.c_str()), Form("m_pid_%i_gg_%s",it_pid_->first, it_pid_->second.c_str()), nbins, -0.5, bin_max,  nbins, -0.5, bin_max);
+                mGG_particle[it_pid_->second]->GetXaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
+                mGG_particle[it_pid_->second]->GetYaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin));
+                fOutput->Add(mGG_particle[it_pid_->second]);
+                std::cout<<"mGG_particle"<<it_pid_->second<<" created \n";
+                
+                mGG_particle_time_diff[it_pid_->second] = new TH2F(Form("pid_gamma_%i_%s_time_diff",it_pid_->first, it_pid_->second.c_str()), Form("pid_%i_g_%s_time_diff",it_pid_->first, it_pid_->second.c_str()),  500, 0.5, 499.5,1e2,-5e5, 5e5);
+                mGG_particle_time_diff[it_pid_->second]->GetXaxis()->SetTitle("domain");
+                mGG_particle_time_diff[it_pid_->second]->GetYaxis()->SetTitle(Form("keV, %i keV/bin", kev_bin)); 
+                fOutput->Add(mGG_particle_time_diff[it_pid_->second]);
+                std::cout<<"mGG_particle_time_diff_"<<it_pid_->second<<" created \n";
+            };
             
         }
         };
@@ -4442,8 +4446,8 @@ void DelilaSelectorEliade::TreatGammaPartCoinc(int coinc_id)//1773 - de-e-LaBr; 
 //                 std::cout<<" hGG_particle_"<<h_name<<" created \n";
 //             }
 //             hGG_particle[h_name]->Fill(it_g_->Energy_kev);
-            
-           // continue; //comment to allow gamma-gamma-particle coinc
+           if (!blParticleGammaGamma) continue;
+           
             std::deque<DelilaEvent>::iterator it2_g_= delilaQu.begin();
               for (; it2_g_  != delilaQu.end();++it2_g_){
                   if (it2_g_->det_def != id_gamma_det) continue;
