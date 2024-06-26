@@ -846,35 +846,38 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    blAddBack = (addBackMode > 0);
 //    if (det_def_trg > 0) blTimeAlignement = false;//in this case trigger is detector type//i commented it checking alignment with pulser and Soiciro 17.5.23
    
-   std::cout<<"Making List of Detectors and Cores from LUT_ELIADE.dat \n";
-   std::map<int, TDelilaDetector > ::iterator it__ = LUT_ELIADE.begin();
-   std::cout<<" Detector ID : ";
-   for (; it__ != LUT_ELIADE.end(); ++it__) {
-      if (LUT_ELIADE[it__->first].detType == 1){
-           int det_id = LUT_ELIADE[it__->first].dom/100;
-           
-           if (std::find(ListOfCores.begin(), ListOfCores.end(),det_id)!=ListOfCores.end()) continue;
-//            if (ListOfCores.find(det_id) == ListOfCores.end()) {;};// continue;
-           std::cout<<det_id<<" ";
-           ListOfCores.push_back(det_id);
-//         std::cout<<LUT_ELIADE[it__->first].dom<<" "<<LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10 <<std::endl;
-      };
-  };
-  std::cout<<" \n";
-  
-  it__ = LUT_ELIADE.begin();
-  std::cout<<" Core ID : ";
-   for (; it__ != LUT_ELIADE.end(); ++it__) {
-      if (LUT_ELIADE[it__->first].detType == 1){
-           int core_id = LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10;
-           if (std::find(ListOfCores.begin(), ListOfCores.end(),core_id)!=ListOfCores.end()) continue;
-           std::cout<<core_id<<" ";
-           ListOfCores.push_back(core_id);
-         
-//         std::cout<<LUT_ELIADE[it__->first].dom<<" "<<LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10 <<std::endl;
-      };
-  };
-  std::cout<<" \n";
+   if (my_confs["IsEliade"]){
+   
+        std::cout<<"Making List of Detectors and Cores from LUT_ELIADE.dat \n";
+        std::map<int, TDelilaDetector > ::iterator it__ = LUT_ELIADE.begin();
+        std::cout<<" Detector ID : ";
+        for (; it__ != LUT_ELIADE.end(); ++it__) {
+            if (LUT_ELIADE[it__->first].detType == 1){
+                int det_id = LUT_ELIADE[it__->first].dom/100;
+                
+                if (std::find(ListOfCores.begin(), ListOfCores.end(),det_id)!=ListOfCores.end()) continue;
+        //            if (ListOfCores.find(det_id) == ListOfCores.end()) {;};// continue;
+                std::cout<<det_id<<" ";
+                ListOfCores.push_back(det_id);
+        //         std::cout<<LUT_ELIADE[it__->first].dom<<" "<<LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10 <<std::endl;
+            };
+        };
+        std::cout<<" \n";
+        
+        it__ = LUT_ELIADE.begin();
+        std::cout<<" Core ID : ";
+        for (; it__ != LUT_ELIADE.end(); ++it__) {
+            if (LUT_ELIADE[it__->first].detType == 1){
+                int core_id = LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10;
+                if (std::find(ListOfCores.begin(), ListOfCores.end(),core_id)!=ListOfCores.end()) continue;
+                std::cout<<core_id<<" ";
+                ListOfCores.push_back(core_id);
+                
+        //         std::cout<<LUT_ELIADE[it__->first].dom<<" "<<LUT_ELIADE[it__->first].dom/100 * 10 +LUT_ELIADE[it__->first].dom/10%10 <<std::endl;
+            };
+        };
+        std::cout<<" \n";
+   };
    
   
    
