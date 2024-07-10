@@ -697,7 +697,7 @@ void DelilaSelectorEliade::Init(TTree *tree)
   
   
   
-  if (my_confs["FineTimeStamp"]){cout<<" Time: \t\t\t\t FineTimeStamp\n";} else{cout<<" Time: \t\t\t\t TimeStamp\n";}
+  if (my_confs["UseFineTS"]){cout<<" Time: \t\t\t\t FineTimeStamp\n";} else{cout<<" Time: \t\t\t\t TimeStamp\n";}
   
   if (my_confs["Fold"]){cout<<" Fold: \t\t\t\t enabled\n";};
   
