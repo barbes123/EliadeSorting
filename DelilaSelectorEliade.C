@@ -233,74 +233,45 @@ void DelilaSelectorEliade::Read_AddBackTable() {
   lookuptable.close();
   }
 
-  //60Co run 19 poly2
-  /*Crosstalk_matrix[30][30] = 1.00001;
-  Crosstalk_matrix[30][31] = 0.0033635;
-  Crosstalk_matrix[30][32] = 0.00624205;
-  Crosstalk_matrix[30][33] = 0.00569536;
-  Crosstalk_matrix[31][30] = 0.0110337;
-  Crosstalk_matrix[31][31] = 0.999949;
-  Crosstalk_matrix[31][32] = 0.0125455;
-  Crosstalk_matrix[31][33] = 0.0118912;
-  Crosstalk_matrix[32][30] = -0.0043473;
-  Crosstalk_matrix[32][31] = -0.00547755;
-  Crosstalk_matrix[32][32] = 0.999902;
-  Crosstalk_matrix[32][33] = -0.00297115;
-  Crosstalk_matrix[33][30] = -0.000352647;
-  Crosstalk_matrix[33][31] = -0.00169757;
-  Crosstalk_matrix[33][32] = 0.00090722;
-  Crosstalk_matrix[33][33] = 0.999975;*/
-  //60Co run 19 linear
-  /*Crosstalk_matrix[30][30] = 1.;
-  Crosstalk_matrix[30][31] = 0.000196922;
-  Crosstalk_matrix[30][32] = 0.000317959;
-  Crosstalk_matrix[30][33] = 0.000163159;
-  Crosstalk_matrix[31][30] = 0.00371755;
-  Crosstalk_matrix[31][31] = 1.;
-  Crosstalk_matrix[31][32] = 0.00336885;
-  Crosstalk_matrix[31][33] = 0.00307501;
-  Crosstalk_matrix[32][30] = -0.000637918;
-  Crosstalk_matrix[32][31] = -0.0010794;
-  Crosstalk_matrix[32][32] = 0.999995;
-  Crosstalk_matrix[32][33] = -0.0006628;
-  Crosstalk_matrix[33][30] = 0.00204568;
-  Crosstalk_matrix[33][31] = 0.00136688;
-  Crosstalk_matrix[33][32] = 0.00155062;
-  Crosstalk_matrix[33][33] = 1.;*/
-  //152Eu run 20 poly2
-  /*Crosstalk_matrix[30][30] = 0.999994;
-  Crosstalk_matrix[30][31] = 0.00123696;
-  Crosstalk_matrix[30][32] = -0.000844153;
-  Crosstalk_matrix[30][33] = 0.000451283;
-  Crosstalk_matrix[31][30] = -0.00227777;
-  Crosstalk_matrix[31][31] = 0.99998;
-  Crosstalk_matrix[31][32] = -0.0031801;
-  Crosstalk_matrix[31][33] = -0.00233592;
-  Crosstalk_matrix[32][30] = 0.00431839;
-  Crosstalk_matrix[32][31] = 0.00462815;
-  Crosstalk_matrix[32][32] = 0.999978;
-  Crosstalk_matrix[32][33] = 0.00427928;
-  Crosstalk_matrix[33][30] = 0.000657621;
-  Crosstalk_matrix[33][31] = 0.00111413;
-  Crosstalk_matrix[33][32] = -0.000821712;
-  Crosstalk_matrix[33][33] = 0.999994;*/
-  //152Eu run 20 linear
-  /*Crosstalk_matrix[30][30] = 1.00001;
-  Crosstalk_matrix[30][31] = 0.00168809;
-  Crosstalk_matrix[30][32] = 0.00172696;
-  Crosstalk_matrix[30][33] = 0.00146297;
-  Crosstalk_matrix[31][30] = 0.00124378;
-  Crosstalk_matrix[31][31] = 1.;
-  Crosstalk_matrix[31][32] = 0.00139072;
-  Crosstalk_matrix[31][33] = 0.00129858;
-  Crosstalk_matrix[32][30] = 0.00144049;
-  Crosstalk_matrix[32][31] = 0.000988801;
-  Crosstalk_matrix[32][32] = 1.00001;
-  Crosstalk_matrix[32][33] = 0.00127115;
-  Crosstalk_matrix[33][30] = 0.00130832;
-  Crosstalk_matrix[33][31] = 0.000572351;
-  Crosstalk_matrix[33][32] = 0.00103709;
-  Crosstalk_matrix[33][33] = 1.;*/
+  std::cout << "I am Reading CrosstalkTable ... ";
+ 
+  char* pLUTC_Path;
+  //pLUT_Path = getenv ("ELIADE_LUT");
+  pLUTC_Path = ".";
+  if (pLUTC_Path!=NULL)
+    printf ("The AddBackTable path is: %s \n",pLUTC_Path);
+
+
+  std::stringstream LUTCFile;
+  LUTCFile << pLUTC_Path <<"/"<<"Crosstalk_matrix.dat";
+// //   const int nbr_of_ch = 200;
+  std::ifstream lookuptableC(LUTCFile.str().c_str());
+
+  if (!lookuptableC.good()) {
+    std::ostringstream os;
+    os << "Could not open " << LUTCFile.str().c_str()
+    << " no addback will be done\n";
+//        << " and I need it ;(\n";
+//     Abort(os.str().c_str());
+  } else {
+    while (lookuptableC.good()) {
+      std::string oneline;
+      std::getline(lookuptableC, oneline);
+      if (!lookuptableC.good()) continue;
+      if (oneline[0] == '#') continue; // ignore lines stating with #
+      if (oneline.empty())   continue; // ignore empty lines
+
+      std::istringstream is(oneline);
+ 
+      float E_C = 0; char* doublepoint; int dom1 = 0; int dom2 = 0; float C_factor = 0.; float C_error = 0.;
+      is >> dom1 >> dom2 >> C_factor;
+      Crosstalk_matrix[dom1][dom2] = C_factor;
+      std::cout<<dom1<<" "<<dom2<<" "<<Crosstalk_matrix[dom1][dom2]<<" "<<Crosstalk_matrix[dom2][dom1]<<endl;
+
+ 
+  }
+  lookuptableC.close();
+  }
 
   std::cout << " done" << std::endl;
   //  std::exit(1);
@@ -2958,10 +2929,10 @@ void DelilaSelectorEliade::EventBuilderPreTrigger()
 //            if (blCS)                    ViewACS_segments();
             if (my_confs["Fold"])                  TreatFold(3);
             
-           if (blAddBack)               ViewAddBackDetector();//for segments
+//           if (blAddBack)               ViewAddBackDetector();//for segments
 //            if (blAddBack)               ViewAddBackDetectorCS();
 //            if (blAddBack)               ViewAddBackCrystal();
-//            if (blAddBack)               ViewAddBackCoreCore();
+            if (blAddBack)               ViewAddBackCoreCore();
            
            if (blGammaGamma)            TreatGammaGammaCoinc();
            
@@ -3317,7 +3288,7 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
      std::deque<DelilaEvent>::iterator it1_= SegQu.begin();
      std::deque<DelilaEvent>::iterator it2_= SegQu.begin();
      
-     for (; it1_!= SegQu.end();++it1_){
+     /*for (; it1_!= SegQu.end();++it1_){
          if ((*it1_).det_def != 2) {SegQu.erase(it1_); continue;}
          if ((*it1_).CS != 0) {SegQu.erase(it1_); continue;}
          int det_id1  =  (*it1_).cloverID;
@@ -3366,6 +3337,81 @@ void DelilaSelectorEliade::ViewAddBackDetector()//it is for segments
                it2_ = SegQu.begin();
            }
          };
+
+         mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
+
+         (*it1_).Energy_kev = foldsum;
+         delilaQuAddedBack.push_back((*it1_));
+
+         if (addback_tree>0){
+             nfoldAddback = nnfold;
+             EAddback = foldsum;
+             addbackTree->Fill();
+             vDomain->clear();
+             vEAddback->clear();
+             vTime->clear();
+         }
+
+         SegQu.erase(it1_);
+         it1_ = SegQu.begin() - 1;
+    }*/
+
+     for (; it1_!= SegQu.end();++it1_){
+         if ((*it1_).det_def != 2) {SegQu.erase(it1_); continue;}
+         if ((*it1_).CS != 0) {SegQu.erase(it1_); continue;}
+         int det_id1  =  (*it1_).cloverID;
+         int core_id1 =  (*it1_).coreID;
+
+         int nnfold = 1;
+         double foldsum = (*it1_).Energy_kev;
+         vEAddback->clear();
+         vDomain->clear();
+         if (addback_tree>0){
+           vTime->clear();
+           vTime->push_back((*it1_).Time);
+         }
+         vDomain->push_back((*it1_).domain);
+         vEAddback->push_back((*it1_).Energy_kev);
+
+         it2_= it1_;
+         for (; it2_!= SegQu.end();++it2_){           
+           if (it1_ == it2_) continue; 
+           if ((*it2_).det_def != 2) continue;
+           if ((*it2_).CS != 0) continue;  
+           int det_id2 =  (*it2_).cloverID;
+           int core_id2 = (*it2_).coreID;
+           if (det_id1 != det_id2) continue;
+           if (core_id1/10 != core_id2/10) continue;
+//             std::cout<<core_id1<<" "<<core_id2<<" "<<" \n";           
+           
+           double time_diff_seg_seg = (*it1_).Time - (*it2_).Time;
+           
+           int id1 = core_id1;
+           int id2 = core_id2;
+           //mTimeDiffCoreSegments[id1]->Fill(id2,time_diff_seg_seg);
+
+           if (time_diff_seg_seg < coinc_gates[12] && AddBack_distances[(*it1_).domain%100][(*it2_).domain%100]<addback_distance) {
+               nnfold++;
+               foldsum += (*it2_).Energy_kev;
+
+               if (addback_tree>0){
+                 vTime->push_back((*it2_).Time);
+               }
+               vDomain->push_back((*it2_).domain);
+               vEAddback->push_back((*it2_).Energy_kev);
+
+               SegQu.erase(it2_);
+               it1_ = SegQu.begin();
+               it2_ = SegQu.begin();
+           }
+         };
+
+         foldsum = 0;
+         for (int v_it = 0; v_it < int(vEAddback->size()); v_it++){
+           for (int v_it2 = 0; v_it2 < int(vEAddback->size()); v_it2++){
+             foldsum += vEAddback->at(v_it2) * Crosstalk_matrix[vDomain->at(v_it)%100][vDomain->at(v_it2)%100];
+           }
+         }
 
          mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
 
