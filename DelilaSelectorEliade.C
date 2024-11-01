@@ -3936,7 +3936,7 @@ void DelilaSelectorEliade::Read_ELIADE_JSONLookUpTable()
         curDet.phi            =  data[i]["phi"];
         curDet.threshold      =  data[i]["threshold"];
         curDet.cs_dom         =  data[i]["cs_dom"];
-        curDet.enable         =  data[i]["enable"];
+        curDet.enable         =  data[i]["on"];
         
        curDet.pol_order      = 0;
        
