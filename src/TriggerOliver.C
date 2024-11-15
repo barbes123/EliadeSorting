@@ -4,16 +4,21 @@
 
 void DelilaSelectorEliade::AnalyseQuOliver(){
     
+            
+           
+    
             if (blCS)                   cs_simple(35);
             if (blGammaGamma)           TreatGammaGammaCoinc();
             if (my_confs["Fold"])                 TreatFold(3);
             if (my_confs["DeeSector"])		    ViewDeESector();
             if (blFillSingleSpectra)    FillSingleSpectra();
 //             std::cout<<"Warning  DelilaEvent.TimeBunch_ is more than rf_time \n";
+            
             hdelilaQu_size->Fill(delilaQu.size());
+            
             delilaQu.clear();
-//             MovePreQu2QuOliver();
-//             delilaPreQu.clear();
+//             MovePreQu2QuOliver();//this
+//             delilaPreQu.clear();//this
             return;
 }
 
@@ -33,21 +38,27 @@ void DelilaSelectorEliade::EventBuilderForOliver()
         
         AnalyseQuOliver();
         
-//         delilaPreQu.push_back(DelilaEvent_); // add the current event to be the first in the new queue
+//         delilaPreQu.push_back(DelilaEvent_); // add the current event to be the first in the new queue //this
         
 //         blIsWindow = false;  
         return; 
         
-    }else if (DelilaEvent_.TimeBunch >=rf_time){
+       }else if (DelilaEvent_.TimeBunch >=rf_time){
                    
                 AnalyseQuOliver();
            
-    } else if (DelilaEvent_.TimeBunch <= my_params["window_length"] ){
+//     } else if (DelilaEvent_.TimeBunch <= my_params["window_length"] ){
+    } else if (DelilaEvent_.TimeBunch <= rf_time  ){    
                 hTimeInBunch->Fill(DelilaEvent_.TimeBunch);         
                 delilaQu.push_back(DelilaEvent_);
-    }; /*else if (DelilaEvent_.TimeBunch > event_length) {
-                delilaPreQu.push_back(DelilaEvent_);   
-    };*/
+//     } else if (DelilaEvent_.TimeBunch  > rf_time - my_params["pre_window"]){
+//         DelilaEvent_.TimeBunch = DelilaEvent_.TimeBunch -  my_params["pre_window"];
+//         delilaPreQu.push_back(DelilaEvent_);   //this
+        
+//         std::cout<<" DelilaEvent_.TimeBunch  < rf_time - my_params[pre_window]" <<DelilaEvent_.TimeBunch <<" "<< rf_time - my_params["pre_window"] <<"\n";
+//     }else if (DelilaEvent_.TimeBunch > my_params["window_length"]) {//this
+//                 delilaPreQu.push_back(DelilaEvent_);   //this
+    };//this
     
     return;
 };
@@ -76,8 +87,8 @@ void DelilaSelectorEliade::MovePreQu2QuOliver()
     
     hdelilaPreQu_size->Fill(nval);
     
-//     std::cout<<"PreQueSize is "<< delilaPreQu.size() << " \n";
-//     std::cout<<"delilaQueSize is "<< delilaQu.size() << " \n";
+     std::cout<<"PreQueSize is "<< delilaPreQu.size() << " \n";
+     std::cout<<"delilaQueSize is "<< delilaQu.size() << " \n";
     
     delilaPreQu.clear();
 }
@@ -97,12 +108,12 @@ void DelilaSelectorEliade::FillSpectraForOliver(DelilaEvent event)
 {
     
     
-    if (event.TimeBunch > 3.5e5) {
-        event.TimeBunch-=4e5;
-        delilaPreQu.push_back(event);
-        return;
-    };
-        
+//     if (event.TimeBunch > 3.5e5) {
+//         event.TimeBunch-=4e5;
+//         delilaPreQu.push_back(event);
+//         return;
+//     };
+//         
         
         
     double TimeBunchOliver = event.TimeBunch;

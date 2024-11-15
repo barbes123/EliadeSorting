@@ -444,6 +444,7 @@ void DelilaSelectorEliade::Read_Confs() {
   my_confs["Fold"]                 = false;
   
   my_params["window_length"]       = 1;
+  my_params["pre_window"]          = 1;
   my_params["beta"]                = 0; 
   my_params["reference_dom"]       = 101;
   
@@ -2039,7 +2040,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
          
             DelilaEvent_.TimeTrg = DelilaEvent_.Time - LastTriggerEvent.Time;
             
-            DelilaEvent_.TimeTrg = DelilaEvent_.TimeTrg + LUT_TA[domain];
+            DelilaEvent_.TimeTrg = DelilaEvent_.TimeTrg + LUT_TA[domain]  + my_params["pre_window"] ;
             
             int nn =  DelilaEvent_.TimeTrg  / rf_time;
             DelilaEvent_.TimeBunch = DelilaEvent_.TimeTrg  - nn * rf_time;
