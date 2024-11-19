@@ -236,10 +236,22 @@ public :
   TH2F* mGammaGammaDC;
 //   TH2F* mGammaGammaCS_DC;
 
+//////For Oliver////////////////////
+  
   std::map<int, TH2F*> mEnergyTimeDiff;
   std::map<int, TH2F*> mEnergyTimeDiffCS;
   std::map<int, TH2F*> mEnergyTimeDiffDC;
   std::map<int, TH2F*> mEnergyTimeDiffCS_DC;
+  
+  std::map<int, TH2F*> mEnergyTimeDiffCS_DC_E;
+  std::map<int, TH2F*> mEnergyTimeDiffCS_DC_noE;
+//   TH1F* hTimeDiff_g_e;
+  
+/////////////////////////////////////
+  
+  
+  
+  
 //   TH2F* mEnergyTimeDiff_trigger;
   TH2F* mDomainTimeDiff_trigger;
   TH2F* mDomainTimeDiff_bunch;
@@ -495,6 +507,7 @@ public :
    
    virtual void TreatGammaGammaCoinc();
    virtual void TreatGammaPartCoinc(int coinc_id);
+   
   
    virtual void ViewAddBackCoreCore();
    virtual void ViewAddBackCrystal();
@@ -509,9 +522,11 @@ public :
 //---------For Bunch Veriosn (Oliver)---------
    virtual void EventBuilderForOliver();
    virtual void AnalyseQuOliver();
-   virtual void FillSpectraForOliver(DelilaEvent event);
+//    virtual void FillSpectraForOliver(DelilaEvent event);
+   virtual void FillSpectraForOliver();
    virtual void FillSpectraFromPreQu();
    virtual void MovePreQu2QuOliver();
+   virtual void TreatGammaEdetectorCoincOliver(int coinc_id); //for Oliver gamma-vs any E
 
 //    virtual void cs_in_bunch_bunch(int coin_id);
 //--------------------------------------------   

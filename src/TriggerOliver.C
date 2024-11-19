@@ -11,7 +11,14 @@ void DelilaSelectorEliade::AnalyseQuOliver(){
             if (blGammaGamma)           TreatGammaGammaCoinc();
             if (my_confs["Fold"])                 TreatFold(3);
             if (my_confs["DeeSector"])		    ViewDeESector();
-            if (blFillSingleSpectra)    FillSingleSpectra();
+            
+            TreatGammaEdetectorCoincOliver(37);
+            
+            //---------------------------------------------
+            if (blFillSingleSpectra)    FillSpectraForOliver();
+            //---------------------------------------------
+            
+            
 //             std::cout<<"Warning  DelilaEvent.TimeBunch_ is more than rf_time \n";
             
             hdelilaQu_size->Fill(delilaQu.size());
@@ -95,56 +102,138 @@ void DelilaSelectorEliade::MovePreQu2QuOliver()
 
 void DelilaSelectorEliade::FillSpectraFromPreQu()
 {
-    std::deque<DelilaEvent>::iterator it_ev__= delilaPreQu.begin();
-   
-     for (; it_ev__!= delilaPreQu.end();++it_ev__){
-         FillSpectraForOliver(*it_ev__);
-     }
-     delilaPreQu.clear();
+//     std::deque<DelilaEvent>::iterator it_ev__= delilaPreQu.begin();
+//    
+//      for (; it_ev__!= delilaPreQu.end();++it_ev__){
+//          FillSpectraForOliver(*it_ev__);
+//      }
+//      delilaPreQu.clear();
+    return;
    
 };
 
-void DelilaSelectorEliade::FillSpectraForOliver(DelilaEvent event)
+void DelilaSelectorEliade::FillSpectraForOliver()
 {
+     std::deque<DelilaEvent>::iterator it_ev__= delilaQu.begin();
+   
+     for (; it_ev__!= delilaQu.end();++it_ev__){
+         
+         int domain = (*it_ev__).domain;
+         
+        hDelila_single[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
+        
+
+        if ((*it_ev__).det_def == 3 || (*it_ev__).det_def == 1) {
+            if (((*it_ev__).CS == 0) && blCS)  {
+                mDelilaCS->Fill(domain, DelilaEvent_.Energy_kev);
+                hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
+            };
+            if (my_params["beta"] > 0) {
+                mDelilaDC->Fill(domain, DelilaEvent_.EnergyDC); 
+                hDelilaDC[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC);
+                if (((*it_ev__).CS == 0) && blCS)  {
+                    mDelilaCS_DC->Fill(domain, DelilaEvent_.EnergyDC);
+                    hDelilaCS_DC[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC);
+                 };
+             };
+         };
+         
+         
+         if ((*it_ev__).det_def == 5) {
+             mEnergyTimeDiff[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev, (*it_ev__).TimeBunch);
+ //             return;
+         };
     
-    
-//     if (event.TimeBunch > 3.5e5) {
-//         event.TimeBunch-=4e5;
-//         delilaPreQu.push_back(event);
+        if ((*it_ev__).det_def == 3){
+            
+            hPID -> Fill((*it_ev__).particleID);
+            
+            mEnergyTimeDiff[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev, (*it_ev__).TimeBunch);
+            if (((*it_ev__).CS == 0 && blCS)){
+    //             mEnergyTimeDiffCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev, TimeBunchOliver);//too many big hists for memory
+                mDelilaCS->Fill((*it_ev__).domain, (*it_ev__).Energy_kev);
+                hDelilaCS[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
+            };
+        
+            if (my_params["beta"] > 0) {
+                
+//                 std::cout<<" PID fill "<< (*it_ev__).particleID<< "\n";
+
+    //             mEnergyTimeDiffDC[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC, TimeBunchOliver);//too many big hists for memory
+                mDelilaDC->Fill((*it_ev__).domain, (*it_ev__).EnergyDC); 
+                hDelilaDC[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC);
+                
+                if (((*it_ev__).CS == 0 ) && blCS){
+                    mEnergyTimeDiffCS_DC[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC,  (*it_ev__).TimeBunch);
+                    mDelilaCS_DC->Fill((*it_ev__).domain, (*it_ev__).EnergyDC);
+                    hDelilaCS_DC[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC);
+                    
+//                    
+                    if ((*it_ev__).particleID > 0){
+                        mEnergyTimeDiffCS_DC_E[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC, (*it_ev__).TimeBunch);
+                    }
+                    else{
+                        mEnergyTimeDiffCS_DC_noE[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC, (*it_ev__).TimeBunch);
+                    };                
+                };
+            };
+        };    
+     };
+}
+
+
+// void DelilaSelectorEliade::FillSpectraForOliver(DelilaEvent event)
+// {
+//     
+//     
+// //     if (event.TimeBunch > 3.5e5) {
+// //         event.TimeBunch-=4e5;
+// //         delilaPreQu.push_back(event);
+// //         return;
+// //     };
+// //         
+//         
+//         
+//     double TimeBunchOliver = event.TimeBunch;
+// //      if (event.TimeBunch > 3.5e5) TimeBunchOliver-= 4e5; 
+//     
+//     
+//     if (event.det_def == 5) {
+//         mEnergyTimeDiff[event.det_def]->Fill(event.Energy_kev, TimeBunchOliver);
 //         return;
 //     };
-//         
-        
-        
-    double TimeBunchOliver = event.TimeBunch;
-//      if (event.TimeBunch > 3.5e5) TimeBunchOliver-= 4e5; 
-    
-    
-    if (event.det_def == 5) {
-        mEnergyTimeDiff[event.det_def]->Fill(event.Energy_kev, TimeBunchOliver);
-        return;
-    };
-    
-    if (event.det_def == 3){
-        mEnergyTimeDiff[event.det_def]->Fill(event.Energy_kev, TimeBunchOliver);
-        if ((event.CS == 0 && blCS)){
-            mEnergyTimeDiffCS[event.det_def]->Fill(event.Energy_kev, TimeBunchOliver);
-            mDelilaCS->Fill(event.domain, event.Energy_kev);
-            hDelilaCS[event.det_def]->Fill(event.Energy_kev);
-        }
-        if (my_params["beta"] > 0) {
-            mEnergyTimeDiffDC[event.det_def]->Fill(event.EnergyDC, TimeBunchOliver);
-            mDelilaDC->Fill(event.domain, event.EnergyDC); 
-            hDelilaDC[event.det_def]->Fill(event.EnergyDC);
-            if ((event.CS == 0 ) && blCS){
-                mEnergyTimeDiffCS_DC[event.det_def]->Fill(event.EnergyDC, TimeBunchOliver);
-                mDelilaCS_DC->Fill(event.domain, event.EnergyDC);
-                hDelilaCS_DC[event.det_def]->Fill(event.EnergyDC);
-            };
-        };
-     };    
-    return;
-}
+//     
+//     if (event.det_def == 3){
+//         mEnergyTimeDiff[event.det_def]->Fill(event.Energy_kev, TimeBunchOliver);
+//         if ((event.CS == 0 && blCS)){
+// //             mEnergyTimeDiffCS[event.det_def]->Fill(event.Energy_kev, TimeBunchOliver);//too many big hists for memory
+//             mDelilaCS->Fill(event.domain, event.Energy_kev);
+//             hDelilaCS[event.det_def]->Fill(event.Energy_kev);
+//         }
+//         if (my_params["beta"] > 0) {
+//             
+//             std::cout<<" PID "<< event.particleID<< "\n";
+// 
+// //             mEnergyTimeDiffDC[event.det_def]->Fill(event.EnergyDC, TimeBunchOliver);//too many big hists for memory
+//             mDelilaDC->Fill(event.domain, event.EnergyDC); 
+//             hDelilaDC[event.det_def]->Fill(event.EnergyDC);
+//             if ((event.CS == 0 ) && blCS){
+//                 mEnergyTimeDiffCS_DC[event.det_def]->Fill(event.EnergyDC, TimeBunchOliver);
+//                 mDelilaCS_DC->Fill(event.domain, event.EnergyDC);
+//                 hDelilaCS_DC[event.det_def]->Fill(event.EnergyDC);
+//                 
+//                 hPID -> Fill(event.particleID);
+//                 if (event.particleID > 0){
+//                     mEnergyTimeDiffCS_DC_E[event.det_def]->Fill(event.EnergyDC, TimeBunchOliver);
+//                 }
+//                 else{
+//                     mEnergyTimeDiffCS_DC_noE[event.det_def]->Fill(event.EnergyDC, TimeBunchOliver);
+//                 };                
+//             };
+//         };
+//      };    
+//     return;
+// }
 
 void DelilaSelectorEliade::FillSpectraForElifant(DelilaEvent event)
 {
@@ -215,5 +304,62 @@ void DelilaSelectorEliade::FillSpectraForElifant(DelilaEvent event)
 //          };
 //     };
 // };
+
+
+// void DelilaSelectorEliade::TreatGammaEdetectorCoinc(int id_gamma_det=3, int id_e_det=7)
+void DelilaSelectorEliade::TreatGammaEdetectorCoincOliver(int coinc_id)
+{
+    
+//    if (coinc_id != 1771 && coinc_id != 1773) {
+//        std::cout<<"TreatGammaPartCoinc wrong coinc_id \n";
+//        return;
+//    }
+   std::deque<DelilaEvent>::iterator it_e_= delilaQu.begin();
+   std::deque<DelilaEvent>::iterator it_g_= delilaQu.begin();
+   
+   int id_gamma_det=coinc_id/10;
+   int id_e_det=coinc_id%10;
+   
+//     std::cout<<"id_gamma_det "<<id_gamma_det<<" \n";
+//     std::cout<<"id_e_det "<<id_e_det<<" \n";
+   
+    for (; it_e_  != delilaQu.end();++it_e_){
+        if ((*it_e_).det_def != id_e_det) continue;
+        
+//         std::cout<<"(*it1_).det_def "<<(*it1_).det_def<<" (*it1_).e_energy "<<(*it1_).e_energy<<" \n";
+
+        
+//         if ((*it_e_).e_energy == 0) continue;
+        if ((*it_e_).fEnergy == 0) continue;
+        
+        it_g_= delilaQu.begin();
+        
+        for (; it_g_  != delilaQu.end();++it_g_){
+          
+//               std::cout<<"cccc"<<"\n";
+//             if ((*it2_).det_def != dname["LaBr"]) continue;
+            if ((*it_g_).det_def != id_gamma_det) continue;
+            if ((*it_g_).CS != 0) continue;
+            
+            double time_diff ;
+            
+            if (blExtTrigger) 
+            {
+                time_diff = (*it_e_).TimeBunch - (*it_g_).TimeBunch;
+            }else time_diff = (*it_e_).Time - (*it_g_).Time; 
+            
+            
+//             hTimeDiff_g_e->Fill(time_diff);
+            
+//             std::cout<<time_diff<<"\n";
+            if (abs(time_diff) < coinc_gates[coinc_id]) it_g_->particleID+=1;
+            
+//             if ( it_g_->particleID > 0) std::cout<<" <PID> " <<it_g_->particleID<<"\n";
+        };
+    };
+    
+    return;  
+
+};
 
 

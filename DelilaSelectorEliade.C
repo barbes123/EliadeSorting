@@ -864,6 +864,12 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    hhGammaSi->GetYaxis()->SetTitle("counts");   
    fOutput->Add(hhGammaSi);
    
+   //for oliver
+//    hTimeDiff_g_e = new TH1F("hTimeDiff_g_e", "hTimeDiff_g_e", 5e3, -1e5, 4e5);
+//    hTimeDiff_g_e->GetXaxis()->SetTitle("TimeDiff E-LaBr, ps"); 
+//    //       hTimeDiff_g_e>GetYaxis()->SetTitle("counts");
+//    fOutput->Add(hTimeDiff_g_e);
+   
 
    
    hTimeSort = new TH1F("hTimeSort", "time_diff: current-last", 121e2, -1e6,120e6);
@@ -1180,6 +1186,10 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             };
         };
         
+        hPID = new TH1F("hPID", "hPID", 2200,-0.5, 2199.5);
+        hPID ->GetXaxis()->SetTitle("PID");
+        fOutput->Add(hPID); 
+        
         //matrices for dEs-Es
         if (my_confs["DeeSector"] || my_confs["DeeRing"] ){
             for (; it_lut_ != LUT_ELIADE.end(); ++it_lut_) {
@@ -1232,9 +1242,9 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
 //             mDee_SectorAll_TimeDiff ->GetYaxis()->SetTitle("counts");
             fOutput->Add(hDee_RingAll_TimeDiff); 
             
-            hPID = new TH1F("hPID", "hPID", 2200,-0.5, 2199.5);
-            hPID ->GetXaxis()->SetTitle("PID");
-            fOutput->Add(hPID); 
+//             hPID = new TH1F("hPID", "hPID", 2200,-0.5, 2199.5);
+//             hPID ->GetXaxis()->SetTitle("PID");
+//             fOutput->Add(hPID); 
             
             hPID_dee = new TH1F("hPID_dee", "hPID_dee", 2200,-0.5, 2199.5);
             hPID_dee ->GetXaxis()->SetTitle("hPID_dee");
@@ -1568,7 +1578,8 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
       };
       
       
-  
+          
+
       
        if ((itna1->first == 1) && has_detector["HPGe"] && (addBackMode > 0)){
 //           
@@ -1582,7 +1593,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
          
          
          
-         if (blExtTrigger && ((itna1->first == 3) && has_detector["LaBr"] ) //for Oliver
+         if (blExtTrigger && ((itna1->first == 3) && has_detector["LaBr"]) //for Oliver
              /*|| ((itna1->first == 1) && has_detector["HPGe"])*/ 
             ){
          
@@ -1601,7 +1612,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
              
              
             if (my_params["beta"] > 0) {
-                mEnergyTimeDiffDC[itna1->first] = new TH2F(Form("mEnergyTimeDiffDC%s",itna1->second.c_str()), Form("mEnergyTimeDiffDC%s",itna1->second.c_str()), n_bin_e, -0.5, max_e-0.5, 14000, -2e5, 5e5);//128 keV per bin
+                mEnergyTimeDiffDC[itna1->first] = new TH2F(Form("mEnergyTimeDiffDC_%s",itna1->second.c_str()), Form("mEnergyTimeDiffDC_%s",itna1->second.c_str()), n_bin_e, -0.5, max_e-0.5, 14000, -2e5, 5e5);//128 keV per bin
                 mEnergyTimeDiffDC[itna1->first]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
                 mEnergyTimeDiffDC[itna1->first]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
                 fOutput->Add(mEnergyTimeDiffDC[itna1->first]);
@@ -1611,6 +1622,21 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                 mEnergyTimeDiffCS_DC[itna1->first]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
                 mEnergyTimeDiffCS_DC[itna1->first]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
                 fOutput->Add(mEnergyTimeDiffCS_DC[itna1->first]);
+                
+                
+                
+                mEnergyTimeDiffCS_DC_E[itna1->first] = new TH2F(Form("mEnergyTimeDiffCS_DC_E_%s",itna1->second.c_str()), Form("mEnergyTimeDiffCS_DC_E_%s",itna1->second.c_str()), n_bin_e, -0.5, max_e-0.5, 14000, -2e5, 5e5);//128 keV per bin
+                mEnergyTimeDiffCS_DC_E[itna1->first]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
+                mEnergyTimeDiffCS_DC_E[itna1->first]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
+                fOutput->Add(mEnergyTimeDiffCS_DC_E[itna1->first]);
+                
+                
+                
+                mEnergyTimeDiffCS_DC_noE[itna1->first] = new TH2F(Form("mEnergyTimeDiffCS_DC_noE_%s",itna1->second.c_str()), Form("mEnergyTimeDiffCS_DC_noE_%s",itna1->second.c_str()), n_bin_e, -0.5, max_e-0.5, 14000, -2e5, 5e5);//128 keV per bin
+                mEnergyTimeDiffCS_DC_noE[itna1->first]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
+                mEnergyTimeDiffCS_DC_noE[itna1->first]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
+                fOutput->Add(mEnergyTimeDiffCS_DC_noE[itna1->first]);
+                
                 };
             };  
          
@@ -3152,7 +3178,7 @@ void DelilaSelectorEliade::FillSingleSpectra()
          hDelila_single[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
          
          
-         if (blExtTrigger) {FillSpectraForOliver((*it_ev__));continue;}
+//          if (blExtTrigger) {FillSpectraForOliver((*it_ev__));continue;}
          if (blExpIsElifant) {FillSpectraForElifant((*it_ev__));continue;}
          
          
