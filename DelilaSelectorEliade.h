@@ -227,6 +227,9 @@ public :
   TH2F* mDelilaDC;//keV
   TH2F* mDelilaCS_DC;//keV
   
+//   TH2F* mPSD;
+  std::map<int, TH2F*> mPSD;
+  
 //   TH2F* mDelila_long;
 //   TH2F* mDelila_raw_long;
 //   TH2F* mDelilaCS_long;
@@ -499,6 +502,7 @@ public :
    virtual void TreatNeutronNeutron();
    virtual void TreatNeutronSingle3He();
    virtual void TreatBeamCurrent();//not yet implemented 
+   virtual void TreatPSD();//for scintillator neutron dets
 
    virtual void TreatElissaSingle();
    virtual void TreatElissaSinglePSA();

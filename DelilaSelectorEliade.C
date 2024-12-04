@@ -708,6 +708,7 @@ void DelilaSelectorEliade::Begin(TTree * tree)
   detector_name[7]="Elissa";   has_detector[detector_name[7]] = false;
   detector_name[17]="dElissa"; has_detector[detector_name[17]] = false;
   detector_name[8]="neutron";  has_detector[detector_name[8]] = false;
+  detector_name[88]="psd";     has_detector[detector_name[88]] = false;
   detector_name[9]="pulser";   has_detector[detector_name[9]] = false;
   detector_name[10]="core10";   has_detector[detector_name[10]] = false;
   detector_name[99]="ExtTrigger";   has_detector[detector_name[99]] = false;
@@ -974,6 +975,22 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    mGammaGammaDC->GetXaxis()->SetTitle("keV");
    mGammaGammaDC->GetYaxis()->SetTitle("keV");
    fOutput->Add(mGammaGammaDC);
+   
+   
+   if (has_detector["psd"]){
+       
+       
+       std::map<int, TDelilaDetector> ::iterator it_dom_psd_ = LUT_ELIADE.begin();
+        for (; it_dom_psd_ != LUT_ELIADE.end(); ++it_dom_psd_) {
+            int dom = LUT_ELIADE[it_dom_psd_->first].dom;           
+            mPSD[dom] = new TH2F(Form("mPSD_dom_%i", dom), Form("mPSD_dom_%i", dom), 4096, -0.5, 16383.5, 1000, 0, 1);
+            mPSD[dom]->GetXaxis()->SetTitle("a.u.");
+            mPSD[dom]->GetYaxis()->SetTitle("a.u.");
+            mPSD[dom]->SetTitle("(ChargeLong - ChargeShort)/(ChargeLong + ChargeShort)");
+            fOutput->Add(mPSD[dom]);
+            std::cout<<"Created for dom "<<dom<<std::endl;
+        }
+   };
    
 //    mGammaGammaCS_DC = new TH2F("mGammaGammaCS_DC", "mGammaGammaCS_DC", 4096, -0.5, 16383.5, 4096, -0.5, 16383.5);
 //    mGammaGammaCS_DC->GetXaxis()->SetTitle("keV");
@@ -2115,6 +2132,10 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
              if (has_detector["neutron"]) {TreatNeutronSingle3He();/*TreatNeutronSingle()*/;}
                 else return kTRUE;
              break;
+         };case 88:  { 
+             if (has_detector["psd"]) {TreatPSD();/*TreatNeutronSingle()*/;}//TreatPSD should replce TreatNeutronSingle
+                else return kTRUE;
+             break;
          };case 9:  { 
              if (has_detector["pulser"]) //CheckPulserAllignement(90);
                 return kTRUE;
@@ -2671,7 +2692,8 @@ void DelilaSelectorEliade::TreatLaBrSingle()
     
     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
 
-    Double_t theta = (180 - LUT_ELIADE[daq_ch].theta) * TMath::DegToRad();
+//     Double_t theta = (180 - LUT_ELIADE[daq_ch].theta) * TMath::DegToRad();
+    Double_t theta = LUT_ELIADE[daq_ch].theta * TMath::DegToRad();
     Double_t costheta = TMath::Cos(theta);
     if (my_params["beta"] >0) {
         DelilaEvent_.EnergyDC = DelilaEvent_.Energy_kev*(1./sqrt(1 - my_params["beta"]*my_params["beta"]) * (1 - my_params["beta"]*costheta));
@@ -4555,3 +4577,14 @@ void DelilaSelectorEliade::TreatGammaPartCoinc(int coinc_id)//1773 - de-e-LaBr; 
     return;  
 
 };
+
+void DelilaSelectorEliade::TreatPSD()//clover
+{
+     UShort_t daq_ch = DelilaEvent_.channel;
+     UShort_t domain = DelilaEvent_.domain;
+    
+     DelilaEvent_.Energy_kev = CalibDet(DelilaEvent_.fEnergy, daq_ch);
+     DelilaEvent_.fEnergyShort = fEnergyShort;
+     float psd = (1.0*DelilaEvent_.fEnergy - DelilaEvent_.fEnergyShort) / (DelilaEvent_.fEnergy + DelilaEvent_.fEnergyShort);
+     mPSD[domain]->Fill(DelilaEvent_.fEnergy, psd);
+}
