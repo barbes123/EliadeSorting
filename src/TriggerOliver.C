@@ -14,6 +14,9 @@ void DelilaSelectorEliade::AnalyseQuOliver(){
             
             TreatGammaEdetectorCoincOliver(37);
             
+            if (my_confs["TOF"]) TreatNeutronPartCoinc(88);
+            
+            
             //---------------------------------------------
             if (blFillSingleSpectra)    FillSpectraForOliver();
             //---------------------------------------------
@@ -360,6 +363,43 @@ void DelilaSelectorEliade::TreatGammaEdetectorCoincOliver(int coinc_id)
     
     return;  
 
+};
+
+void DelilaSelectorEliade::TreatNeutronPartCoinc(int neutron_det_id)
+{
+	std::deque<DelilaEvent>::iterator it_= delilaQu.begin();
+	 for (; it_  != delilaQu.end();++it_){
+		 if ((*it_).det_def != neutron_det_id )continue;
+	 //check if inside PSD cut
+	 
+		 std::map<UInt_t, string>::iterator it_pid_=particle_name_in_cut.begin();
+		 for(;it_pid_!=particle_name_in_cut.end();++it_pid_){
+		        if (particle_cut[it_pid_->second] == 0x0) continue;
+		        
+		        float psd = (1.0*(*it_).fEnergy - (*it_).fEnergyShort) / ((*it_).fEnergy + (*it_).fEnergyShort);
+//			mPSD[domain]->Fill(DelilaEvent_.fEnergy, psd);		        
+		        
+		        if (particle_cut[it_pid_->second]->IsInside(it_->fEnergy,psd))//Energy_kev is E energy
+		        {
+		            (*it_).particleID = 10000;
+		            //hPID_dee->Fill(it_->particleID);
+		            //mdee_gate_check[it_->particleID]->Fill(it_->fEnergy, psd);
+		            
+		            mTOF_PSD_ch_long[it_->domain]->Fill(it_->fEnergy, it_->TimeBunch);
+			    mTOF_PSD_ch_short[it_->domain]->Fill(psd, it_->TimeBunch);
+			    mTOF_MEV[it_->domain]->Fill(Time2Energy(my_params["distance"],(it_->TimeBunch*pow(10,-12))));
+		            
+		            break;
+		//                 it1_->particleID+= it_pid_->first;
+		//                 mdee_gate_check[it_pid_->first]->Fill(it1_->e_energy, it1_->Energy_kev);
+		//                 hGG_particle[it_pid_->second]->Fill((*it_g_).Energy_kev);
+		            }
+		        };
+ 
+	 }
+
+
+	return;
 };
 
 
