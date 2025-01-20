@@ -118,7 +118,7 @@ void DelilaSelectorEliade::FillSpectraForOliver()
    
      for (; it_ev__!= delilaQu.end();++it_ev__){
          
-         int domain = (*it_ev__).domain;
+        int domain = (*it_ev__).domain;
          
         hDelila_single[(*it_ev__).det_def]->Fill((*it_ev__).Energy_kev);
         
@@ -167,8 +167,25 @@ void DelilaSelectorEliade::FillSpectraForOliver()
                     mEnergyTimeDiffCS_DC[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC,  (*it_ev__).TimeBunch);
                     mDelilaCS_DC->Fill((*it_ev__).domain, (*it_ev__).EnergyDC);
                     hDelilaCS_DC[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC);
+         
+                    int theta_int = static_cast<int>((*it_ev__).theta);
+ 
+                     //----------------------------------------------------------------------------------------------------------------
+                     // Check if the key exists in the map
+                     //----------------------------------------------------------------------------------------------------------------
+                     /*auto it = mEnergyTimeDiffCS_DC_theta.find(theta_int);
+                     if (it != mEnergyTimeDiffCS_DC_theta.end()) {
+                         std::cout << "Key " << theta_int << " exists in the map.\n";
+                         TH2F* hist = it->second;
+                         std::cout << "Histogram Name: " << hist->GetName() << "\n";
+                         std::cout << "Histogram Title: " << hist->GetTitle() << "\n";
+                         std::cout << "Entries in histogram: " << hist->GetEntries() << "\n";
+                     } else {
+                         std::cout << "Hist " << Form("mEnergyTimeDiffCS_DC_theta%i",theta_int) << " does not exist \n";
+                     }*/
+                     //----------------------------------------------------------------------------------------------------------------
+                    mEnergyTimeDiffCS_DC_theta[theta_int] ->Fill((*it_ev__).EnergyDC,  (*it_ev__).TimeBunch);
                     
-//                    
                     if ((*it_ev__).particleID > 0){
                         mEnergyTimeDiffCS_DC_E[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC, (*it_ev__).TimeBunch);
                     }

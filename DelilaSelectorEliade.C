@@ -1633,27 +1633,50 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                 mEnergyTimeDiffDC[itna1->first]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
                 mEnergyTimeDiffDC[itna1->first]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
                 fOutput->Add(mEnergyTimeDiffDC[itna1->first]);
-                
-                
+
                 mEnergyTimeDiffCS_DC[itna1->first] = new TH2F(Form("mEnergyTimeDiffCS_DC%s",itna1->second.c_str()), Form("mEnergyTimeDiffCS_DC%s",itna1->second.c_str()), n_bin_e, -0.5, max_e-0.5, 14000, -2e5, 5e5);//128 keV per bin
                 mEnergyTimeDiffCS_DC[itna1->first]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
                 mEnergyTimeDiffCS_DC[itna1->first]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
                 fOutput->Add(mEnergyTimeDiffCS_DC[itna1->first]);
-                
-                
                 
                 mEnergyTimeDiffCS_DC_E[itna1->first] = new TH2F(Form("mEnergyTimeDiffCS_DC_E_%s",itna1->second.c_str()), Form("mEnergyTimeDiffCS_DC_E_%s",itna1->second.c_str()), n_bin_e, -0.5, max_e-0.5, 14000, -2e5, 5e5);//128 keV per bin
                 mEnergyTimeDiffCS_DC_E[itna1->first]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
                 mEnergyTimeDiffCS_DC_E[itna1->first]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
                 fOutput->Add(mEnergyTimeDiffCS_DC_E[itna1->first]);
                 
-                
-                
                 mEnergyTimeDiffCS_DC_noE[itna1->first] = new TH2F(Form("mEnergyTimeDiffCS_DC_noE_%s",itna1->second.c_str()), Form("mEnergyTimeDiffCS_DC_noE_%s",itna1->second.c_str()), n_bin_e, -0.5, max_e-0.5, 14000, -2e5, 5e5);//128 keV per bin
                 mEnergyTimeDiffCS_DC_noE[itna1->first]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
                 mEnergyTimeDiffCS_DC_noE[itna1->first]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
                 fOutput->Add(mEnergyTimeDiffCS_DC_noE[itna1->first]);
                 
+                
+                std::map<int, TDelilaDetector > ::iterator it_lut_ = LUT_ELIADE.begin();
+                std::deque<int> list_of_theta;
+                
+                
+                for (; it_lut_ != LUT_ELIADE.end(); ++it_lut_) {
+                    if (LUT_ELIADE[it_lut_->first].detType == 3){
+                        int dom = LUT_ELIADE[it_lut_->first].dom;
+                        Float_t theta = LUT_ELIADE[it_lut_->first].theta;
+                        int theta_int = static_cast<int>(theta);
+                        bool found = false;
+                        for (int value : list_of_theta) {
+                            if (value == theta_int) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            list_of_theta.push_back(theta_int); // Add the element if not found
+                            mEnergyTimeDiffCS_DC_theta[theta_int] = new TH2F(Form("mEnergyTimeDiffCS_DC_theta%i",theta_int), Form("mEnergyTimeDiffCS_DC_theta%i",theta_int), n_bin_e, -0.5, max_e-0.5, 14000, -2e5, 5e5);//128 keV per bin
+                            mEnergyTimeDiffCS_DC_theta[theta_int]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
+                            mEnergyTimeDiffCS_DC_theta[theta_int]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
+                            fOutput->Add(mEnergyTimeDiffCS_DC_theta[theta_int]);
+                            
+                            std::cout << Form("mEnergyTimeDiffCS_DC_theta%i",theta_int)<<" Initialized \n";
+                            };
+                        };
+                    };
                 };
             };  
          

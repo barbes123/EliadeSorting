@@ -244,7 +244,8 @@ public :
   std::map<int, TH2F*> mEnergyTimeDiff;
   std::map<int, TH2F*> mEnergyTimeDiffCS;
   std::map<int, TH2F*> mEnergyTimeDiffDC;
-  std::map<int, TH2F*> mEnergyTimeDiffCS_DC;
+  std::map<int, TH2F*> mEnergyTimeDiffCS_DC;//a matrix for each det type
+  std::map<int, TH2F*> mEnergyTimeDiffCS_DC_theta; //a matrix for each theta 
   
   std::map<int, TH2F*> mEnergyTimeDiffCS_DC_E;
   std::map<int, TH2F*> mEnergyTimeDiffCS_DC_noE;
