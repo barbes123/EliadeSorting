@@ -229,6 +229,13 @@ public :
   
 //   TH2F* mPSD;
   std::map<int, TH2F*> mPSD;
+  std::map<int, TH2F*> mTOF_ch_long; //tof-vs-charge long
+  std::map<int, TH2F*> mTOF_ch_short; //tof-vs-charge long
+  
+  std::map<int, TH2F*> mTOF_PSD_ch_long; //tof-vs-charge long
+  std::map<int, TH2F*> mTOF_PSD_ch_short; //tof-vs-charge long
+  
+  std::map<int, TH1F*> mTOF_MEV; //tof-vs-charge long
   
 //   TH2F* mDelila_long;
 //   TH2F* mDelila_raw_long;
@@ -512,6 +519,7 @@ public :
    
    virtual void TreatGammaGammaCoinc();
    virtual void TreatGammaPartCoinc(int coinc_id);
+   virtual void TreatNeutronPartCoinc(int neutron_det_id);
    
   
    virtual void ViewAddBackCoreCore();
@@ -521,6 +529,7 @@ public :
 //    virtual void ViewACS();//for cores old
    virtual void ViewACS_cores();//for cores
    virtual void ViewACS_segments(); //for segments
+   virtual double Time2Energy(double d, double t);//time and distance
 
    virtual void cs_simple(int coin_id);
    

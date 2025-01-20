@@ -47,6 +47,7 @@ bool blFillAmaxEnergyDom    = false;
 bool blFillSingleSpectra    = true;
 bool blLong                 = false;//for Oliver
 bool blParticleGammaGamma   = false;
+//bool blTOF 		    = true;
 // bool blDeeSector            = true;
 // bool blDeeRing              = false;
 // bool blDeeEx                = false;
@@ -442,7 +443,9 @@ void DelilaSelectorEliade::Read_Confs() {
   my_confs["Time_Alignement"]      = true; 
   my_confs["UseFineTS"]            = true;
   my_confs["Fold"]                 = false;
+  my_confs["TOF"]                  = false;
   
+  my_params["distance"]            = 0;  
   my_params["window_length"]       = 1;
   my_params["pre_window"]          = 1;
   my_params["beta"]                = 0; 
@@ -707,8 +710,9 @@ void DelilaSelectorEliade::Begin(TTree * tree)
   detector_name[6]="BGOf";     has_detector[detector_name[6]] = false;//front
   detector_name[7]="Elissa";   has_detector[detector_name[7]] = false;
   detector_name[17]="dElissa"; has_detector[detector_name[17]] = false;
-  detector_name[8]="neutron";  has_detector[detector_name[8]] = false;
-  detector_name[88]="psd";     has_detector[detector_name[88]] = false;
+  detector_name[8]="neutron";  has_detector[detector_name[8]] = false;//3He gas counters
+  detector_name[88]="psdL";     	has_detector[detector_name[88]] = false;//type one - liuqid
+  detector_name[87]="psdP";     	has_detector[detector_name[87]] = false;//type one - plastic
   detector_name[9]="pulser";   has_detector[detector_name[9]] = false;
   detector_name[10]="core10";   has_detector[detector_name[10]] = false;
   detector_name[99]="ExtTrigger";   has_detector[detector_name[99]] = false;
@@ -725,12 +729,12 @@ void DelilaSelectorEliade::Begin(TTree * tree)
    particle_name_in_cut[10] = "deuteron";
    particle_name_in_cut[100] = "alpha";
    particle_name_in_cut[1000] = "6Li";
+   particle_name_in_cut[10000] = "neutron";
    
    particle_name_without_cut[110] = "1a1p";
    particle_name_without_cut[11] = "1d1p";
    particle_name_without_cut[101] = "1a1d";
-
-  
+ 
 
   std::map<int, Float_t>::iterator it_c_gates_ =  coinc_gates.begin();
   for(;it_c_gates_!=coinc_gates.end();++it_c_gates_){
@@ -792,6 +796,7 @@ void DelilaSelectorEliade::Begin(TTree * tree)
    Read_AcsTable();
 //    if (!my_confs["IsEliade"]) Read_CutFile();
    if (my_confs["ParticleCutGate"]) Read_CutFile();
+   if (my_confs["TOF"]) Read_CutFile();
 //    Read_CoincCoinc_TimeAlignment_LookUpTable();//for fine coinc-coinc time allignement 
 //    Print_CoincCoinc_TimeAlignment_LookUpTable();
    //Print_TimeAlignment_LookUpTable();
@@ -977,7 +982,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    fOutput->Add(mGammaGammaDC);
    
    
-   if (has_detector["psd"]){
+   if (has_detector["psdL"] || has_detector["psdP"]){
        
        
        std::map<int, TDelilaDetector> ::iterator it_dom_psd_ = LUT_ELIADE.begin();
@@ -988,6 +993,47 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
             mPSD[dom]->GetYaxis()->SetTitle("a.u.");
             mPSD[dom]->SetTitle("(ChargeLong - ChargeShort)/(ChargeLong + ChargeShort)");
             fOutput->Add(mPSD[dom]);
+            
+           
+           if (my_confs["TOF"]){
+           
+            mTOF_ch_short[dom] = new TH2F(Form("mTOF_ch_short_dom_%i", dom), Form("mTOF_ch_short_dom_%i", dom), 1000, 0, 1, 14000, -2e5, 5e5);
+            mTOF_ch_short[dom]->GetXaxis()->SetTitle("a.u.");
+            mTOF_ch_short[dom]->GetYaxis()->SetTitle("ps");
+            mTOF_ch_short[dom]->SetTitle("(ChargeLong - ChargeShort)/(ChargeLong + ChargeShort) vs RF");
+            fOutput->Add(mTOF_ch_short[dom]);
+            
+                  
+            mTOF_ch_long[dom] = new TH2F(Form("mTOF_ch_long_dom_%i", dom), Form("mTOF_ch_long_dom_%i", dom), 4096, -0.5, 16383.5, 14000, -2e5, 5e5);
+            mTOF_ch_long[dom]->GetXaxis()->SetTitle("a.u.");
+            mTOF_ch_long[dom]->GetYaxis()->SetTitle("ps");
+            //mTOF_ch_long[dom]->SetTitle("(ChargeLong - ChargeShort)/(ChargeLong + ChargeShort)");
+            mTOF_ch_long[dom]->SetTitle("ChargeLong vs RF");
+            fOutput->Add(mTOF_ch_long[dom]);
+            
+            
+            mTOF_PSD_ch_short[dom] = new TH2F(Form("mTOF_PSD_ch_short_%i", dom), Form("mTOF_PSD_ch_short_%i", dom), 1000, 0, 1, 14000, -2e5, 5e5);
+            mTOF_PSD_ch_short[dom]->GetXaxis()->SetTitle("a.u.");
+            mTOF_PSD_ch_short[dom]->GetYaxis()->SetTitle("ps");
+            mTOF_PSD_ch_short[dom]->SetTitle("(ChargeLong - ChargeShort)/(ChargeLong + ChargeShort) vs RF and PSD");
+            fOutput->Add(mTOF_PSD_ch_short[dom]);
+            
+                  
+            mTOF_PSD_ch_long[dom] = new TH2F(Form("mTOF_PSD_ch_long_%i", dom), Form("mTOF_PSD_ch_long_%i", dom), 4096, -0.5, 16383.5, 14000, -2e5, 5e5);
+            mTOF_PSD_ch_long[dom]->GetXaxis()->SetTitle("a.u.");
+            mTOF_PSD_ch_long[dom]->GetYaxis()->SetTitle("ps");
+            //mTOF_ch_long[dom]->SetTitle("(ChargeLong - ChargeShort)/(ChargeLong + ChargeShort)");
+            mTOF_PSD_ch_long[dom]->SetTitle("ChargeLong vs RF and PSD");
+            fOutput->Add(mTOF_PSD_ch_long[dom]);
+            
+            mTOF_MEV[dom] = new TH1F(Form("mTOF_MEV_%i", dom), Form("mTOF_PSD_ch_short_%i", dom), 5000,-0.5,49.5);
+            mTOF_MEV[dom]->GetXaxis()->SetTitle("MeV");
+            mTOF_MEV[dom]->GetYaxis()->SetTitle("count");
+            mTOF_MEV[dom]->SetTitle("TOF energy (and PSD)");
+            fOutput->Add(mTOF_MEV[dom]);
+            
+            };
+            
             std::cout<<"Created for dom "<<dom<<std::endl;
         }
    };
@@ -2155,8 +2201,8 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
              if (has_detector["neutron"]) {TreatNeutronSingle3He();/*TreatNeutronSingle()*/;}
                 else return kTRUE;
              break;
-         };case 88:  { 
-             if (has_detector["psd"]) {TreatPSD();/*TreatNeutronSingle()*/;}//TreatPSD should replce TreatNeutronSingle
+         };case 87: case 88:  { 
+             if (has_detector["psdL"]||has_detector["psdP"]) {TreatPSD();/*TreatNeutronSingle()*/;}//TreatPSD should replce TreatNeutronSingle
                 else return kTRUE;
              break;
          };case 9:  { 
@@ -2434,7 +2480,7 @@ void DelilaSelectorEliade::Terminate()
       if (blCS)                     foutFile->mkdir("CS","CS");
       if (has_detector["neutron"])  foutFile->mkdir("Neutron","Neutron");
       if (blExtTrigger)             foutFile->mkdir("CheckBunching","CheckBunching");
-      if (my_confs["ParticleCutGate"] )        foutFile->mkdir("particle_cuts","particle_cuts");
+      if (my_confs["ParticleCutGate"] ||my_confs["TOF"] )        foutFile->mkdir("particle_cuts","particle_cuts");
      
       if (has_detector["Elissa"]) foutFile->mkdir("dee","dee");
       
@@ -2498,7 +2544,7 @@ void DelilaSelectorEliade::Terminate()
             }
         };
         
-        if (my_confs["ParticleCutGate"] ){
+        if (my_confs["ParticleCutGate"] || my_confs["TOF"] ){
             foutFile->cd(Form("%s:/particle_cuts", OutputFile.str().c_str()));
             std::map<UInt_t, string>::iterator it_pid_=particle_name_in_cut.begin();
             for(;it_pid_!=particle_name_in_cut.end();++it_pid_){
@@ -4610,4 +4656,27 @@ void DelilaSelectorEliade::TreatPSD()//clover
      DelilaEvent_.fEnergyShort = fEnergyShort;
      float psd = (1.0*DelilaEvent_.fEnergy - DelilaEvent_.fEnergyShort) / (DelilaEvent_.fEnergy + DelilaEvent_.fEnergyShort);
      mPSD[domain]->Fill(DelilaEvent_.fEnergy, psd);
+     
+     if (my_confs["TOF"]){
+      	mTOF_ch_long[domain]->Fill(DelilaEvent_.fEnergy, DelilaEvent_.TimeBunch);
+  	mTOF_ch_short[domain]->Fill(psd, DelilaEvent_.TimeBunch);
+  	 };
+     
+     
 }
+
+double DelilaSelectorEliade::Time2Energy(double d, double t)
+{
+	//E in MeV, time in s, distance in m
+	double v = 0;
+ 	double gamma = 0;
+ 	double c = 299792458.0;
+ 	double e = 0;
+	v = d/t;	
+	gamma = 1./pow(1.-v*v/(c*c),0.5);
+	e = 939.565*(gamma-1); //939.565 = Mn*c^2
+	//std::cout<<"gamma "<<gamma<<" v "<<v<<" E "<<e<<" \n";
+	return e;	
+};
+
+
