@@ -252,7 +252,11 @@ public :
   std::map<int, TH2F*> mEnergyTimeDiffCS;
   std::map<int, TH2F*> mEnergyTimeDiffDC;
   std::map<int, TH2F*> mEnergyTimeDiffCS_DC;//a matrix for each det type
-  std::map<int, TH2F*> mEnergyTimeDiffCS_DC_theta; //a matrix for each theta 
+  std::map<int, TH2F*> mEnergyTimeDiffCS_DC_theta; //a matrix for each theta
+  std::map<int, TH2F*> mEnergyTimeDiffCS_DC_domain; //a matrix for each domain
+  std::map<int, TH1F*> hEnergyTimeDiffCS_DC_theta; //a matrix for each theta
+  std::map<int, TH1F*> hEnergyTimeDiffCS_DC_domain; //a matrix for each domain 
+  
   
   std::map<int, TH2F*> mEnergyTimeDiffCS_DC_E;
   std::map<int, TH2F*> mEnergyTimeDiffCS_DC_noE;
@@ -565,6 +569,8 @@ public :
    virtual void GetNMultiplicity();
    
    virtual void SimpleRun(); //to run without EventBuilder
+   
+   virtual bool CheckKey(std::map<int, TH2F*> dic, int key);
 
    
    virtual std::vector<float> trapezoidal(short wave[],int length, int L, int G);//L = 20; G = 0

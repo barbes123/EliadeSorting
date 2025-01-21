@@ -1694,7 +1694,7 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                 mEnergyTimeDiffCS_DC_noE[itna1->first]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
                 mEnergyTimeDiffCS_DC_noE[itna1->first]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
                 fOutput->Add(mEnergyTimeDiffCS_DC_noE[itna1->first]);
-                
+                          
                 
                 std::map<int, TDelilaDetector > ::iterator it_lut_ = LUT_ELIADE.begin();
                 std::deque<int> list_of_theta;
@@ -1702,7 +1702,29 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                 
                 for (; it_lut_ != LUT_ELIADE.end(); ++it_lut_) {
                     if (LUT_ELIADE[it_lut_->first].detType == 3){
-                        int dom = LUT_ELIADE[it_lut_->first].dom;
+                        
+                        int dom = static_cast<int>(LUT_ELIADE[it_lut_->first].dom);
+                        
+                        mEnergyTimeDiffCS_DC_domain[dom] = new TH2F(Form("mEnergyTimeDiffCS_DC_domain%i",dom), Form("mEnergyTimeDiffCS_DC_domain%i",dom), n_bin_e, -0.5, max_e-0.5, 14000, -2e5, 5e5);//128 keV per bin
+                        mEnergyTimeDiffCS_DC_domain[dom]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
+                        mEnergyTimeDiffCS_DC_domain[dom]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
+                        fOutput->Add(mEnergyTimeDiffCS_DC_domain[dom]);
+                        
+                        
+                        hEnergyTimeDiffCS_DC_domain[dom] = new TH1F(Form("hEnergyTimeDiffCS_DC_domain%i",dom), Form("hEnergyTimeDiffCS_DC_domain%i",dom), 14000, -2e5, 5e5);//128 keV per bin
+                        hEnergyTimeDiffCS_DC_domain[dom]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
+                        hEnergyTimeDiffCS_DC_domain[dom]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
+                        fOutput->Add(hEnergyTimeDiffCS_DC_domain[dom]);
+                        
+
+
+
+                        
+                        
+                        std::cout << Form("mEnergyTimeDiffCS_DC_domain%i",dom)<<" Initialized \n";
+
+                        
+                        
                         Float_t theta = LUT_ELIADE[it_lut_->first].theta;
                         int theta_int = static_cast<int>(theta);
                         bool found = false;
@@ -1718,6 +1740,12 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                             mEnergyTimeDiffCS_DC_theta[theta_int]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
                             mEnergyTimeDiffCS_DC_theta[theta_int]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
                             fOutput->Add(mEnergyTimeDiffCS_DC_theta[theta_int]);
+                              
+                            
+                            hEnergyTimeDiffCS_DC_theta[theta_int] = new TH1F(Form("hEnergyTimeDiffCS_DC_theta%i",theta_int), Form("hEnergyTimeDiffCS_DC_theta%i",theta_int), 14000, -2e5, 5e5);//128 keV per bin
+                            hEnergyTimeDiffCS_DC_theta[theta_int]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
+                            hEnergyTimeDiffCS_DC_theta[theta_int]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
+                            fOutput->Add(hEnergyTimeDiffCS_DC_theta[theta_int]);
                             
                             std::cout << Form("mEnergyTimeDiffCS_DC_theta%i",theta_int)<<" Initialized \n";
                             };
@@ -2480,8 +2508,11 @@ void DelilaSelectorEliade::Terminate()
       if (blCS)                     foutFile->mkdir("CS","CS");
       if (has_detector["neutron"])  foutFile->mkdir("Neutron","Neutron");
       if (blExtTrigger)             foutFile->mkdir("CheckBunching","CheckBunching");
-      if (my_confs["ParticleCutGate"] ||my_confs["TOF"] )        foutFile->mkdir("particle_cuts","particle_cuts");
-     
+      //For Oliver----------------------------------------------------------------------------
+      if (blExtTrigger)             foutFile->mkdir("EnergyTimeDiffCS_DC_domain","mEnergyTimeDiffCS_DC_domain");
+      if (blExtTrigger)             foutFile->mkdir("EnergyTimeDiffCS_DC_theta","CheckBunching");
+      //---------------------------------------------------------------------------------------
+      if (my_confs["ParticleCutGate"] ||my_confs["TOF"] )        foutFile->mkdir("particle_cuts","particle_cuts");     
       if (has_detector["Elissa"]) foutFile->mkdir("dee","dee");
       
       outputTree->Write();
@@ -2498,6 +2529,10 @@ void DelilaSelectorEliade::Terminate()
                name.Contains("mTimeDiffCoreSegments") ||
                name.Contains("mTimeDiffCoreCore")) && blAddBack){
                 foutFile->cd(Form("%s:/AddBack", OutputFile.str().c_str()));
+           }else if (name.Contains("EnergyTimeDiffCS_DC_domain")){
+                foutFile->cd(Form("%s:/EnergyTimeDiffCS_DC_domain", OutputFile.str().c_str()));
+           }else if (name.Contains("EnergyTimeDiffCS_DC_theta")){
+                foutFile->cd(Form("%s:/EnergyTimeDiffCS_DC_theta", OutputFile.str().c_str()));
            }else if (name.Contains("NN_")&&has_detector["neutron"]){
                 foutFile->cd(Form("%s:/Neutron", OutputFile.str().c_str()));
            }else if (name.Contains("gate_check")&&my_confs["ParticleCutGate"] ){
@@ -4678,5 +4713,26 @@ double DelilaSelectorEliade::Time2Energy(double d, double t)
 	//std::cout<<"gamma "<<gamma<<" v "<<v<<" E "<<e<<" \n";
 	return e;	
 };
+
+bool DelilaSelectorEliade::CheckKey(std::map<int, TH2F*> dic, int key)
+{
+    //----------------------------------------------------------------------------------------------------------------
+    // Check if the key exists in the map
+    //----------------------------------------------------------------------------------------------------------------
+    auto it = dic.find(key);
+    if (it != dic.end()) {
+        std::cout << "Key " << key << " exists in the map.\n";
+        TH2F* hist = it->second;
+        std::cout << "Histogram Name: " << hist->GetName() << "\n";
+        std::cout << "Histogram Title: " << hist->GetTitle() << "\n";
+        std::cout << "Entries in histogram: " << hist->GetEntries() << "\n";
+        return true;
+    } else {
+        std::cout << "Hist " <<  Form("Key %i", key) << " does not exist \n";
+        return false;
+    }
+    //----------------------------------------------------------------------------------------------------------------
+}
+
 
 
