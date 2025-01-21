@@ -1716,6 +1716,16 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                         hEnergyTimeDiffCS_DC_domain[dom]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
                         fOutput->Add(hEnergyTimeDiffCS_DC_domain[dom]);
                         
+                         mEnergyTimeDiffCS_DC_E_domain[dom] = new TH2F(Form("mEnergyTimeDiffCS_DC_E_domain%i",dom), Form("mEnergyTimeDiffCS_DC_E_domain%i",dom), n_bin_e, -0.5, max_e-0.5, 14000, -2e5, 5e5);//128 keV per bin
+                        mEnergyTimeDiffCS_DC_E_domain[dom]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
+                        mEnergyTimeDiffCS_DC_E_domain[dom]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
+                        fOutput->Add(mEnergyTimeDiffCS_DC_E_domain[dom]);
+                        
+                        mEnergyTimeDiffCS_DC_noE_domain[dom] = new TH2F(Form("mEnergyTimeDiffCS_DC_noE_domain%i",dom), Form("mEnergyTimeDiffCS_DC_noE_domain%i",dom), n_bin_e, -0.5, max_e-0.5, 14000, -2e5, 5e5);//128 keV per bin
+                        mEnergyTimeDiffCS_DC_noE_domain[dom]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
+                        mEnergyTimeDiffCS_DC_noE_domain[dom]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
+                        fOutput->Add(mEnergyTimeDiffCS_DC_noE_domain[dom]);
+                        
 
 
 
@@ -2529,7 +2539,7 @@ void DelilaSelectorEliade::Terminate()
                name.Contains("mTimeDiffCoreSegments") ||
                name.Contains("mTimeDiffCoreCore")) && blAddBack){
                 foutFile->cd(Form("%s:/AddBack", OutputFile.str().c_str()));
-           }else if (name.Contains("EnergyTimeDiffCS_DC_domain")){
+           }else if (name.Contains("EnergyTimeDiffCS_DC_domain") || name.Contains("EnergyTimeDiffCS_DC_E_domain")||name.Contains("EnergyTimeDiffCS_DC_noE_domain")){
                 foutFile->cd(Form("%s:/EnergyTimeDiffCS_DC_domain", OutputFile.str().c_str()));
            }else if (name.Contains("EnergyTimeDiffCS_DC_theta")){
                 foutFile->cd(Form("%s:/EnergyTimeDiffCS_DC_theta", OutputFile.str().c_str()));

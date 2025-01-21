@@ -256,6 +256,9 @@ public :
   std::map<int, TH2F*> mEnergyTimeDiffCS_DC_domain; //a matrix for each domain
   std::map<int, TH1F*> hEnergyTimeDiffCS_DC_theta; //a matrix for each theta
   std::map<int, TH1F*> hEnergyTimeDiffCS_DC_domain; //a matrix for each domain 
+    
+  std::map<int, TH2F*> mEnergyTimeDiffCS_DC_E_domain; //a matrix for each domain
+  std::map<int, TH2F*> mEnergyTimeDiffCS_DC_noE_domain; //a matrix for each domain
   
   
   std::map<int, TH2F*> mEnergyTimeDiffCS_DC_E;
