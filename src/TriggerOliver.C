@@ -173,27 +173,36 @@ void DelilaSelectorEliade::FillSpectraForOliver()
          
                     int theta_int = static_cast<int>((*it_ev__).theta);
  
-                     //----------------------------------------------------------------------------------------------------------------
-                     // Check if the key exists in the map
-                     //----------------------------------------------------------------------------------------------------------------
-                     /*auto it = mEnergyTimeDiffCS_DC_theta.find(theta_int);
-                     if (it != mEnergyTimeDiffCS_DC_theta.end()) {
-                         std::cout << "Key " << theta_int << " exists in the map.\n";
-                         TH2F* hist = it->second;
-                         std::cout << "Histogram Name: " << hist->GetName() << "\n";
-                         std::cout << "Histogram Title: " << hist->GetTitle() << "\n";
-                         std::cout << "Entries in histogram: " << hist->GetEntries() << "\n";
-                     } else {
-                         std::cout << "Hist " << Form("mEnergyTimeDiffCS_DC_theta%i",theta_int) << " does not exist \n";
-                     }*/
-                     //----------------------------------------------------------------------------------------------------------------
+//                      //----------------------------------------------------------------------------------------------------------------
+//                      // Check if the key exists in the map
+//                      //----------------------------------------------------------------------------------------------------------------
+//                      auto it = mEnergyTimeDiffCS_DC_domain.find(domain);
+//                      if (it != mEnergyTimeDiffCS_DC_domain.end()) {
+//                          std::cout << "Key " << theta_int << " exists in the map.\n";
+//                          TH2F* hist = it->second;
+//                          std::cout << "Histogram Name: " << hist->GetName() << "\n";
+//                          std::cout << "Histogram Title: " << hist->GetTitle() << "\n";
+//                          std::cout << "Entries in histogram: " << hist->GetEntries() << "\n";
+//                      } else {
+//                          std::cout << "Hist " << Form("mEnergyTimeDiffCS_DC_domain%i",theta_int) << " does not exist \n";
+//                      }
+//                      //----------------------------------------------------------------------------------------------------------------
+//                     if (not CheckKey(mEnergyTimeDiffCS_DC_theta, theta_int)){std::cout<<"Matrix "<<Form("mEnergyTimeDiffCS_DC_theta%i is not initialized \n",theta_int); };
+//                     if (not CheckKey(mEnergyTimeDiffCS_DC_domain, domain)){std::cout<<"Matrix "<<Form("mEnergyTimeDiffCS_DC_domain%i is not initialized \n",domain); };
+                    
+                    mEnergyTimeDiffCS_DC_domain[domain]->Fill((*it_ev__).EnergyDC,  (*it_ev__).TimeBunch);
                     mEnergyTimeDiffCS_DC_theta[theta_int] ->Fill((*it_ev__).EnergyDC,  (*it_ev__).TimeBunch);
+                    
+                    hEnergyTimeDiffCS_DC_domain[domain]->Fill((*it_ev__).TimeBunch);
+                    hEnergyTimeDiffCS_DC_theta[theta_int] ->Fill((*it_ev__).TimeBunch);
                     
                     if ((*it_ev__).particleID > 0){
                         mEnergyTimeDiffCS_DC_E[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC, (*it_ev__).TimeBunch);
+                        mEnergyTimeDiffCS_DC_E_domain[domain]->Fill((*it_ev__).EnergyDC,  (*it_ev__).TimeBunch);
                     }
                     else{
                         mEnergyTimeDiffCS_DC_noE[(*it_ev__).det_def]->Fill((*it_ev__).EnergyDC, (*it_ev__).TimeBunch);
+                        mEnergyTimeDiffCS_DC_noE_domain[domain]->Fill((*it_ev__).EnergyDC,  (*it_ev__).TimeBunch);
                     };                
                 };
             };
