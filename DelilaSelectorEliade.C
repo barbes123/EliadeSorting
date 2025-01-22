@@ -1712,8 +1712,8 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
                         
                         
                         hEnergyTimeDiffCS_DC_domain[dom] = new TH1F(Form("hEnergyTimeDiffCS_DC_domain%i",dom), Form("hEnergyTimeDiffCS_DC_domain%i",dom), 14000, -2e5, 5e5);//128 keV per bin
-                        hEnergyTimeDiffCS_DC_domain[dom]->GetXaxis()->SetTitle(Form("Energy, %i keV/bin", kev_per_bin));
-                        hEnergyTimeDiffCS_DC_domain[dom]->GetYaxis()->SetTitle("Time diff, 200 ps/pin");
+                        hEnergyTimeDiffCS_DC_domain[dom]->GetYaxis()->SetTitle("counts");
+                        hEnergyTimeDiffCS_DC_domain[dom]->GetXaxis()->SetTitle("Time diff, 200 ps/pin");
                         fOutput->Add(hEnergyTimeDiffCS_DC_domain[dom]);
                         
                          mEnergyTimeDiffCS_DC_E_domain[dom] = new TH2F(Form("mEnergyTimeDiffCS_DC_E_domain%i",dom), Form("mEnergyTimeDiffCS_DC_E_domain%i",dom), n_bin_e, -0.5, max_e-0.5, 14000, -2e5, 5e5);//128 keV per bin
