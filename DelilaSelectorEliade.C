@@ -3893,8 +3893,8 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
      std::deque<DelilaEvent>::iterator it2_= CoreQu.begin();
      
      for (; it1_!= CoreQu.end();++it1_){
-         if ((*it1_).det_def != 1) {CoreQu.erase(it1_); continue;}
-         if ((*it1_).CS != 0) {CoreQu.erase(it1_); continue;}
+//          if ((*it1_).det_def != 1) {CoreQu.erase(it1_); continue;}
+//          if ((*it1_).CS != 0) {CoreQu.erase(it1_); continue;}
          int det_id1  =  (*it1_).cloverID;
          int core_id1 =  (*it1_).coreID;
 
@@ -3910,41 +3910,52 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
          }
 
          it2_= it1_;
+         std::deque<DelilaEvent> AbQu;
          for (; it2_!= CoreQu.end();++it2_){           
            if (it1_ == it2_) continue; 
-           if ((*it2_).det_def != 1) continue;
-           if ((*it2_).CS != 0) continue;  
+//            if ((*it2_).det_def != 1) continue;
+//            if ((*it2_).CS != 0) continue;  
            int det_id2 =  (*it2_).cloverID;
            int core_id2 = (*it2_).coreID;
            if (det_id1 != det_id2) continue;
            if (core_id1/10 != core_id2/10) continue;
 //             std::cout<<core_id1<<" "<<core_id2<<" "<<" \n";           
            
+           int IsDiagonal = 0;
+//            bool blIsDiagonal = (core_id1+core_id2)%2 == 0);
            double time_diff_core_core = (*it1_).Time - (*it2_).Time;
            
-           int id1 = core_id1;
-           int id2 = core_id2;
-           if (id1 < id2){
-             mTimeDiffCoreCore[id1]->Fill(id2,time_diff_core_core);
-           }else{
-             mTimeDiffCoreCore[id2]->Fill(id1,-time_diff_core_core);
-           }
-
-           if (abs(time_diff_core_core) < coinc_gates[11]) {
+           if (abs(time_diff_core_core) < coinc_gates[11]){               
+               AbQu.push_back(*it2_);
+               if ((core_id1+core_id2)%2 == 0) IsDiagonal++;
                nnfold++;
-               foldsum += (*it2_).Energy_kev;
-
-               if (addback_tree>0){
-                 vDomain->push_back((*it2_).domain);
-                 vEAddback->push_back((*it2_).Energy_kev);
-                 vTime->push_back((*it2_).Time);
-               }
-
-               CoreQu.erase(it2_);
-               it1_= CoreQu.begin();
-               it2_= CoreQu.begin();
-           }
-         };
+            };
+            
+            if ((IsDiagonal == 1) && nnfold == 2) continue; 
+            
+            std::deque<DelilaEvent>::iterator it_ab_= AbQu.begin();
+            
+            for (; it_ab_!=AbQu.end(); ++it_ab_){
+                int core_id_ab =  (*it_ab_).coreID;;
+                if (core_id1 < core_id_ab){
+                    mTimeDiffCoreCore[core_id1]->Fill(core_id_ab,time_diff_core_core);
+                }else{
+                    mTimeDiffCoreCore[core_id_ab]->Fill(core_id1,-time_diff_core_core);
+                }
+                foldsum += (*it_ab_).Energy_kev;
+                
+//                 if (addback_tree>0){
+//                  vDomain->push_back((*it_ab_).domain);
+//                  vEAddback->push_back((*it_ab_).Energy_kev);
+//                  vTime->push_back((*it_ab_).Time);
+//                }
+            }
+            
+//             CoreQu.erase(it2_);
+//             it1_= CoreQu.begin();
+//             it2_= CoreQu.begin();
+           };
+         
 
          mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
 
