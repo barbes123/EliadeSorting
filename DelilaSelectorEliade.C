@@ -870,6 +870,15 @@ void DelilaSelectorEliade::SlaveBegin(TTree * /*tree*/)
    hhGammaSi->GetYaxis()->SetTitle("counts");   
    fOutput->Add(hhGammaSi);
    
+   
+   
+   //check how many diaginal hits
+      
+   habDiagonal = new TH1F("habDiagonal", "habDiagonal", 10, -0.5, 9.5);
+   habDiagonal->GetXaxis()->SetTitle("number of diaginals");
+   habDiagonal->GetYaxis()->SetTitle("counts");   
+   fOutput->Add(habDiagonal);
+   
    //for oliver
 //    hTimeDiff_g_e = new TH1F("hTimeDiff_g_e", "hTimeDiff_g_e", 5e3, -1e5, 4e5);
 //    hTimeDiff_g_e->GetXaxis()->SetTitle("TimeDiff E-LaBr, ps"); 

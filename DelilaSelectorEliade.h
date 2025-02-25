@@ -442,6 +442,8 @@ public :
   
   std::map<int, TH2F*> mDee;
   TH2F* mDeeTimeDiff;
+  
+  TH1F* habDiagonal;
 
 
     
