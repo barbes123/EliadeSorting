@@ -2180,7 +2180,7 @@ Bool_t DelilaSelectorEliade::Process(Long64_t entry)
      if (DelilaEvent_.Time == 0) {hTimeZero->Fill(daq_ch);return kTRUE;};
      hTimeSort->Fill(time_diff_last);
      
-     if (debug){std::cout<<"I am doing new entry l.1084, ch:"<< daq_ch << "\n";}
+//      if (debug){std::cout<<"I am doing new entry l.1084, ch:"<< daq_ch << "\n";}
      
      lastDelilaTime = DelilaEvent_.Time;     
      //Apply time correction, usually should not be done for ExtTrigger, so it is not specified in LUT timeoffset for him
@@ -3918,12 +3918,10 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
            vTime->push_back((*it1_).Time);
          }
 
-         it2_= it1_;
+         it2_=  CoreQu.begin();
          std::deque<DelilaEvent> AbQu;
          for (; it2_!= CoreQu.end();++it2_){           
            if (it1_ == it2_) continue; 
-//            if ((*it2_).det_def != 1) continue;
-//            if ((*it2_).CS != 0) continue;  
            int det_id2 =  (*it2_).cloverID;
            int core_id2 = (*it2_).coreID;
            if (det_id1 != det_id2) continue;
@@ -3931,16 +3929,17 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
 //             std::cout<<core_id1<<" "<<core_id2<<" "<<" \n";           
            
            int IsDiagonal = 0;
-//            bool blIsDiagonal = (core_id1+core_id2)%2 == 0);
            double time_diff_core_core = (*it1_).Time - (*it2_).Time;
            
            if (abs(time_diff_core_core) < coinc_gates[11]){               
                AbQu.push_back(*it2_);
+               CoreQu.erase(it2_);
                if ((core_id1+core_id2)%2 == 0) IsDiagonal++;
                nnfold++;
             };
             
-            if ((IsDiagonal == 1) && nnfold == 2) continue; 
+            //Uncomment to allow diagonal plays
+//             if ((IsDiagonal == 1) && nnfold == 2) continue; 
             
             std::deque<DelilaEvent>::iterator it_ab_= AbQu.begin();
             
@@ -3953,13 +3952,12 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
                 }
                 foldsum += (*it_ab_).Energy_kev;
                 
-//                 if (addback_tree>0){
-//                  vDomain->push_back((*it_ab_).domain);
-//                  vEAddback->push_back((*it_ab_).Energy_kev);
-//                  vTime->push_back((*it_ab_).Time);
-//                }
+                 if (addback_tree>0){
+                  vDomain->push_back((*it_ab_).domain);
+                  vEAddback->push_back((*it_ab_).Energy_kev);
+                  vTime->push_back((*it_ab_).Time);
+                }
             }
-            
 //             CoreQu.erase(it2_);
 //             it1_= CoreQu.begin();
 //             it2_= CoreQu.begin();
@@ -3967,7 +3965,6 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
          
 
          mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
-
          (*it1_).Energy_kev = foldsum;
          delilaQuAddedBack.push_back((*it1_));
 
