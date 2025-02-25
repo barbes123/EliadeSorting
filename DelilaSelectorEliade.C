@@ -3881,31 +3881,43 @@ void DelilaSelectorEliade::ViewACS_segments()
 }
 
 
+
 void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
 {
      std::deque<DelilaEvent>::iterator itd_= delilaQu.begin();
-     
+
      delilaQuAddedBack.clear();//safe event for later g-g, similar to delilaQu back with addback
-     
+
      std::deque<DelilaEvent> CoreQu;
      CoreQu.clear();
 
+     int nCoreFired{0};
+
      for (; itd_!= delilaQu.end();++itd_){
-         
+
          if ((*itd_).det_def != 1) continue;
          if ((*itd_).CS != 0) continue;
-         
+
+         //for neighbour crystals only
+         /*bool fired{false};
+         std::deque<DelilaEvent>::iterator itn_= CoreQu.begin();
+         for (; itn_!= CoreQu.end();++itn_){
+           if ((*itd_).coreID == (*itn_).coreID) {fired = true; break;}
+         }
+         if (!fired) nCoreFired++;*/
+
          CoreQu.push_back(*itd_);
      }
 
      std::deque<DelilaEvent>::iterator it1_= CoreQu.begin();
      std::deque<DelilaEvent>::iterator it2_= CoreQu.begin();
-     
+
      for (; it1_!= CoreQu.end();++it1_){
-//          if ((*it1_).det_def != 1) {CoreQu.erase(it1_); continue;}
-//          if ((*it1_).CS != 0) {CoreQu.erase(it1_); continue;}
+         if ((*it1_).det_def != 1) {CoreQu.erase(it1_); continue;}
+         if ((*it1_).CS != 0) {CoreQu.erase(it1_); continue;}
          int det_id1  =  (*it1_).cloverID;
          int core_id1 =  (*it1_).coreID;
+         int QuSize = CoreQu.size();
 
          int nnfold = 1;
          double foldsum = (*it1_).Energy_kev;
@@ -3918,53 +3930,55 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
            vTime->push_back((*it1_).Time);
          }
 
-         it2_=  CoreQu.begin();
-         std::deque<DelilaEvent> AbQu;
-         for (; it2_!= CoreQu.end();++it2_){           
-           if (it1_ == it2_) continue; 
+         it2_= it1_;
+         for (; it2_!= CoreQu.end();++it2_){
+           if (it1_ == it2_) continue;
+           if ((*it2_).det_def != 1) continue;
+           if ((*it2_).CS != 0) continue;
            int det_id2 =  (*it2_).cloverID;
            int core_id2 = (*it2_).coreID;
            if (det_id1 != det_id2) continue;
            if (core_id1/10 != core_id2/10) continue;
-//             std::cout<<core_id1<<" "<<core_id2<<" "<<" \n";           
-           
-           int IsDiagonal = 0;
+           //for neighbour crystals only
+//           if (nCoreFired == 2 && (core_id1+core_id2)%2 == 0) continue;
+//             std::cout<<core_id1<<" "<<core_id2<<" "<<" \n";
+
            double time_diff_core_core = (*it1_).Time - (*it2_).Time;
-           
-           if (abs(time_diff_core_core) < coinc_gates[11]){               
-               AbQu.push_back(*it2_);
-               CoreQu.erase(it2_);
-               if ((core_id1+core_id2)%2 == 0) IsDiagonal++;
+
+           int id1 = core_id1;
+           int id2 = core_id2;
+           if (id1 < id2){
+             mTimeDiffCoreCore[id1]->Fill(id2,time_diff_core_core);
+           }else{
+             mTimeDiffCoreCore[id2]->Fill(id1,-time_diff_core_core);
+           }
+
+           if (abs(time_diff_core_core) < coinc_gates[11]) {
                nnfold++;
-            };
-            
-            //Uncomment to allow diagonal plays
-//             if ((IsDiagonal == 1) && nnfold == 2) continue; 
-            
-            std::deque<DelilaEvent>::iterator it_ab_= AbQu.begin();
-            
-            for (; it_ab_!=AbQu.end(); ++it_ab_){
-                int core_id_ab =  (*it_ab_).coreID;;
-                if (core_id1 < core_id_ab){
-                    mTimeDiffCoreCore[core_id1]->Fill(core_id_ab,time_diff_core_core);
-                }else{
-                    mTimeDiffCoreCore[core_id_ab]->Fill(core_id1,-time_diff_core_core);
-                }
-                foldsum += (*it_ab_).Energy_kev;
-                
-                 if (addback_tree>0){
-                  vDomain->push_back((*it_ab_).domain);
-                  vEAddback->push_back((*it_ab_).Energy_kev);
-                  vTime->push_back((*it_ab_).Time);
-                }
-            }
-//             CoreQu.erase(it2_);
-//             it1_= CoreQu.begin();
-//             it2_= CoreQu.begin();
-           };
-         
+               foldsum += (*it2_).Energy_kev;
+
+               if (addback_tree>0){
+                 vDomain->push_back((*it2_).domain);
+                 vEAddback->push_back((*it2_).Energy_kev);
+                 vTime->push_back((*it2_).Time);
+               }
+
+               CoreQu.erase(it2_);
+               it1_= CoreQu.begin();
+               it2_= CoreQu.begin();
+           }
+         };
+
+         //for crosstalk correction
+         /*foldsum = 0;
+         for (int v_it = 0; v_it < int(vEAddback->size()); v_it++){
+           for (int v_it2 = 0; v_it2 < int(vEAddback->size()); v_it2++){
+             foldsum += vEAddback->at(v_it2) * Crosstalk_matrix[vDomain->at(v_it)/10%10+1][vDomain->at(v_it2)/10%10+1];
+          }
+         }*/
 
          mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
+
          (*it1_).Energy_kev = foldsum;
          delilaQuAddedBack.push_back((*it1_));
 
@@ -3980,102 +3994,23 @@ void DelilaSelectorEliade::ViewAddBackCoreCore() //addback on the core level
          CoreQu.erase(it1_);
          it1_= CoreQu.begin()-1;
     }
-        
-/*        std::deque<DelilaEvent>::iterator it3_= CoreQu.begin();
-        std::deque<DelilaEvent>::iterator it4_= CoreQu.begin();
-        int nnfold = CoreQu.size();
-        double foldsum = 0;
-        double foldE = 0;
-        
-        if (addback_tree>0){
-          vDomain->clear();
-          vEAddback->clear();
-          vTime->clear();
-        }
 
-        switch (nnfold){
-            case 1:{
-              mFoldSpec[det_id1]->Fill(nnfold, CoreQu[0].Energy_kev);
-              mFoldSpecSum[det_id1]->Fill(nnfold, CoreQu[0].Energy_kev);
-             
-              delilaQuAddedBack.push_back(CoreQu[0]);
-
-              if (addback_tree>0){
-                vDomain->push_back(CoreQu[0].domain);
-                vEAddback->push_back(CoreQu[0].Energy_kev);
-                vTime->push_back(CoreQu[0].Time);
-                nfoldAddback = nnfold;
-                EAddback = CoreQu[0].Energy_kev;
-                addbackTree->Fill();
-                vDomain->clear();
-                vEAddback->clear();
-                vTime->clear();
-              }
-
-              break ;  
-            };
-            default :{
-              it3_= CoreQu.begin();
-              foldsum = 0;
-              if (nnfold==2){
-                if ((*it3_).coreID>(*(it3_+1)).coreID){
-                  mFoldSpec[det_id1]->Fill((*it3_).coreID,(*(it3_+1)).coreID);
-                }
-                else{
-                  mFoldSpec[det_id1]->Fill((*(it3_+1)).coreID,(*it3_).coreID);
-                }
-              }
-              for (; it3_!= CoreQu.end();++it3_){
-                //mFoldSpec[det_id1]->Fill(nnfold, (*it3_).Energy_kev);  
-                /*foldE = 0.;
-                it4_= CoreQu.begin();
-                for (; it4_!= CoreQu.end();++it4_){
-                  foldE += (*it4_).Energy_kev*Crosstalk_matrix[(*it3_).coreID][(*it4_).coreID];
-                }
-                foldsum+= foldE;*/
-                /*foldsum+= (*it3_).Energy_kev;
-                if (addback_tree>0){
-                  vDomain->push_back((*it3_).domain);
-                  //vEAddback->push_back(foldE);
-                  vEAddback->push_back((*it3_).Energy_kev);
-                  vTime->push_back((*it3_).Time);
-                }
-              };
-              mFoldSpecSum[det_id1]->Fill(nnfold, foldsum);
-               
-              CoreQu[0].Energy_kev = foldsum;
-              delilaQuAddedBack.push_back(CoreQu[0]);
-
-              if (addback_tree>0){
-                nfoldAddback = nnfold;
-                EAddback = foldsum;
-                addbackTree->Fill();
-                vDomain->clear();
-                vEAddback->clear();
-                vTime->clear();
-              }
-
-            };
-        };
-     };*/
-     
-     
      std::deque<DelilaEvent>::iterator it_gg1_= delilaQuAddedBack.begin();
      std::deque<DelilaEvent>::iterator it_gg2_= delilaQuAddedBack.begin();
      int coinc_id = 11;
-     
+
       for (; it_gg1_!= delilaQuAddedBack.end();++it_gg1_){
           it2_= delilaQuAddedBack.begin();
-          for (; it_gg2_!= delilaQuAddedBack.end();++it_gg2_){  
+          for (; it_gg2_!= delilaQuAddedBack.end();++it_gg2_){
               if (it_gg1_ == it_gg2_) continue;
               int core_id1 =  (*it_gg1_).domain/100 * 10 +(*it_gg1_).domain/10%10;
               double time_diff_gg = (*it_gg1_).Time - (*it_gg2_).Time;
-                              
+
               if (abs(time_diff_gg) < coinc_gates[coinc_id]){
                   mGG_AB_time_diff[coinc_id]->Fill(core_id1,time_diff_gg);
                   mGG_AddBack[coinc_id]->Fill(it_gg1_->Energy_kev, it_gg2_->Energy_kev);
               };
-          }        
+          }
       }
 }
 
